@@ -122,6 +122,7 @@ _pricing_records_cache: list[PricingRecord] | None = None
 _mvp_catalog_validation_summary_cache: dict[str, int] | None = None
 _mvp_catalog_data_cache: dict[str, dict[str, Any]] | None = None
 _huggingface_models_cache: list[dict[str, Any]] | None = None
+_huggingface_catalog_meta_cache: dict[str, Any] | None = None
 
 
 def _parse_optional_float(value: str, field_name: str, source: Path, row_num: int) -> float | None:
@@ -335,6 +336,7 @@ def get_mvp_catalog(catalog_name: str) -> dict[str, Any]:
 def validate_huggingface_catalog(force: bool = False) -> int:
     """Validate local Hugging Face catalog JSON against schema."""
     global _huggingface_models_cache
+    global _huggingface_catalog_meta_cache
     if _huggingface_models_cache is not None and not force:
         return len(_huggingface_models_cache)
 
@@ -361,6 +363,12 @@ def validate_huggingface_catalog(force: bool = False) -> int:
     if not isinstance(models, list):
         raise ValueError(f"{HUGGINGFACE_CATALOG_FILE} models must be a list")
     _huggingface_models_cache = models
+    _huggingface_catalog_meta_cache = {
+        "generated_at_utc": data.get("generated_at_utc"),
+        "model_count": int(data.get("model_count", len(models))),
+        "source": data.get("source"),
+        "schema_version": data.get("schema_version"),
+    }
     return len(_huggingface_models_cache)
 
 
@@ -381,6 +389,19 @@ def get_huggingface_models(
     ]
     models.sort(key=lambda row: int(row.get("downloads", 0)), reverse=True)
     return deepcopy(models)
+
+
+def get_huggingface_catalog_metadata() -> dict[str, Any]:
+    """Return metadata for the local Hugging Face catalog snapshot."""
+    validate_huggingface_catalog()
+    assert _huggingface_catalog_meta_cache is not None
+    return deepcopy(_huggingface_catalog_meta_cache)
+
+
+def refresh_huggingface_catalog_cache() -> dict[str, Any]:
+    """Force-refresh Hugging Face catalog caches after sync."""
+    validate_huggingface_catalog(force=True)
+    return get_huggingface_catalog_metadata()
 
 
 def get_pricing_records(workload_type: WorkloadType | str | None = None) -> list[PricingRecord]:

@@ -203,6 +203,8 @@ Open [http://localhost:8501](http://localhost:8501) in your browser.
 
 ### Python API
 
+Canonical planning API: `rank_configs(...)`
+
 ```python
 from inference_atlas import rank_configs
 

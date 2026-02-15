@@ -68,6 +68,7 @@ class RankedPlan:
     billing_mode: str
     gpu_type: str | None
     gpu_count: int
+    confidence: str
     monthly_cost_usd: float
     score: float
     utilization_at_peak: float | None
@@ -390,6 +391,7 @@ def rank_configs(
                 billing_mode=cfg.billing_mode,
                 gpu_type=cfg.gpu_type,
                 gpu_count=cfg.gpu_count,
+                confidence=cfg.confidence,
                 monthly_cost_usd=monthly,
                 score=score,
                 utilization_at_peak=utilization,
@@ -422,6 +424,7 @@ def rank_configs(
                 billing_mode=row.billing_mode,
                 gpu_type=row.gpu_type,
                 gpu_count=row.gpu_count,
+                confidence=row.confidence,
                 monthly_cost_usd=row.monthly_cost_usd,
                 score=row.score,
                 utilization_at_peak=row.utilization_at_peak,

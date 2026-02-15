@@ -3,16 +3,19 @@
 from __future__ import annotations
 
 import os
+from datetime import datetime, timezone
 
 import streamlit as st
 
 from inference_atlas import (
+    get_huggingface_catalog_metadata,
     get_huggingface_models,
     get_mvp_catalog,
-    get_recommendations,
+    refresh_huggingface_catalog_cache,
     rank_configs,
 )
 from inference_atlas.data_loader import get_models
+from inference_atlas.huggingface_catalog import fetch_huggingface_models, write_huggingface_catalog
 from inference_atlas.llm import LLMRouter, WorkloadSpec
 
 st.set_page_config(page_title="InferenceAtlas", layout="centered")
@@ -93,6 +96,52 @@ def _provider_ids_for_lane(lane: str) -> set[str]:
         return providers.intersection(MANAGED_PROVIDER_IDS)
     return providers.difference(MANAGED_PROVIDER_IDS)
 
+
+def _catalog_is_stale(generated_at_utc: str | None, max_age_days: int = 14) -> bool:
+    if not generated_at_utc:
+        return True
+    try:
+        generated = datetime.fromisoformat(generated_at_utc.replace("Z", "+00:00"))
+    except ValueError:
+        return True
+    now = datetime.now(timezone.utc)
+    return (now - generated).days > max_age_days
+
+
+with st.expander("Open-source model catalog status (Hugging Face API)"):
+    try:
+        hf_meta = get_huggingface_catalog_metadata()
+        generated_at = hf_meta.get("generated_at_utc")
+        model_count = int(hf_meta.get("model_count", 0))
+        st.write(f"Last sync (UTC): `{generated_at or 'unknown'}`")
+        st.write(f"Model count: `{model_count}`")
+        if _catalog_is_stale(generated_at):
+            st.warning("Catalog is stale or empty. Sync is recommended.")
+        else:
+            st.success("Catalog freshness is within the target window.")
+    except Exception as exc:  # noqa: BLE001 - user-facing status message
+        st.warning(f"Hugging Face catalog status unavailable: {exc}")
+
+    sync_limit = st.slider(
+        "Sync model limit",
+        min_value=20,
+        max_value=500,
+        value=100,
+        step=20,
+        help="Number of top downloaded models to fetch from Hugging Face API.",
+    )
+    if st.button("Sync Hugging Face models now"):
+        try:
+            token = os.getenv("HUGGINGFACE_TOKEN")
+            synced_models = fetch_huggingface_models(limit=sync_limit, token=token)
+            write_huggingface_catalog(synced_models)
+            meta = refresh_huggingface_catalog_cache()
+            st.success(
+                f"Synced {meta.get('model_count', 0)} models at {meta.get('generated_at_utc', 'unknown')}."
+            )
+        except Exception as exc:  # noqa: BLE001 - user-facing sync message
+            st.error(f"Hugging Face sync failed: {exc}")
+
 with st.form("inputs"):
     model_items = list(MODEL_REQUIREMENTS.items())
     default_model_key = str(parsed_workload.get("model_key", "llama_70b"))
@@ -162,11 +211,6 @@ with st.form("inputs"):
                 "No local Hugging Face models found. Run `python3 scripts/sync_huggingface_catalog.py` "
                 "to fetch models via API."
             )
-    use_legacy_engine = st.toggle(
-        "Use legacy engine",
-        value=False,
-        help="Off (default): rank_configs() MVP planner. On: deprecated get_recommendations().",
-    )
 
     submit = st.form_submit_button("Get Recommendations")
 
@@ -186,106 +230,42 @@ if submit:
     )
     st.session_state["last_workload"] = effective_workload
 
-    if use_legacy_engine:
-        try:
-            recommendations = get_recommendations(
-                tokens_per_day=effective_workload.tokens_per_day,
-                pattern=effective_workload.pattern,
-                model_key=model_key,
-                latency_requirement_ms=effective_workload.latency_requirement_ms,
-                top_k=3,
+    try:
+        lane_provider_ids = _provider_ids_for_lane(planning_lane)
+        ranked_plans = rank_configs(
+            tokens_per_day=effective_workload.tokens_per_day,
+            model_bucket=selected_model_bucket,
+            peak_to_avg=pattern_to_peak_to_avg[effective_workload.pattern],
+            top_k=3,
+            provider_ids=lane_provider_ids,
+        )
+        if effective_workload.latency_requirement_ms is not None:
+            st.caption(
+                "Note: MVP planner ranking does not currently apply latency-specific penalties."
             )
-        except ValueError as exc:
-            st.error(str(exc))
-            recommendations = []
-        st.session_state["last_recommendations"] = recommendations
-        st.session_state["last_ranked_plans"] = []
-        st.session_state["last_engine"] = "legacy"
-        st.session_state["last_lane"] = None
-    else:
-        try:
-            lane_provider_ids = _provider_ids_for_lane(planning_lane)
-            ranked_plans = rank_configs(
-                tokens_per_day=effective_workload.tokens_per_day,
-                model_bucket=selected_model_bucket,
-                peak_to_avg=pattern_to_peak_to_avg[effective_workload.pattern],
-                top_k=3,
-                provider_ids=lane_provider_ids,
-            )
-            if effective_workload.latency_requirement_ms is not None:
-                st.caption(
-                    "Note: MVP planner ranking does not currently apply latency-specific penalties."
-                )
-        except ValueError as exc:
-            st.error(str(exc))
-            ranked_plans = []
-        st.session_state["last_ranked_plans"] = ranked_plans
-        st.session_state["last_recommendations"] = []
-        st.session_state["last_engine"] = "mvp"
-        st.session_state["last_lane"] = planning_lane
+    except ValueError as exc:
+        st.error(str(exc))
+        ranked_plans = []
+    st.session_state["last_ranked_plans"] = ranked_plans
+    st.session_state["last_lane"] = planning_lane
 
-last_recommendations = st.session_state.get("last_recommendations", [])
 last_ranked_plans = st.session_state.get("last_ranked_plans", [])
-last_engine = st.session_state.get("last_engine")
 last_workload = st.session_state.get("last_workload")
-if last_engine == "legacy" and last_recommendations:
-    st.subheader("Top 3 Recommendations (Legacy)")
-    for rec in last_recommendations:
-        with st.container():
-            col1, col2 = st.columns([3, 1])
-
-            with col1:
-                st.markdown(f"### {rec.rank}. {rec.platform} - {rec.option}")
-                st.caption(rec.reasoning)
-
-            with col2:
-                st.metric("Monthly Cost", f"${rec.monthly_cost_usd:,.0f}")
-                st.metric("Cost/1M Tokens", f"${rec.cost_per_million_tokens:.2f}")
-
-            if rec.utilization_pct < 60:
-                util_label = "Low"
-            elif rec.utilization_pct < 80:
-                util_label = "Moderate"
-            else:
-                util_label = "High"
-            st.progress(min(max(rec.utilization_pct / 100, 0.0), 1.0))
-            st.caption(f"{util_label} utilization: {rec.utilization_pct:.0f}%")
-
-            if rec.idle_waste_pct > 40:
-                potential_savings = rec.monthly_cost_usd * rec.idle_waste_pct / 100
-                st.warning(
-                    f"{rec.idle_waste_pct:.0f}% idle capacity. "
-                    f"Consider autoscaling to save about ${potential_savings:,.0f}/mo."
-                )
-
-            st.markdown("---")
-
-    explain_disabled = (not has_llm_key) or (last_workload is None)
-    if st.button("Explain this recommendation", disabled=explain_disabled):
-        if not has_llm_key:
-            st.error("Set OPENAI_API_KEY or ANTHROPIC_API_KEY to use AI explanations.")
-        elif last_workload is None:
-            st.error("Run recommendations first to generate an explanation.")
-        else:
+if last_ranked_plans:
+    selected_lane = st.session_state.get("last_lane")
+    if selected_lane:
+        st.caption(f"Lane: {selected_lane}")
+        if selected_lane == "Open-source route":
             try:
-                router = LLMRouter()
-                top_rec = last_recommendations[0]
-                summary = (
-                    f"{top_rec.platform} - {top_rec.option}, "
-                    f"${top_rec.monthly_cost_usd:.0f}/mo, "
-                    f"{top_rec.utilization_pct:.0f}% util"
+                hf_meta = get_huggingface_catalog_metadata()
+                st.caption(
+                    "Open-source catalog freshness: "
+                    f"{hf_meta.get('generated_at_utc', 'unknown')} UTC "
+                    f"(models={hf_meta.get('model_count', 0)})"
                 )
-                explanation = router.explain(summary, last_workload)
-                st.session_state["last_explanation"] = explanation
-                st.info(explanation)
-            except Exception as exc:  # noqa: BLE001 - user-facing parser message
-                st.error(f"Explanation failed: {exc}")
-    if st.session_state.get("last_explanation"):
-        st.info(st.session_state["last_explanation"])
-elif last_engine == "mvp" and last_ranked_plans:
-    if st.session_state.get("last_lane"):
-        st.caption(f"Lane: {st.session_state['last_lane']}")
-    st.subheader("Top 3 Recommendations (MVP Planner Default)")
+            except Exception:
+                pass
+    st.subheader("Top 3 Recommendations")
     for plan in last_ranked_plans:
         with st.container():
             col1, col2 = st.columns([3, 1])
@@ -297,6 +277,7 @@ elif last_engine == "mvp" and last_ranked_plans:
             with col2:
                 st.metric("Monthly Cost", f"${plan.monthly_cost_usd:,.0f}")
                 st.metric("Score", f"{plan.score:,.1f}")
+                st.metric("Confidence", plan.confidence)
 
             if plan.utilization_at_peak is not None:
                 util_ratio = min(max(plan.utilization_at_peak, 0.0), 1.0)
@@ -305,6 +286,10 @@ elif last_engine == "mvp" and last_ranked_plans:
             st.caption(
                 f"Risk: overload={plan.risk.risk_overload:.2f}, "
                 f"complexity={plan.risk.risk_complexity:.2f}, total={plan.risk.total_risk:.2f}"
+            )
+            st.caption(
+                f"Assumptions: peak_to_avg={plan.assumptions['peak_to_avg']}, "
+                f"util_target={plan.assumptions['util_target']}, beta={plan.assumptions['scaling_beta']}"
             )
             st.markdown("---")
 
@@ -437,6 +422,7 @@ if mvp_plans:
                 "billing": plan.billing_mode,
                 "gpu": plan.gpu_type or "-",
                 "gpus": plan.gpu_count,
+                "confidence": plan.confidence,
                 "monthly_usd": round(plan.monthly_cost_usd, 2),
                 "score": round(plan.score, 2),
                 "risk": round(plan.risk.total_risk, 3),
