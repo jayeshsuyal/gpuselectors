@@ -200,30 +200,61 @@ with st.form("mvp_planner_inputs"):
         min_value=1.0,
         value=8_000_000.0,
         step=100_000.0,
+        help="Total tokens processed per day (input + output) for this workload.",
     )
     mvp_peak_to_avg = st.number_input(
         "Peak-to-average",
         min_value=1.0,
         value=2.5,
         step=0.1,
+        help="Peak traffic divided by average traffic (higher means burstier demand).",
     )
     mvp_model_bucket = st.selectbox(
         "Model bucket",
         options=bucket_options,
         index=bucket_options.index("70b") if "70b" in bucket_options else 0,
+        help="Approximate model size class used for capacity lookup (e.g., 7b, 70b).",
     )
-    mvp_top_k = st.slider("Top K", min_value=1, max_value=10, value=5)
+    mvp_top_k = st.slider(
+        "Top K",
+        min_value=1,
+        max_value=10,
+        value=5,
+        help="Number of best-ranked deployment configurations to display.",
+    )
 
     with st.expander("Advanced assumptions"):
-        mvp_util_target = st.slider("Util target", min_value=0.50, max_value=0.90, value=0.75, step=0.01)
-        mvp_beta = st.slider("Scaling beta", min_value=0.01, max_value=0.20, value=0.08, step=0.01)
-        mvp_alpha = st.slider("Risk alpha", min_value=0.0, max_value=2.0, value=1.0, step=0.1)
+        mvp_util_target = st.slider(
+            "Util target",
+            min_value=0.50,
+            max_value=0.90,
+            value=0.75,
+            step=0.01,
+            help="Target max utilization at peak load; lower values reserve more headroom.",
+        )
+        mvp_beta = st.slider(
+            "Scaling beta",
+            min_value=0.01,
+            max_value=0.20,
+            value=0.08,
+            step=0.01,
+            help="Controls multi-GPU scaling efficiency drop as GPU count increases.",
+        )
+        mvp_alpha = st.slider(
+            "Risk alpha",
+            min_value=0.0,
+            max_value=2.0,
+            value=1.0,
+            step=0.1,
+            help="Weight of risk in final score; higher values penalize risky configs more.",
+        )
         mvp_autoscale_ineff = st.slider(
             "Autoscale inefficiency",
             min_value=1.0,
             max_value=1.5,
             value=1.15,
             step=0.01,
+            help="Multiplier for autoscaling overhead (cold starts, orchestration, idle drift).",
         )
 
     mvp_submit = st.form_submit_button("Run MVP Planner")
@@ -262,7 +293,11 @@ if mvp_plans:
                 "headroom_pct": round(plan.headroom_pct, 1) if plan.headroom_pct is not None else None,
             }
         )
-    st.dataframe(table_rows, use_container_width=True, hide_index=True)
+    try:
+        st.dataframe(table_rows, use_container_width=True, hide_index=True)
+    except TypeError:
+        # Backward compatibility for older Streamlit versions.
+        st.dataframe(table_rows)
 
     st.markdown("**Top Explanations**")
     for plan in mvp_plans[:3]:
