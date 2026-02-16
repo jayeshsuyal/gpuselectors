@@ -1,0 +1,103 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://inference-atlas.local/schemas/catalog_v2_pricing.schema.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "generated_at_utc",
+    "providers_synced",
+    "row_count",
+    "connector_counts",
+    "rows"
+  ],
+  "properties": {
+    "schema_version": {
+      "type": "string"
+    },
+    "generated_at_utc": {
+      "type": "string"
+    },
+    "providers_synced": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "row_count": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "connector_counts": {
+      "type": "object",
+      "additionalProperties": {
+        "type": "integer",
+        "minimum": 0
+      }
+    },
+    "rows": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "provider",
+          "workload_type",
+          "sku_key",
+          "sku_name",
+          "model_key",
+          "billing_mode",
+          "unit_price_usd",
+          "unit_name",
+          "region",
+          "source_url",
+          "source_date",
+          "confidence",
+          "source_kind"
+        ],
+        "properties": {
+          "provider": {
+            "type": "string"
+          },
+          "workload_type": {
+            "type": "string"
+          },
+          "sku_key": {
+            "type": "string"
+          },
+          "sku_name": {
+            "type": "string"
+          },
+          "model_key": {
+            "type": "string"
+          },
+          "billing_mode": {
+            "type": "string"
+          },
+          "unit_price_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "unit_name": {
+            "type": "string"
+          },
+          "region": {
+            "type": "string"
+          },
+          "source_url": {
+            "type": "string"
+          },
+          "source_date": {
+            "type": "string"
+          },
+          "confidence": {
+            "type": "string"
+          },
+          "source_kind": {
+            "type": "string"
+          }
+        }
+      }
+    }
+  }
+}

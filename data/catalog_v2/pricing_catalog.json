@@ -1,0 +1,103 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-02-16T02:42:54.368928+00:00",
+  "providers_synced": [
+    "openai"
+  ],
+  "row_count": 6,
+  "connector_counts": {
+    "openai": 6
+  },
+  "rows": [
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_4o_input",
+      "sku_name": "GPT-4o Input",
+      "model_key": "gpt_4o",
+      "billing_mode": "per_token",
+      "unit_price_usd": 5.0,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://platform.openai.com/docs/pricing",
+      "source_date": "2026-02-13",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    },
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_4o_output",
+      "sku_name": "GPT-4o Output",
+      "model_key": "gpt_4o",
+      "billing_mode": "per_token",
+      "unit_price_usd": 15.0,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://platform.openai.com/docs/pricing",
+      "source_date": "2026-02-13",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    },
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_4o_mini_input",
+      "sku_name": "GPT-4o Mini Input",
+      "model_key": "gpt_4o_mini",
+      "billing_mode": "per_token",
+      "unit_price_usd": 0.15,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://platform.openai.com/docs/pricing",
+      "source_date": "2026-02-13",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    },
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_4o_mini_output",
+      "sku_name": "GPT-4o Mini Output",
+      "model_key": "gpt_4o_mini",
+      "billing_mode": "per_token",
+      "unit_price_usd": 0.6,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://platform.openai.com/docs/pricing",
+      "source_date": "2026-02-13",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    },
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_5_input",
+      "sku_name": "GPT-5 Input",
+      "model_key": "gpt_5",
+      "billing_mode": "per_token",
+      "unit_price_usd": 1.25,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "source_date": "2025-10-31",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    },
+    {
+      "provider": "openai",
+      "workload_type": "llm",
+      "sku_key": "gpt_5_output",
+      "sku_name": "GPT-5 Output",
+      "model_key": "gpt_5",
+      "billing_mode": "per_token",
+      "unit_price_usd": 10.0,
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "source_url": "https://intuitionlabs.ai/articles/llm-api-pricing-comparison-2025",
+      "source_date": "2025-10-31",
+      "confidence": "high",
+      "source_kind": "normalized_catalog"
+    }
+  ]
+}
