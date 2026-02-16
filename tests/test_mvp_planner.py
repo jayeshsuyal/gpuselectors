@@ -9,6 +9,7 @@ from inference_atlas.mvp_planner import (
     compute_monthly_cost,
     enumerate_configs,
     enumerate_configs_for_providers,
+    get_provider_compatibility,
     normalize_workload,
     rank_configs,
     risk_score,
@@ -104,6 +105,27 @@ def test_enumerate_configs_has_matches() -> None:
     assert any(row.billing_mode in {"dedicated_hourly", "autoscale_hourly"} for row in rows)
 
 
+def test_enumerate_configs_blends_io_pairs_for_llm_rows() -> None:
+    rows = enumerate_configs(model_bucket="7b")
+    ids = {row.offering_id for row in rows}
+    assert "fireworks_deepseek_v3_blended_io" in ids
+    assert "fireworks_deepseek_v3_input" not in ids
+    assert "fireworks_deepseek_v3_output" not in ids
+
+
+def test_output_token_ratio_changes_blended_price() -> None:
+    low_ratio_rows = enumerate_configs(model_bucket="7b", output_token_ratio=0.1)
+    high_ratio_rows = enumerate_configs(model_bucket="7b", output_token_ratio=0.9)
+
+    def _price(rows: list[PlannerConfig], offering_id: str) -> float:
+        row = next(item for item in rows if item.offering_id == offering_id)
+        assert row.price_per_1m_tokens_usd is not None
+        return row.price_per_1m_tokens_usd
+
+    target = "fireworks_deepseek_v3_blended_io"
+    assert _price(low_ratio_rows, target) < _price(high_ratio_rows, target)
+
+
 def test_enumerate_configs_provider_subset_filters() -> None:
     rows = enumerate_configs_for_providers(
         model_bucket="70b",
@@ -111,6 +133,17 @@ def test_enumerate_configs_provider_subset_filters() -> None:
     )
     assert rows
     assert all(row.provider_id in {"baseten", "together_ai"} for row in rows)
+
+
+def test_provider_compatibility_reports_supported_and_unsupported() -> None:
+    diag = get_provider_compatibility(
+        model_bucket="70b",
+        provider_ids={"baseten", "cohere"},
+    )
+    by_id = {row.provider_id: row for row in diag}
+    assert by_id["baseten"].compatible is True
+    assert by_id["cohere"].compatible is False
+    assert "No offering for selected model bucket" in by_id["cohere"].reason
 
 
 def test_rank_configs_returns_sorted_results() -> None:

@@ -14,6 +14,15 @@ DEFAULT_PEAK_TO_AVG = 2.5
 DEFAULT_SCALING_BETA = 0.08
 DEFAULT_AUTOSCALE_INEFFICIENCY = 1.15
 DEFAULT_ALPHA = 1.0
+DEFAULT_OUTPUT_TOKEN_RATIO = 0.30
+CONFIDENCE_ORDER = {
+    "high": 3,
+    "official": 3,
+    "medium": 2,
+    "estimated": 2,
+    "low": 1,
+    "vendor_list": 1,
+}
 
 
 @dataclass(frozen=True)
@@ -80,6 +89,14 @@ class RankedPlan:
     assumptions: dict[str, float]
 
 
+@dataclass(frozen=True)
+class ProviderCompatibility:
+    provider_id: str
+    provider_name: str
+    compatible: bool
+    reason: str
+
+
 def normalize_workload(
     tokens_per_day: float,
     peak_to_avg: float = DEFAULT_PEAK_TO_AVG,
@@ -116,6 +133,12 @@ def _bucket_token(model_bucket: str) -> str:
     if token.startswith("bucket_"):
         token = token.removeprefix("bucket_")
     return token
+
+
+def _lower_confidence(a: str, b: str) -> str:
+    a_score = CONFIDENCE_ORDER.get(a, 0)
+    b_score = CONFIDENCE_ORDER.get(b, 0)
+    return a if a_score <= b_score else b
 
 
 def capacity(
@@ -162,8 +185,14 @@ def capacity(
     )
 
 
-def enumerate_configs(model_bucket: str) -> list[PlannerConfig]:
+def enumerate_configs(
+    model_bucket: str,
+    output_token_ratio: float = DEFAULT_OUTPUT_TOKEN_RATIO,
+) -> list[PlannerConfig]:
     """Enumerate provider/offering configurations from providers catalog."""
+    if not 0 <= output_token_ratio <= 1:
+        raise ValueError("output_token_ratio must be between 0 and 1")
+
     providers = get_mvp_catalog("providers")["providers"]
     models = get_mvp_catalog("models")["models"]
     model_to_bucket = {row["model_id"]: row["size_bucket"] for row in models}
@@ -172,6 +201,9 @@ def enumerate_configs(model_bucket: str) -> list[PlannerConfig]:
 
     configs: list[PlannerConfig] = []
     for provider in providers:
+        paired_per_token: dict[tuple[str, str], dict[str, Any]] = {}
+        single_per_token: list[dict[str, Any]] = []
+
         for offering in provider["offerings"]:
             model_refs: list[str] = offering.get("model_refs", [])
             supports_model = any(
@@ -183,26 +215,18 @@ def enumerate_configs(model_bucket: str) -> list[PlannerConfig]:
 
             mode = offering["billing_mode"]
             if mode == "per_token":
-                configs.append(
-                    PlannerConfig(
-                        provider_id=provider["provider_id"],
-                        provider_name=provider["provider_name"],
-                        offering_id=offering["offering_id"],
-                        billing_mode=mode,
-                        gpu_type=None,
-                        gpu_count=0,
-                        price_per_gpu_hour_usd=None,
-                        price_per_1m_tokens_usd=float(offering["price_per_1m_tokens_usd"]),
-                        tps_cap=(
-                            float(offering["tps_cap"])
-                            if offering.get("tps_cap") is not None
-                            else None
-                        ),
-                        region=offering["region"],
-                        confidence=offering["confidence"],
-                        notes=offering.get("notes", ""),
-                    )
-                )
+                offering_id = offering["offering_id"]
+                model_ref = model_refs[0] if model_refs else offering_id
+                if offering_id.endswith("_input"):
+                    base_id = offering_id[: -len("_input")]
+                    bucket = paired_per_token.setdefault((model_ref, base_id), {})
+                    bucket["input"] = offering
+                elif offering_id.endswith("_output"):
+                    base_id = offering_id[: -len("_output")]
+                    bucket = paired_per_token.setdefault((model_ref, base_id), {})
+                    bucket["output"] = offering
+                else:
+                    single_per_token.append(offering)
                 continue
 
             for gpu_count in offering["allowed_gpu_counts"]:
@@ -223,18 +247,136 @@ def enumerate_configs(model_bucket: str) -> list[PlannerConfig]:
                     )
                 )
 
+        for (model_ref, base_id), pair in paired_per_token.items():
+            if "input" in pair and "output" in pair:
+                input_price = float(pair["input"]["price_per_1m_tokens_usd"])
+                output_price = float(pair["output"]["price_per_1m_tokens_usd"])
+                blended = ((1.0 - output_token_ratio) * input_price) + (
+                    output_token_ratio * output_price
+                )
+                input_tps_cap = (
+                    float(pair["input"]["tps_cap"])
+                    if pair["input"].get("tps_cap") is not None
+                    else None
+                )
+                output_tps_cap = (
+                    float(pair["output"]["tps_cap"])
+                    if pair["output"].get("tps_cap") is not None
+                    else None
+                )
+                tps_caps = [cap for cap in (input_tps_cap, output_tps_cap) if cap is not None]
+                blended_tps_cap = min(tps_caps) if tps_caps else None
+                configs.append(
+                    PlannerConfig(
+                        provider_id=provider["provider_id"],
+                        provider_name=provider["provider_name"],
+                        offering_id=f"{base_id}_blended_io",
+                        billing_mode="per_token",
+                        gpu_type=None,
+                        gpu_count=0,
+                        price_per_gpu_hour_usd=None,
+                        price_per_1m_tokens_usd=blended,
+                        tps_cap=blended_tps_cap,
+                        region=pair["input"]["region"],
+                        confidence=_lower_confidence(
+                            pair["input"]["confidence"],
+                            pair["output"]["confidence"],
+                        ),
+                        notes=(
+                            f"Blended input/output price: input={input_price:.6g}, "
+                            f"output={output_price:.6g}, output_ratio={output_token_ratio:.2f}"
+                        ),
+                    )
+                )
+            elif "input" in pair:
+                single_per_token.append(pair["input"])
+            elif "output" in pair:
+                single_per_token.append(pair["output"])
+
+        for offering in single_per_token:
+            configs.append(
+                PlannerConfig(
+                    provider_id=provider["provider_id"],
+                    provider_name=provider["provider_name"],
+                    offering_id=offering["offering_id"],
+                    billing_mode="per_token",
+                    gpu_type=None,
+                    gpu_count=0,
+                    price_per_gpu_hour_usd=None,
+                    price_per_1m_tokens_usd=float(offering["price_per_1m_tokens_usd"]),
+                    tps_cap=(
+                        float(offering["tps_cap"])
+                        if offering.get("tps_cap") is not None
+                        else None
+                    ),
+                    region=offering["region"],
+                    confidence=offering["confidence"],
+                    notes=offering.get("notes", ""),
+                )
+            )
+
     return configs
 
 
 def enumerate_configs_for_providers(
     model_bucket: str,
     provider_ids: set[str] | None = None,
+    output_token_ratio: float = DEFAULT_OUTPUT_TOKEN_RATIO,
 ) -> list[PlannerConfig]:
     """Enumerate configurations for an optional subset of providers."""
-    configs = enumerate_configs(model_bucket=model_bucket)
+    configs = enumerate_configs(
+        model_bucket=model_bucket,
+        output_token_ratio=output_token_ratio,
+    )
     if provider_ids is None:
         return configs
     return [cfg for cfg in configs if cfg.provider_id in provider_ids]
+
+
+def get_provider_compatibility(
+    model_bucket: str,
+    provider_ids: set[str] | None = None,
+    output_token_ratio: float = DEFAULT_OUTPUT_TOKEN_RATIO,
+) -> list[ProviderCompatibility]:
+    """Return compatibility diagnostics for providers against a model bucket."""
+    providers = get_mvp_catalog("providers")["providers"]
+    all_provider_rows = [
+        (str(p["provider_id"]), str(p["provider_name"])) for p in providers
+    ]
+    if provider_ids is None:
+        scoped_rows = all_provider_rows
+    else:
+        scoped_rows = [row for row in all_provider_rows if row[0] in provider_ids]
+
+    compatible_ids = {
+        cfg.provider_id
+        for cfg in enumerate_configs_for_providers(
+            model_bucket=model_bucket,
+            provider_ids={row[0] for row in scoped_rows},
+            output_token_ratio=output_token_ratio,
+        )
+    }
+    diagnostics: list[ProviderCompatibility] = []
+    for provider_id, provider_name in scoped_rows:
+        if provider_id in compatible_ids:
+            diagnostics.append(
+                ProviderCompatibility(
+                    provider_id=provider_id,
+                    provider_name=provider_name,
+                    compatible=True,
+                    reason="Supports selected model bucket",
+                )
+            )
+        else:
+            diagnostics.append(
+                ProviderCompatibility(
+                    provider_id=provider_id,
+                    provider_name=provider_name,
+                    compatible=False,
+                    reason="No offering for selected model bucket",
+                )
+            )
+    return diagnostics
 
 
 def _is_feasible(
@@ -323,10 +465,13 @@ def rank_configs(
     autoscale_inefficiency: float = DEFAULT_AUTOSCALE_INEFFICIENCY,
     top_k: int = 10,
     provider_ids: set[str] | None = None,
+    output_token_ratio: float = DEFAULT_OUTPUT_TOKEN_RATIO,
 ) -> list[RankedPlan]:
     """Run full MVP ranking pipeline and return top-k plans."""
     if top_k < 1:
         raise ValueError("top_k must be >= 1")
+    if not 0 <= output_token_ratio <= 1:
+        raise ValueError("output_token_ratio must be between 0 and 1")
 
     workload = normalize_workload(
         tokens_per_day=tokens_per_day,
@@ -338,6 +483,7 @@ def rank_configs(
     all_configs = enumerate_configs_for_providers(
         model_bucket=model_bucket,
         provider_ids=provider_ids,
+        output_token_ratio=output_token_ratio,
     )
     candidates: list[RankedPlan] = []
 
@@ -405,6 +551,7 @@ def rank_configs(
                     "peak_to_avg": peak_to_avg,
                     "scaling_beta": beta,
                     "alpha": alpha,
+                    "output_token_ratio": output_token_ratio,
                 },
             )
         )
