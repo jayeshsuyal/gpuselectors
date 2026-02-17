@@ -99,6 +99,15 @@ Tier 3: Bundled catalog snapshot
 
 All tiers produce the same `CanonicalPricingRow` schema: `provider`, `workload_type`, `sku_key`, `sku_name`, `billing_mode`, `unit_price_usd`, `unit_name`, `region`, `source_date`, `confidence`, `source_kind`.
 
+## Ranking Notes
+
+For non-LLM optimizer mode, catalog ranking supports:
+- `normalized` comparator: workload-aware unit normalization (for example: `audio_min -> audio_hour`, `1k_chars -> 1m_chars`, `image -> 1k_images` when comparable).
+- `raw` comparator: direct listed unit price ranking.
+- optional confidence-weighted pricing penalty (higher penalty for lower-confidence rows).
+
+The UI now reports excluded-offer counts (for normalization/budget filters) and provides provider diagnostics CSV export for included/excluded reasoning.
+
 ### Current Coverage (catalog snapshot: 2026-02-16)
 
 | Provider | SKUs | Workloads |

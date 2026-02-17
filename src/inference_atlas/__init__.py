@@ -14,6 +14,13 @@ from inference_atlas.cost_model import (
     calculate_gpu_monthly_cost,
     calculate_per_token_monthly_cost,
 )
+from inference_atlas.catalog_ranking import (
+    RankedCatalogOffer,
+    build_provider_diagnostics,
+    confidence_multiplier,
+    normalize_unit_price_for_workload,
+    rank_catalog_offers,
+)
 from inference_atlas.data_loader import (
     get_catalog_v2_metadata,
     get_catalog_v2_rows,
@@ -129,4 +136,10 @@ __all__ = [
     # Invoice analyzer
     "analyze_invoice_csv",
     "canonical_workload_from_invoice",
+    # Catalog ranking helpers
+    "normalize_unit_price_for_workload",
+    "confidence_multiplier",
+    "rank_catalog_offers",
+    "build_provider_diagnostics",
+    "RankedCatalogOffer",
 ]
