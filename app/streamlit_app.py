@@ -47,6 +47,17 @@ def _catalog_freshness_days(generated_at_utc: str | None) -> int | None:
 def _model_key_to_bucket(model_key: str) -> str:
     model = MODEL_REQUIREMENTS.get(model_key)
     if not model:
+        key = str(model_key).lower()
+        if any(token in key for token in ["405b", "400b", "390b"]):
+            return "405b"
+        if any(token in key for token in ["120b", "110b", "100b", "90b", "80b", "72b", "70b", "65b"]):
+            return "70b"
+        if any(token in key for token in ["50b", "40b", "34b", "32b", "30b", "27b", "22b", "20b"]):
+            return "34b"
+        if any(token in key for token in ["19b", "18b", "17b", "16b", "15b", "14b", "13b", "12b", "11b", "10b"]):
+            return "13b"
+        if any(token in key for token in ["9b", "8b", "7b", "6b", "5b", "4b", "3b", "2b", "1b"]):
+            return "7b"
         return "70b"
     param_count = int(model["parameter_count"])
     if param_count <= 9_000_000_000:
@@ -70,6 +81,20 @@ def _rows_to_csv_bytes(rows: list[dict[str, object]]) -> bytes:
     return out.getvalue().encode("utf-8")
 
 
+def _format_model_label(model_key: str) -> str:
+    """Return a readable model label without changing the underlying model key."""
+    key = str(model_key).strip()
+    lower = key.lower()
+    if lower.startswith("accounts/fireworks/models/"):
+        return f"Fireworks - {key.split('/')[-1]}"
+    if lower.startswith("accounts/stability/models/"):
+        return f"Stability - {key.split('/')[-1]}"
+    if "/" in key:
+        org, name = key.split("/", 1)
+        return f"{org} - {name}"
+    return key
+
+
 def _build_ai_context_workload() -> WorkloadSpec:
     """Build a safe fallback workload context for AI explanation helper."""
     return WorkloadSpec(
@@ -82,16 +107,18 @@ def _build_ai_context_workload() -> WorkloadSpec:
 
 def _build_catalog_context(
     *,
-    selected_workload: str,
+    selected_workload: str | None,
     selected_providers: list[str],
     rows: list[object],
     max_rows: int = 40,
 ) -> str:
     """Build compact, grounded catalog context for AI prompts."""
+    selected_provider_set = set(selected_providers)
     filtered = [
         row
         for row in rows
-        if row.workload_type == selected_workload and row.provider in set(selected_providers)
+        if (selected_workload is None or row.workload_type == selected_workload)
+        and row.provider in selected_provider_set
     ]
     if not filtered:
         return "No matching catalog rows for current workload/provider filters."
@@ -103,7 +130,7 @@ def _build_catalog_context(
     units = sorted({row.unit_name for row in filtered})
 
     lines = [
-        f"workload={selected_workload}",
+        f"workload={selected_workload if selected_workload is not None else 'all'}",
         f"providers={','.join(providers)}",
         f"rows_total={len(filtered)}",
         f"units={','.join(units)}",
@@ -127,6 +154,25 @@ def _build_catalog_context(
         )
     lines.append("rows_sample_end")
     return "\n".join(lines)
+
+
+def _infer_workload_from_ai_text(ai_text: str, default_workload: str) -> str:
+    """Infer workload intent from free-form AI helper text."""
+    text = ai_text.lower()
+    keyword_map = {
+        "speech_to_text": ["speech to text", "speech-to-text", "stt", "transcription"],
+        "text_to_speech": ["text to speech", "text-to-speech", "tts", "voice synthesis"],
+        "embeddings": ["embedding", "vector search", "semantic search", "retrieval"],
+        "image_generation": ["image generation", "text to image", "text-to-image", "diffusion"],
+        "vision": ["vision", "image understanding", "ocr", "visual qa", "multimodal"],
+        "video_generation": ["video generation", "text to video", "text-to-video"],
+        "moderation": ["moderation", "safety", "content filter"],
+        "llm": ["llm", "chat", "completion", "text generation", "inference"],
+    }
+    for workload, keywords in keyword_map.items():
+        if any(keyword in text for keyword in keywords):
+            return workload
+    return default_workload
 
 
 all_rows = get_catalog_v2_rows()
@@ -169,6 +215,7 @@ selected_workload = workload_options[selected_workload_label]
 workload_rows = get_catalog_v2_rows(selected_workload)
 workload_provider_ids = sorted({row.provider for row in workload_rows})
 selected_global_providers = workload_provider_ids
+llm_catalog_model_keys = sorted({row.model_key for row in get_catalog_v2_rows("llm") if row.model_key})
 
 meta = get_catalog_v2_metadata()
 generated_at = str(meta.get("generated_at_utc") or "")
@@ -197,9 +244,19 @@ with st.sidebar:
             disabled=not has_llm_key,
         ):
             try:
+                ai_workload = _infer_workload_from_ai_text(ai_text, selected_workload)
+                ai_providers = selected_global_providers
+                if ai_workload != selected_workload:
+                    ai_providers = sorted(
+                        {
+                            row.provider
+                            for row in all_rows
+                            if row.workload_type == ai_workload
+                        }
+                    )
                 catalog_context = _build_catalog_context(
-                    selected_workload=selected_workload,
-                    selected_providers=selected_global_providers,
+                    selected_workload=ai_workload,
+                    selected_providers=ai_providers,
                     rows=all_rows,
                 )
                 prompt = (
@@ -346,22 +403,43 @@ with opt_tab:
         ai_defaults = st.session_state.get("ai_defaults", {})
 
         with st.form("optimize_inputs"):
+            model_options = []
             model_items = list(MODEL_REQUIREMENTS.items())
-            model_display_names = [v["display_name"] for _, v in model_items]
-            model_key_by_display = {v["display_name"]: k for k, v in model_items}
-            default_model_key = str(ai_defaults.get("model_key", model_items[0][0]))
-            if default_model_key not in MODEL_REQUIREMENTS:
-                default_model_key = model_items[0][0]
-            default_model_index = next(
-                idx for idx, (model_key, _) in enumerate(model_items) if model_key == default_model_key
-            )
+            for model_key, model_data in model_items:
+                model_options.append(
+                    {
+                        "display": f"{model_data['display_name']} (curated)",
+                        "model_key": model_key,
+                    }
+                )
+            curated_model_keys = set(MODEL_REQUIREMENTS)
+            for model_key in llm_catalog_model_keys:
+                if model_key not in curated_model_keys:
+                    model_options.append(
+                        {
+                            "display": f"{_format_model_label(model_key)} (catalog)",
+                            "model_key": model_key,
+                        }
+                    )
+            if not model_options:
+                st.error("No LLM models are available in curated or catalog data.")
+                st.stop()
+            model_key_to_index = {
+                option["model_key"]: idx for idx, option in enumerate(model_options)
+            }
+            default_model_key = str(ai_defaults.get("model_key", model_options[0]["model_key"]))
+            default_model_index = model_key_to_index.get(default_model_key, 0)
 
             model_display_name = st.selectbox(
-                "Model (curated)",
-                options=model_display_names,
+                "Model",
+                options=[option["display"] for option in model_options],
                 index=default_model_index,
             )
-            model_key = model_key_by_display[model_display_name]
+            model_key = next(
+                option["model_key"]
+                for option in model_options
+                if option["display"] == model_display_name
+            )
 
             tokens_per_day = st.number_input(
                 "Traffic (tokens/day)",
@@ -404,9 +482,11 @@ with opt_tab:
             selected_provider_ids = st.multiselect(
                 f"Providers to include ({len(llm_provider_options)} available for LLM)",
                 options=llm_provider_options,
-                default=llm_provider_options,
+                default=[],
                 help="Incompatible providers are automatically excluded during ranking and shown in diagnostics.",
             )
+            if not selected_provider_ids:
+                st.info("No providers selected - pick one or more to continue.")
 
             with st.expander("Advanced options", expanded=False):
                 monthly_budget_max = st.number_input(
