@@ -144,6 +144,7 @@ _mvp_catalog_data_cache: dict[str, dict[str, Any]] | None = None
 _huggingface_models_cache: list[dict[str, Any]] | None = None
 _huggingface_catalog_meta_cache: dict[str, Any] | None = None
 _catalog_v2_rows_cache: list[CatalogV2Row] | None = None
+_catalog_v2_meta_cache: dict[str, Any] | None = None
 
 
 def _parse_optional_float(value: str, field_name: str, source: Path, row_num: int) -> float | None:
@@ -308,6 +309,7 @@ def _load_json(path: Path) -> dict[str, Any]:
 
 def _load_catalog_v2_rows() -> list[CatalogV2Row]:
     global _catalog_v2_rows_cache
+    global _catalog_v2_meta_cache
     if _catalog_v2_rows_cache is not None:
         return list(_catalog_v2_rows_cache)
 
@@ -342,6 +344,13 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
             raise ValueError(f"{CATALOG_V2_FILE}: invalid row at index {idx}: {exc}") from exc
 
     _catalog_v2_rows_cache = parsed
+    _catalog_v2_meta_cache = {
+        "generated_at_utc": data.get("generated_at_utc"),
+        "row_count": int(data.get("row_count", len(parsed))),
+        "providers_synced": list(data.get("providers_synced", [])),
+        "connector_counts": dict(data.get("connector_counts", {})),
+        "schema_version": data.get("schema_version"),
+    }
     return list(_catalog_v2_rows_cache)
 
 
@@ -494,6 +503,23 @@ def get_catalog_v2_rows(workload_type: WorkloadType | str | None = None) -> list
         return rows
     token = workload_type.value if isinstance(workload_type, WorkloadType) else workload_type.strip().lower()
     return [row for row in rows if row.workload_type == token]
+
+
+def get_catalog_v2_metadata() -> dict[str, Any]:
+    """Return metadata for the unified catalog_v2 snapshot."""
+    _load_catalog_v2_rows()
+    assert _catalog_v2_meta_cache is not None
+    return deepcopy(_catalog_v2_meta_cache)
+
+
+def refresh_catalog_v2_cache() -> dict[str, Any]:
+    """Force-refresh catalog_v2 rows and metadata after sync jobs."""
+    global _catalog_v2_rows_cache
+    global _catalog_v2_meta_cache
+    _catalog_v2_rows_cache = None
+    _catalog_v2_meta_cache = None
+    _load_catalog_v2_rows()
+    return get_catalog_v2_metadata()
 
 
 def get_pricing_by_workload() -> dict[WorkloadType, list[PricingRecord]]:

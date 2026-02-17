@@ -5,6 +5,7 @@ from __future__ import annotations
 import csv
 import io
 import os
+from datetime import datetime, timezone
 
 import streamlit as st
 
@@ -13,7 +14,7 @@ from inference_atlas import (
     get_provider_compatibility,
     rank_configs,
 )
-from inference_atlas.data_loader import get_models
+from inference_atlas.data_loader import get_catalog_v2_metadata, get_models
 from inference_atlas.llm import LLMRouter, RouterConfig, WorkloadSpec
 from inference_atlas.workload_types import WorkloadType
 
@@ -28,9 +29,22 @@ pattern_to_label = {"steady": "Steady", "business_hours": "Business Hours", "bur
 label_to_pattern = {"Steady": "steady", "Business Hours": "business_hours", "Bursty": "bursty"}
 pattern_default_peak_to_avg = {"steady": 1.5, "business_hours": 2.5, "bursty": 3.5}
 
-ASK_IA_ROUTER = LLMRouter(
-    config=RouterConfig(primary_provider="opus_4_6", fallback_provider="gpt_5_2")
-)
+
+def _get_ask_ia_router() -> LLMRouter:
+    """Build Ask IA router lazily to avoid hard-failing without API keys."""
+    return LLMRouter(
+        config=RouterConfig(primary_provider="opus_4_6", fallback_provider="gpt_5_2")
+    )
+
+
+def _catalog_freshness_days(generated_at_utc: str | None) -> int | None:
+    if not generated_at_utc:
+        return None
+    try:
+        generated = datetime.fromisoformat(str(generated_at_utc).replace("Z", "+00:00"))
+    except ValueError:
+        return None
+    return (datetime.now(timezone.utc) - generated).days
 
 
 def _model_key_to_bucket(model_key: str) -> str:
@@ -134,6 +148,98 @@ def _build_catalog_context(
     return "\n".join(lines)
 
 
+def _canonical_workload_from_invoice(raw: str) -> str:
+    token = raw.strip().lower()
+    aliases = {
+        "llm": "llm",
+        "speech_to_text": "speech_to_text",
+        "transcription": "speech_to_text",
+        "stt": "speech_to_text",
+        "text_to_speech": "text_to_speech",
+        "tts": "text_to_speech",
+        "embeddings": "embeddings",
+        "embedding": "embeddings",
+        "rerank": "embeddings",
+        "image_generation": "image_generation",
+        "image_gen": "image_generation",
+        "vision": "vision",
+        "video_generation": "video_generation",
+        "moderation": "moderation",
+    }
+    return aliases.get(token, token)
+
+
+def _analyze_invoice(csv_bytes: bytes, catalog_rows: list[object]) -> tuple[list[dict[str, object]], dict[str, float]]:
+    text = csv_bytes.decode("utf-8", errors="replace")
+    reader = csv.DictReader(io.StringIO(text))
+    required = {"provider", "workload_type", "usage_qty", "usage_unit", "amount_usd"}
+    if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
+        missing = sorted(required - set(reader.fieldnames or []))
+        raise ValueError(
+            "Invoice CSV missing required columns: " + ", ".join(missing)
+        )
+
+    suggestions: list[dict[str, object]] = []
+    total_spend = 0.0
+    total_savings = 0.0
+
+    for idx, row in enumerate(reader, start=2):
+        try:
+            provider = str(row["provider"]).strip()
+            workload = _canonical_workload_from_invoice(str(row["workload_type"]))
+            usage_qty = float(str(row["usage_qty"]).strip())
+            usage_unit = str(row["usage_unit"]).strip()
+            amount_usd = float(str(row["amount_usd"]).strip())
+        except (KeyError, ValueError):
+            continue
+
+        if usage_qty <= 0 or amount_usd <= 0:
+            continue
+
+        effective_unit_price = amount_usd / usage_qty
+        total_spend += amount_usd
+
+        pool = [
+            c
+            for c in catalog_rows
+            if c.workload_type == workload and c.unit_name == usage_unit
+        ]
+        if not pool:
+            continue
+        best = min(pool, key=lambda c: c.unit_price_usd)
+        savings_per_unit = max(0.0, effective_unit_price - best.unit_price_usd)
+        savings_usd = savings_per_unit * usage_qty
+        if savings_usd <= 0:
+            continue
+
+        total_savings += savings_usd
+        suggestions.append(
+            {
+                "invoice_line": idx,
+                "current_provider": provider,
+                "workload_type": workload,
+                "usage_qty": usage_qty,
+                "usage_unit": usage_unit,
+                "amount_usd": round(amount_usd, 2),
+                "effective_unit_price": round(effective_unit_price, 8),
+                "best_provider": best.provider,
+                "best_offering": best.sku_name,
+                "best_unit_price": round(best.unit_price_usd, 8),
+                "estimated_savings_usd": round(savings_usd, 2),
+                "savings_pct": round((savings_usd / amount_usd) * 100.0, 2),
+                "source_kind": best.source_kind,
+            }
+        )
+
+    suggestions.sort(key=lambda row: float(row["estimated_savings_usd"]), reverse=True)
+    summary = {
+        "invoice_lines_analyzed": float(len(suggestions)),
+        "total_spend_usd": round(total_spend, 2),
+        "total_estimated_savings_usd": round(total_savings, 2),
+    }
+    return suggestions, summary
+
+
 all_rows = get_catalog_v2_rows()
 available_workloads = sorted({row.workload_type for row in all_rows})
 preferred_order = [
@@ -173,6 +279,19 @@ selected_workload_label = st.selectbox(
 selected_workload = workload_options[selected_workload_label]
 workload_rows = get_catalog_v2_rows(selected_workload)
 workload_provider_ids = sorted({row.provider for row in workload_rows})
+
+meta = get_catalog_v2_metadata()
+generated_at = str(meta.get("generated_at_utc") or "")
+freshness_days = _catalog_freshness_days(generated_at)
+if freshness_days is None:
+    st.warning("Catalog freshness unknown. Run sync to ensure data is current.")
+elif freshness_days > 3:
+    st.warning(
+        f"Catalog is stale ({freshness_days} days old). "
+        f"Last sync: {generated_at}. Run daily sync."
+    )
+else:
+    st.caption(f"Catalog freshness: {freshness_days} day(s) old. Last sync: {generated_at}")
 all_provider_ids = sorted({row.provider for row in all_rows})
 all_provider_count = len(all_provider_ids)
 
@@ -194,7 +313,7 @@ st.caption(
 
 page_mode = st.selectbox(
     "2. Choose view",
-    options=["Optimize Workload", "Browse Pricing Catalog"],
+    options=["Optimize Workload", "Browse Pricing Catalog", "Invoice Analyzer"],
     index=0,
     help="Catalog is hidden unless you explicitly choose it here.",
 )
@@ -238,7 +357,7 @@ with st.expander("AI Assistant (optional)"):
                 f"User asks: {ai_text}\n"
                 "Answer in concise bullets with provider/sku/price citations from context."
             )
-            st.info(ASK_IA_ROUTER.explain(prompt, _build_ai_context_workload()))
+            st.info(_get_ask_ia_router().explain(prompt, _build_ai_context_workload()))
         except Exception as exc:  # noqa: BLE001
             st.error(f"AI assistant failed: {exc}")
 
@@ -512,6 +631,44 @@ if page_mode == "Browse Pricing Catalog":
         mime="text/csv",
     )
 
+if page_mode == "Invoice Analyzer":
+    st.subheader("Invoice Analyzer (Beta)")
+    st.caption(
+        "Upload invoice CSV and compare effective unit prices against current catalog rows."
+    )
+    st.caption(
+        "Required columns: provider, workload_type, usage_qty, usage_unit, amount_usd"
+    )
+    uploaded = st.file_uploader(
+        "Upload invoice CSV",
+        type=["csv"],
+        accept_multiple_files=False,
+    )
+    if uploaded is not None:
+        try:
+            suggestions, summary = _analyze_invoice(uploaded.getvalue(), all_rows)
+            c1, c2 = st.columns(2)
+            with c1:
+                st.metric("Invoice Spend", f"${summary['total_spend_usd']:,.2f}")
+            with c2:
+                st.metric("Potential Savings", f"${summary['total_estimated_savings_usd']:,.2f}")
+
+            if not suggestions:
+                st.info("No savings opportunities found with current catalog match rules.")
+            else:
+                try:
+                    st.dataframe(suggestions[:25], use_container_width=True, hide_index=True)
+                except TypeError:
+                    st.dataframe(suggestions[:25])
+                st.download_button(
+                    "Download invoice recommendations CSV",
+                    data=_rows_to_csv_bytes(suggestions),
+                    file_name="invoice_savings_recommendations.csv",
+                    mime="text/csv",
+                )
+        except ValueError as exc:
+            st.error(str(exc))
+
 st.markdown("---")
 st.subheader("Ask IA AI")
 if "ia_chat_history" not in st.session_state:
@@ -564,7 +721,7 @@ if chat_prompt:
                 f"User question: {chat_prompt}\n"
                 "Answer with concise bullets and explicit provider/sku/price citations."
             )
-            answer = ASK_IA_ROUTER.explain(prompt, context)
+            answer = _get_ask_ia_router().explain(prompt, context)
         except Exception as exc:  # noqa: BLE001
             answer = f"AI request failed: {exc}"
     st.session_state["ia_chat_history"].append({"role": "assistant", "content": answer})

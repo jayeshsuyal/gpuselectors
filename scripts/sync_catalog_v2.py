@@ -21,8 +21,15 @@ def main() -> None:
         default=["all"],
         help="Provider IDs to sync into catalog_v2 (use 'all' for every available provider)",
     )
+    parser.add_argument(
+        "--fail-on-empty",
+        action="store_true",
+        help="Exit non-zero if sync returns zero rows.",
+    )
     args = parser.parse_args()
     payload = sync_catalog_v2(providers=args.providers)
+    if args.fail_on_empty and int(payload["row_count"]) == 0:
+        raise SystemExit("catalog_v2 sync produced zero rows")
     print(
         f"catalog_v2 synced: {payload['row_count']} rows "
         f"from providers={','.join(payload['providers_synced'])}"

@@ -15,6 +15,7 @@ from inference_atlas.cost_model import (
     calculate_per_token_monthly_cost,
 )
 from inference_atlas.data_loader import (
+    get_catalog_v2_metadata,
     get_catalog_v2_rows,
     get_huggingface_catalog_metadata,
     get_huggingface_models,
@@ -28,6 +29,7 @@ from inference_atlas.data_loader import (
     validate_pricing_datasets,
     validate_huggingface_catalog,
     refresh_huggingface_catalog_cache,
+    refresh_catalog_v2_cache,
 )
 from inference_atlas.llm import (
     GPT52Adapter,
@@ -88,6 +90,7 @@ __all__ = [
     "get_model_display_name",
     "get_pricing_records",
     "get_catalog_v2_rows",
+    "get_catalog_v2_metadata",
     "get_pricing_by_workload",
     "validate_pricing_datasets",
     "validate_mvp_catalogs",
@@ -96,6 +99,7 @@ __all__ = [
     "get_huggingface_catalog_metadata",
     "validate_huggingface_catalog",
     "refresh_huggingface_catalog_cache",
+    "refresh_catalog_v2_cache",
     # MVP planner
     "normalize_workload",
     "capacity",
