@@ -1,0 +1,25 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,anthropic,per_token,claude_opus_4_5_input,Claude Opus 4.5 Input,claude-opus-4.5,5.0,1m_tokens,,,,,,global,Flagship 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_5_output,Claude Opus 4.5 Output,claude-opus-4.5,25.0,1m_tokens,,,,,,global,Flagship 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_4_5_input,Claude Sonnet 4.5 Input,claude-sonnet-4.5,3.0,1m_tokens,,,,,,global,Balanced 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_4_5_output,Claude Sonnet 4.5 Output,claude-sonnet-4.5,15.0,1m_tokens,,,,,,global,Balanced 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_4_5_input,Claude Haiku 4.5 Input,claude-haiku-4.5,1.0,1m_tokens,,,,,,global,Fast 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_4_5_output,Claude Haiku 4.5 Output,claude-haiku-4.5,5.0,1m_tokens,,,,,,global,Fast 4.5 model,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_6_input,Claude Opus 4.6 Input,claude-opus-4.6,5.0,1m_tokens,,,,,,global,Latest Opus,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_6_output,Claude Opus 4.6 Output,claude-opus-4.6,25.0,1m_tokens,,,,,,global,Latest Opus,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_1_input,Claude Opus 4.1 Input,claude-opus-4.1,15.0,1m_tokens,,,,,,global,Legacy Opus 4.1,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_1_output,Claude Opus 4.1 Output,claude-opus-4.1,75.0,1m_tokens,,,,,,global,Legacy Opus 4.1,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_input,Claude Opus 4 Input,claude-opus-4,15.0,1m_tokens,,,,,,global,Original Opus 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_opus_4_output,Claude Opus 4 Output,claude-opus-4,75.0,1m_tokens,,,,,,global,Original Opus 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_4_input,Claude Sonnet 4 Input,claude-sonnet-4,3.0,1m_tokens,,,,,,global,Sonnet 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_4_output,Claude Sonnet 4 Output,claude-sonnet-4,15.0,1m_tokens,,,,,,global,Sonnet 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_4_input,Claude Haiku 4 Input,claude-haiku-4,1.0,1m_tokens,,,,,,global,Haiku 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_4_output,Claude Haiku 4 Output,claude-haiku-4,5.0,1m_tokens,,,,,,global,Haiku 4,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_3_7_input,Claude Sonnet 3.7 Input,claude-sonnet-3.7,3.0,1m_tokens,,,,,,global,Sonnet 3.7,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_3_7_output,Claude Sonnet 3.7 Output,claude-sonnet-3.7,15.0,1m_tokens,,,,,,global,Sonnet 3.7,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_3_5_input,Claude Sonnet 3.5 Input,claude-sonnet-3.5,3.0,1m_tokens,,,,,,global,Sonnet 3.5,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_sonnet_3_5_output,Claude Sonnet 3.5 Output,claude-sonnet-3.5,15.0,1m_tokens,,,,,,global,Sonnet 3.5,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_3_5_input,Claude Haiku 3.5 Input,claude-haiku-3.5,0.8,1m_tokens,,,,,,global,Haiku 3.5,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_3_5_output,Claude Haiku 3.5 Output,claude-haiku-3.5,4.0,1m_tokens,,,,,,global,Haiku 3.5,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_3_input,Claude Haiku 3 Input,claude-haiku-3,0.25,1m_tokens,,,,,,global,Budget Haiku 3,https://docs.anthropic.com/en/api/pricing,2026-02-16,high
+llm,anthropic,per_token,claude_haiku_3_output,Claude Haiku 3 Output,claude-haiku-3,1.25,1m_tokens,,,,,,global,Budget Haiku 3,https://docs.anthropic.com/en/api/pricing,2026-02-16,high

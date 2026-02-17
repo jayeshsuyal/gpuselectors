@@ -1,0 +1,6 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,runpod,hourly,h100_sxm_secure,H100 SXM 80GB Secure,h100_sxm,2.69,gpu_hour,,,80,,global,Secure Cloud pricing,https://www.runpod.io/pricing,2026-02-13,high,
+llm,runpod,hourly,a100_sxm_80gb_secure,A100 SXM 80GB Secure,a100_sxm_80gb,1.64,gpu_hour,,,80,,global,Secure Cloud pricing,https://nerdynav.com/runpod-review/,2026-02-13,high,
+llm,runpod,hourly,rtx_a5000_secure,RTX A5000 24GB Secure,rtx_a5000,0.29,gpu_hour,,,24,,global,Secure Cloud mid-tier,https://nerdynav.com/runpod-review/,2026-02-13,high,
+llm,runpod,hourly,rtx_3090_secure,RTX 3090 24GB Secure,rtx_3090,0.43,gpu_hour,,,24,,global,Secure Cloud popular GPU,https://nerdynav.com/runpod-review/,2026-02-13,high,
+llm,runpod,hourly,rtx_3090_community,RTX 3090 24GB Community,rtx_3090,0.22,gpu_hour,,,24,,global,Community Cloud discount,https://nerdynav.com/runpod-review/,2026-02-13,high,

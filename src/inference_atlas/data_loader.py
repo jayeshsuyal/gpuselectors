@@ -52,6 +52,7 @@ MVP_CATALOG_SCHEMA_FILES = {
 
 HUGGINGFACE_CATALOG_FILE = _project_root / "data" / "huggingface_models.json"
 HUGGINGFACE_SCHEMA_FILE = _project_root / "data" / "huggingface_models.schema.json"
+CATALOG_V2_FILE = _project_root / "data" / "catalog_v2" / "pricing_catalog.json"
 
 REQUIRED_COLUMNS = {
     "workload_type",
@@ -118,11 +119,31 @@ class PricingRecord:
     confidence: str
 
 
+@dataclass(frozen=True)
+class CatalogV2Row:
+    """One canonical row from data/catalog_v2/pricing_catalog.json."""
+
+    provider: str
+    workload_type: str
+    sku_key: str
+    sku_name: str
+    model_key: str
+    billing_mode: str
+    unit_price_usd: float
+    unit_name: str
+    region: str
+    source_url: str
+    source_date: str
+    confidence: str
+    source_kind: str
+
+
 _pricing_records_cache: list[PricingRecord] | None = None
 _mvp_catalog_validation_summary_cache: dict[str, int] | None = None
 _mvp_catalog_data_cache: dict[str, dict[str, Any]] | None = None
 _huggingface_models_cache: list[dict[str, Any]] | None = None
 _huggingface_catalog_meta_cache: dict[str, Any] | None = None
+_catalog_v2_rows_cache: list[CatalogV2Row] | None = None
 
 
 def _parse_optional_float(value: str, field_name: str, source: Path, row_num: int) -> float | None:
@@ -161,6 +182,15 @@ def _normalize_workload_type(raw: str, source: Path, row_num: int) -> WorkloadTy
             f"{source}:{row_num} unsupported workload_type '{raw}'. Valid values/aliases: {valid}"
         )
     return WORKLOAD_ALIASES[key]
+
+
+def _canonical_workload_value(raw: str) -> str:
+    """Normalize workload alias into canonical WorkloadType.value token."""
+    key = raw.strip().lower()
+    workload = WORKLOAD_ALIASES.get(key)
+    if workload is None:
+        return key
+    return workload.value
 
 
 def _load_pricing_file(path: Path) -> list[PricingRecord]:
@@ -274,6 +304,45 @@ def _load_json(path: Path) -> dict[str, Any]:
     if not isinstance(payload, dict):
         raise ValueError(f"JSON root for {path} must be an object")
     return payload
+
+
+def _load_catalog_v2_rows() -> list[CatalogV2Row]:
+    global _catalog_v2_rows_cache
+    if _catalog_v2_rows_cache is not None:
+        return list(_catalog_v2_rows_cache)
+
+    data = _load_json(CATALOG_V2_FILE)
+    rows = data.get("rows", [])
+    if not isinstance(rows, list):
+        raise ValueError(f"{CATALOG_V2_FILE} rows must be a list")
+
+    parsed: list[CatalogV2Row] = []
+    for idx, row in enumerate(rows, start=1):
+        if not isinstance(row, dict):
+            continue
+        try:
+            parsed.append(
+                CatalogV2Row(
+                    provider=str(row["provider"]),
+                    workload_type=_canonical_workload_value(str(row["workload_type"])),
+                    sku_key=str(row["sku_key"]),
+                    sku_name=str(row["sku_name"]),
+                    model_key=str(row.get("model_key", "")),
+                    billing_mode=str(row["billing_mode"]),
+                    unit_price_usd=float(row["unit_price_usd"]),
+                    unit_name=str(row["unit_name"]),
+                    region=str(row["region"]),
+                    source_url=str(row["source_url"]),
+                    source_date=str(row.get("source_date", "")),
+                    confidence=str(row.get("confidence", "")),
+                    source_kind=str(row.get("source_kind", "")),
+                )
+            )
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"{CATALOG_V2_FILE}: invalid row at index {idx}: {exc}") from exc
+
+    _catalog_v2_rows_cache = parsed
+    return list(_catalog_v2_rows_cache)
 
 
 def validate_mvp_catalogs(force: bool = False) -> dict[str, int]:
@@ -416,6 +485,15 @@ def get_pricing_records(workload_type: WorkloadType | str | None = None) -> list
         normalized = workload_type
 
     return [row for row in records if row.workload_type == normalized]
+
+
+def get_catalog_v2_rows(workload_type: WorkloadType | str | None = None) -> list[CatalogV2Row]:
+    """Load unified catalog_v2 rows, optionally filtered by workload."""
+    rows = _load_catalog_v2_rows()
+    if workload_type is None:
+        return rows
+    token = workload_type.value if isinstance(workload_type, WorkloadType) else workload_type.strip().lower()
+    return [row for row in rows if row.workload_type == token]
 
 
 def get_pricing_by_workload() -> dict[WorkloadType, list[PricingRecord]]:

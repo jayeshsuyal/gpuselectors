@@ -21,3 +21,12 @@ def test_sync_catalog_v2_openai_and_validate_schema() -> None:
     validator = Draft202012Validator(schema)
     errors = list(validator.iter_errors(data))
     assert not errors
+
+
+def test_sync_catalog_v2_all_providers_includes_expected_count() -> None:
+    payload = sync_catalog_v2(providers=["all"])
+    providers = payload["providers_synced"]
+    assert isinstance(providers, list)
+    assert len(providers) == 16
+    assert "openai" in providers
+    assert "anthropic" in providers

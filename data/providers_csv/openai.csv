@@ -1,0 +1,57 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,openai,per_token,o1_input,o1 Input,o1,15.0,1m_tokens,,,,,,global,Reasoning model with extended thinking,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o1_output,o1 Output,o1,60.0,1m_tokens,,,,,,global,Reasoning model with extended thinking,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o1_mini_input,o1-mini Input,o1-mini,3.0,1m_tokens,,,,,,global,Fast reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o1_mini_output,o1-mini Output,o1-mini,12.0,1m_tokens,,,,,,global,Fast reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o1_preview_input,o1-preview Input,o1-preview,15.0,1m_tokens,,,,,,global,Preview reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o1_preview_output,o1-preview Output,o1-preview,60.0,1m_tokens,,,,,,global,Preview reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o3_mini_input,o3-mini Input,o3-mini,1.1,1m_tokens,,,,,,global,Latest compact reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,o3_mini_output,o3-mini Output,o3-mini,4.4,1m_tokens,,,,,,global,Latest compact reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_2_input,GPT-5.2 Input,gpt-5.2,100.0,1m_tokens,,,,,,global,Flagship reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_2_output,GPT-5.2 Output,gpt-5.2,400.0,1m_tokens,,,,,,global,Flagship reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_2_pro_input,GPT-5.2 Pro Input,gpt-5.2-pro,1200.0,1m_tokens,,,,,,global,"Most capable, highest cost",https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_2_pro_output,GPT-5.2 Pro Output,gpt-5.2-pro,4800.0,1m_tokens,,,,,,global,"Most capable, highest cost",https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_1_input,GPT-5.1 Input,gpt-5.1,90.0,1m_tokens,,,,,,global,Previous flagship reasoning,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_1_output,GPT-5.1 Output,gpt-5.1,360.0,1m_tokens,,,,,,global,Previous flagship reasoning,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_input,GPT-5 Input,gpt-5,60.0,1m_tokens,,,,,,global,Original GPT-5,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_output,GPT-5 Output,gpt-5,240.0,1m_tokens,,,,,,global,Original GPT-5,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_nano_input,GPT-5 nano Input,gpt-5-nano,0.4,1m_tokens,,,,,,global,Fastest reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_nano_output,GPT-5 nano Output,gpt-5-nano,1.6,1m_tokens,,,,,,global,Fastest reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_mini_input,GPT-5 mini Input,gpt-5-mini,5.0,1m_tokens,,,,,,global,Balanced reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_5_mini_output,GPT-5 mini Output,gpt-5-mini,20.0,1m_tokens,,,,,,global,Balanced reasoning model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4o_input,GPT-4o Input,gpt-4o,2.5,1m_tokens,,,,,,global,Current GPT-4 flagship,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4o_output,GPT-4o Output,gpt-4o,10.0,1m_tokens,,,,,,global,Current GPT-4 flagship,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4o_mini_input,GPT-4o mini Input,gpt-4o-mini,0.15,1m_tokens,,,,,,global,"Fast, affordable GPT-4",https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4o_mini_output,GPT-4o mini Output,gpt-4o-mini,0.6,1m_tokens,,,,,,global,"Fast, affordable GPT-4",https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_1_input,GPT-4.1 Input,gpt-4.1,2.0,1m_tokens,,,,,,global,Enhanced GPT-4,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_1_output,GPT-4.1 Output,gpt-4.1,8.0,1m_tokens,,,,,,global,Enhanced GPT-4,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_1_mini_input,GPT-4.1-mini Input,gpt-4.1-mini,0.3,1m_tokens,,,,,,global,Compact GPT-4.1,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_1_mini_output,GPT-4.1-mini Output,gpt-4.1-mini,1.2,1m_tokens,,,,,,global,Compact GPT-4.1,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_turbo_input,GPT-4 Turbo Input,gpt-4-turbo,10.0,1m_tokens,,,,,,global,High-capacity GPT-4,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_4_turbo_output,GPT-4 Turbo Output,gpt-4-turbo,30.0,1m_tokens,,,,,,global,High-capacity GPT-4,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_oss_120b_input,GPT-OSS-120B Input,gpt-oss-120b,0.03,1m_tokens,,,,,,global,Open-weight model,https://openai.com/api/pricing/,2026-02-16,high
+llm,openai,per_token,gpt_oss_120b_output,GPT-OSS-120B Output,gpt-oss-120b,0.12,1m_tokens,,,,,,global,Open-weight model,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_standard_1024_1024,DALL-E 3 Standard 1024x1024,dall-e-3,0.04,per_image,,,,,,global,Standard quality at 1024x1024 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_standard_1024_1792,DALL-E 3 Standard 1024x1792,dall-e-3,0.08,per_image,,,,,,global,Standard quality at 1024x1792 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_standard_1792_1024,DALL-E 3 Standard 1792x1024,dall-e-3,0.08,per_image,,,,,,global,Standard quality at 1792x1024 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_hd_1024_1024,DALL-E 3 Hd 1024x1024,dall-e-3,0.08,per_image,,,,,,global,Hd quality at 1024x1024 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_hd_1024_1792,DALL-E 3 Hd 1024x1792,dall-e-3,0.12,per_image,,,,,,global,Hd quality at 1024x1792 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_3_hd_1792_1024,DALL-E 3 Hd 1792x1024,dall-e-3,0.12,per_image,,,,,,global,Hd quality at 1792x1024 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_2_standard_256_256,DALL-E 2 Standard 256x256,dall-e-2,0.016,per_image,,,,,,global,Standard quality at 256x256 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_2_standard_512_512,DALL-E 2 Standard 512x512,dall-e-2,0.018,per_image,,,,,,global,Standard quality at 512x512 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,dalle_dall_e_2_standard_1024_1024,DALL-E 2 Standard 1024x1024,dall-e-2,0.02,per_image,,,,,,global,Standard quality at 1024x1024 resolution,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,gpt_image_1_low_square,GPT-Image-1 Low Square,gpt-image-1,0.011,per_image,,,,,,global,Low quality generation,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,gpt_image_1_medium_square,GPT-Image-1 Medium Square,gpt-image-1,0.042,per_image,,,,,,global,Medium quality generation,https://openai.com/api/pricing/,2026-02-16,high
+image_generation,openai,per_image,gpt_image_1_high_square,GPT-Image-1 High Square,gpt-image-1,0.167,per_image,,,,,,global,High quality generation,https://openai.com/api/pricing/,2026-02-16,high
+video_generation,openai,per_video,sora_2,Sora 2,sora-2,0.05,per_second,,,,,,global,Standard video generation,https://openai.com/api/pricing/,2026-02-16,medium
+video_generation,openai,per_video,sora_2_pro,Sora 2 Pro,sora-2-pro,0.15,per_second,,,,,,global,High-quality video generation,https://openai.com/api/pricing/,2026-02-16,medium
+embedding,openai,per_token,text_embedding_3_small,text-embedding-3-small,text-embedding-3-small,0.02,1m_tokens,,,,,,global,Embedding model,https://openai.com/api/pricing/,2026-02-16,high
+embedding,openai,per_token,text_embedding_3_large,text-embedding-3-large,text-embedding-3-large,0.13,1m_tokens,,,,,,global,Embedding model,https://openai.com/api/pricing/,2026-02-16,high
+embedding,openai,per_token,text_embedding_ada_002,text-embedding-ada-002,text-embedding-ada-002,0.1,1m_tokens,,,,,,global,Embedding model,https://openai.com/api/pricing/,2026-02-16,high
+speech_to_text,openai,per_minute,whisper_1,Whisper,whisper-1,0.006,per_minute,,,,,,global,Audio transcription,https://openai.com/api/pricing/,2026-02-16,high
+speech_to_text,openai,per_minute,gpt_4o_transcribe,GPT-4o Transcribe,gpt-4o-transcribe,0.006,per_minute,,,,,,global,Audio transcription,https://openai.com/api/pricing/,2026-02-16,high
+speech_to_text,openai,per_minute,gpt_4o_mini_transcribe,GPT-4o Mini Transcribe,gpt-4o-mini-transcribe,0.003,per_minute,,,,,,global,Audio transcription,https://openai.com/api/pricing/,2026-02-16,high
+tts,openai,per_1m_chars,tts_1,TTS-1,tts-1,15.0,1m_chars,,,,,,global,Text-to-speech synthesis,https://openai.com/api/pricing/,2026-02-16,high
+tts,openai,per_1m_chars,tts_1_hd,TTS-1 HD,tts-1-hd,30.0,1m_chars,,,,,,global,Text-to-speech synthesis,https://openai.com/api/pricing/,2026-02-16,high
+tts,openai,per_minute,gpt_4o_mini_tts,GPT-4o Mini TTS,gpt-4o-mini-tts,0.015,per_minute,,,,,,global,Text-to-speech synthesis,https://openai.com/api/pricing/,2026-02-16,high
+moderation,openai,free,omni_moderation,Omni-Moderation,omni-moderation,0.0,free,,,,,,global,Free content moderation model,https://openai.com/api/pricing/,2026-02-16,high

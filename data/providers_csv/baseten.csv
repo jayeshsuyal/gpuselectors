@@ -1,0 +1,9 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,baseten,per_token,glm_47_input,GLM 4.7 Input,glm_4_7,0.60,1m_tokens,,,,,global,Input tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+llm,baseten,per_token,glm_47_output,GLM 4.7 Output,glm_4_7,2.20,1m_tokens,,,,,global,Output tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+llm,baseten,per_token,gpt_oss_120b_input,GPT OSS 120B Input,gpt_oss_120b,0.10,1m_tokens,,,,,global,Input tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+llm,baseten,per_token,gpt_oss_120b_output,GPT OSS 120B Output,gpt_oss_120b,0.50,1m_tokens,,,,,global,Output tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+llm,baseten,per_token,deepseek_v31_input,DeepSeek V3.1 Input,deepseek_v3_1,0.50,1m_tokens,,,,,global,Input tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+llm,baseten,per_token,deepseek_v31_output,DeepSeek V3.1 Output,deepseek_v3_1,1.50,1m_tokens,,,,,global,Output tokens,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+image_gen,baseten,hourly,h200_dedicated,H200 141GB Dedicated,h200,4.99,gpu_hour,,,141,,global,Dedicated deployment,https://www.baseten.co/products/model-apis/,2026-02-13,high,
+image_gen,baseten,hourly,h100_dedicated,H100 80GB Dedicated,h100,3.36,gpu_hour,,,80,,global,Dedicated deployment,https://www.baseten.co/products/model-apis/,2026-02-13,high,

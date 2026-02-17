@@ -1,0 +1,17 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+transcription,elevenlabs,per_minute,scribe_v2_business,Scribe v2 Business,scribe_v2,0.22,audio_hour,,,,,global,98%+ transcription accuracy,https://elevenlabs.io/pricing/api,2026-02-13,high,
+transcription,elevenlabs,per_minute,scribe_v2_scale,Scribe v2 Scale,scribe_v2,0.30,audio_hour,,,,,global,Scale plan transcription,https://elevenlabs.io/pricing/api,2026-02-13,high,
+transcription,elevenlabs,per_minute,scribe_v2_pro,Scribe v2 Pro,scribe_v2,0.33,audio_hour,,,,,global,Pro plan transcription,https://elevenlabs.io/pricing/api,2026-02-13,high,
+transcription,elevenlabs,per_minute,scribe_v2_realtime_business,Scribe v2 Realtime Business,scribe_v2_realtime,0.39,audio_hour,,,,,150,global,Low latency real-time STT,https://elevenlabs.io/pricing/api,2026-02-13,high
+transcription,elevenlabs,per_minute,scribe_v2_realtime_scale,Scribe v2 Realtime Scale,scribe_v2_realtime,0.42,audio_hour,,,,,150,global,Scale realtime transcription,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,flash_turbo_business,Flash/Turbo Business,flash_v2_5,0.06,1k_chars,,,,,75,global,Business tier ultra-low latency,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,flash_turbo_scale,Flash/Turbo Scale,flash_v2_5,0.08,1k_chars,,,,,75,global,Scale plan pricing,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,flash_turbo_pro,Flash/Turbo Pro,flash_v2_5,0.10,1k_chars,,,,,75,global,Pro plan pricing,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,multilingual_v2_business,Multilingual v2/v3 Business,multilingual_v2,0.12,1k_chars,,,,250,300,global,High quality voice generation,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,multilingual_v2_scale,Multilingual v2/v3 Scale,multilingual_v2,0.17,1k_chars,,,,250,300,global,Scale plan high quality,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_token,multilingual_v2_pro,Multilingual v2/v3 Pro,multilingual_v2,0.20,1k_chars,,,,250,300,global,Pro plan high quality,https://elevenlabs.io/pricing/api,2026-02-13,high
+tts,elevenlabs,per_minute,music_business,Music Generation Business,music_gen,0.28,audio_min,,,,,global,Music generation from text,https://elevenlabs.io/pricing/api,2026-02-13,high,
+tts,elevenlabs,per_minute,voice_isolator_business,Voice Isolator Business,voice_isolator,0.12,audio_min,,,,,global,Removes ambient sounds,https://elevenlabs.io/pricing/api,2026-02-13,high,
+tts,elevenlabs,per_minute,voice_changer_business,Voice Changer Business,voice_changer,0.12,audio_min,,,,,global,Fast real-time processing,https://elevenlabs.io/pricing/api,2026-02-13,high,
+tts,elevenlabs,per_token,sound_effects_business,Sound Effects Business,sfx_gen,0.07,generation,,,,,global,Royalty-free sound effects,https://elevenlabs.io/pricing/api,2026-02-13,high,
+tts,elevenlabs,per_minute,dubbing_v1_business,Dubbing v1 Business,dubbing_v1,0.24,audio_min,,,,,global,Auto speaker detection,https://elevenlabs.io/pricing/api,2026-02-13,high,

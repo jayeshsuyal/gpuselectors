@@ -15,6 +15,7 @@ from inference_atlas.cost_model import (
     calculate_per_token_monthly_cost,
 )
 from inference_atlas.data_loader import (
+    get_catalog_v2_rows,
     get_huggingface_catalog_metadata,
     get_huggingface_models,
     get_mvp_catalog,
@@ -86,6 +87,7 @@ __all__ = [
     "get_models",
     "get_model_display_name",
     "get_pricing_records",
+    "get_catalog_v2_rows",
     "get_pricing_by_workload",
     "validate_pricing_datasets",
     "validate_mvp_catalogs",

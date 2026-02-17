@@ -1,0 +1,8 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+transcription,assemblyai,per_minute,universal_payg,Universal PAYG,universal,0.15,audio_hour,,,,,global,Converts to $0.0025/min,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,universal_streaming,Universal-Streaming,universal_streaming,0.15,audio_hour,,,,,global,Real-time streaming STT,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,slam_1,Slam-1,slam_1,0.27,audio_hour,,,,,global,Advanced pre-recorded model,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,speaker_id_addon,Speaker Identification,addon,0.02,audio_hour,,,,,global,Speaker diarization add-on,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,sentiment_addon,Sentiment Analysis,addon,0.02,audio_hour,,,,,global,Sentiment analysis add-on,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,pii_redaction_addon,PII Redaction,addon,0.08,audio_hour,,,,,global,PII redaction add-on,https://www.assemblyai.com/pricing,2026-02-13,high,
+transcription,assemblyai,per_minute,summarization_addon,Summarization,addon,0.03,audio_hour,,,,,global,Auto-summarization add-on,https://www.assemblyai.com/pricing,2026-02-13,high,

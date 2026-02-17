@@ -18,8 +18,8 @@ def main() -> None:
     parser.add_argument(
         "--providers",
         nargs="*",
-        default=["openai"],
-        help="Provider IDs to sync into catalog_v2",
+        default=["all"],
+        help="Provider IDs to sync into catalog_v2 (use 'all' for every available provider)",
     )
     args = parser.parse_args()
     payload = sync_catalog_v2(providers=args.providers)
