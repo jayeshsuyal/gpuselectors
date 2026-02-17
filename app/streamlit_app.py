@@ -168,19 +168,11 @@ selected_workload_label = st.selectbox(
 selected_workload = workload_options[selected_workload_label]
 workload_rows = get_catalog_v2_rows(selected_workload)
 workload_provider_ids = sorted({row.provider for row in workload_rows})
+selected_global_providers = workload_provider_ids
 
 meta = get_catalog_v2_metadata()
 generated_at = str(meta.get("generated_at_utc") or "")
 freshness_days = _catalog_freshness_days(generated_at)
-
-selected_global_providers = st.multiselect(
-    f"2. Providers ({len(workload_provider_ids)} available for {selected_workload})",
-    options=workload_provider_ids,
-    default=[],
-    help="This provider filter is shared across optimizer and catalog views.",
-)
-if not selected_global_providers:
-    st.info("No providers selected — pick one or more to continue.")
 
 with st.sidebar:
     st.header("Ask IA AI")
@@ -200,11 +192,9 @@ with st.sidebar:
             height=80,
             key="ai_helper_input_text",
         )
-        if not selected_global_providers:
-            st.caption("Select providers first to get grounded suggestions.")
         if st.button(
             "AI: Suggest next steps",
-            disabled=not has_llm_key or not selected_global_providers,
+            disabled=not has_llm_key,
         ):
             try:
                 catalog_context = _build_catalog_context(
@@ -244,7 +234,13 @@ with opt_tab:
             "Throughput/SLA-aware optimization is not implemented yet."
         )
         available_units = sorted({row.unit_name for row in workload_rows})
+        available_models = sorted({row.model_key for row in workload_rows if row.model_key})
         with st.form("optimize_non_llm"):
+            selected_model = st.selectbox(
+                "Model filter",
+                options=["All models", *available_models],
+                help="Optional: focus ranking to one model/provider family.",
+            )
             comparator_mode = "normalized"
             confidence_weighted = True
             selected_unit = st.selectbox(
@@ -284,68 +280,68 @@ with opt_tab:
             non_llm_submit = st.form_submit_button("Get Top 10 Offers")
 
         if non_llm_submit:
-            if not selected_global_providers:
-                st.error("No providers selected. Choose at least one provider.")
+            unit_filter = None if selected_unit == "All units" else selected_unit
+            rows_for_rank = workload_rows
+            if selected_model != "All models":
+                rows_for_rank = [row for row in workload_rows if row.model_key == selected_model]
+            ranked, provider_reasons, excluded_offer_count = rank_catalog_offers(
+                rows=rows_for_rank,
+                allowed_providers=set(selected_global_providers),
+                unit_name=unit_filter,
+                top_k=10,
+                monthly_budget_max_usd=float(monthly_budget_max),
+                comparator_mode=comparator_mode,
+                confidence_weighted=confidence_weighted,
+                workload_type=selected_workload,
+                monthly_usage=float(monthly_usage),
+            )
+            if excluded_offer_count > 0:
+                st.warning(
+                    f"{excluded_offer_count} offers were excluded by normalization/budget filters."
+                )
+            if not ranked:
+                st.warning("No offers matched the selected providers/unit/budget filter.")
             else:
-                unit_filter = None if selected_unit == "All units" else selected_unit
-                ranked, provider_reasons, excluded_offer_count = rank_catalog_offers(
-                    rows=workload_rows,
-                    allowed_providers=set(selected_global_providers),
-                    unit_name=unit_filter,
-                    top_k=10,
-                    monthly_budget_max_usd=float(monthly_budget_max),
-                    comparator_mode=comparator_mode,
-                    confidence_weighted=confidence_weighted,
-                    workload_type=selected_workload,
-                    monthly_usage=float(monthly_usage),
-                )
-                if excluded_offer_count > 0:
-                    st.warning(
-                        f"{excluded_offer_count} offers were excluded by normalization/budget filters."
+                table_rows = []
+                for idx, ranked_row in enumerate(ranked, start=1):
+                    table_rows.append(
+                        {
+                            "rank": idx,
+                            "provider": ranked_row.provider,
+                            "offering": ranked_row.offering,
+                            "billing": ranked_row.billing,
+                            "listed_unit_price": ranked_row.listed_unit_price,
+                            "comparator_price": round(ranked_row.comparator_price, 8),
+                            "unit_name": ranked_row.unit_name,
+                            "confidence": ranked_row.confidence,
+                            "monthly_estimate_usd": (
+                                round(ranked_row.monthly_estimate_usd, 2)
+                                if ranked_row.monthly_estimate_usd is not None
+                                else None
+                            ),
+                        }
                     )
-                if not ranked:
-                    st.warning("No offers matched the selected providers/unit/budget filter.")
-                else:
-                    table_rows = []
-                    for idx, ranked_row in enumerate(ranked, start=1):
-                        table_rows.append(
-                            {
-                                "rank": idx,
-                                "provider": ranked_row.provider,
-                                "offering": ranked_row.offering,
-                                "billing": ranked_row.billing,
-                                "listed_unit_price": ranked_row.listed_unit_price,
-                                "comparator_price": round(ranked_row.comparator_price, 8),
-                                "unit_name": ranked_row.unit_name,
-                                "confidence": ranked_row.confidence,
-                                "monthly_estimate_usd": (
-                                    round(ranked_row.monthly_estimate_usd, 2)
-                                    if ranked_row.monthly_estimate_usd is not None
-                                    else None
-                                ),
-                            }
-                        )
-                    try:
-                        st.dataframe(table_rows, use_container_width=True, hide_index=True)
-                    except TypeError:
-                        st.dataframe(table_rows)
+                try:
+                    st.dataframe(table_rows, use_container_width=True, hide_index=True)
+                except TypeError:
+                    st.dataframe(table_rows)
 
-                diagnostics = build_provider_diagnostics(
-                    workload_provider_ids=workload_provider_ids,
-                    selected_global_providers=selected_global_providers,
-                    provider_reasons=provider_reasons,
+            diagnostics = build_provider_diagnostics(
+                workload_provider_ids=workload_provider_ids,
+                selected_global_providers=selected_global_providers,
+                provider_reasons=provider_reasons,
+            )
+            with st.expander("Provider inclusion diagnostics", expanded=False):
+                try:
+                    st.dataframe(diagnostics, use_container_width=True, hide_index=True)
+                except TypeError:
+                    st.dataframe(diagnostics)
+                st.download_button(
+                    "Download diagnostics CSV",
+                    data=_rows_to_csv_bytes(diagnostics),
+                    file_name=f"{selected_workload}_provider_diagnostics.csv",
+                    mime="text/csv",
                 )
-                with st.expander("Provider inclusion diagnostics", expanded=False):
-                    try:
-                        st.dataframe(diagnostics, use_container_width=True, hide_index=True)
-                    except TypeError:
-                        st.dataframe(diagnostics)
-                    st.download_button(
-                        "Download diagnostics CSV",
-                        data=_rows_to_csv_bytes(diagnostics),
-                        file_name=f"{selected_workload}_provider_diagnostics.csv",
-                        mime="text/csv",
-                    )
     else:
         ai_defaults = st.session_state.get("ai_defaults", {})
 
@@ -392,6 +388,7 @@ with opt_tab:
                 provider_ids=set(workload_provider_ids),
             )
             compatibility_by_provider = {row.provider_id: row for row in compatibility}
+            llm_provider_options = sorted(selected_global_providers)
             compatible_filtered = sorted(
                 row.provider_id
                 for row in compatibility
@@ -405,10 +402,10 @@ with opt_tab:
             monthly_budget_max = 0.0
 
             selected_provider_ids = st.multiselect(
-                f"Providers to include ({len(compatible_filtered)} compatible after filters)",
-                options=compatible_filtered,
-                default=compatible_filtered,
-                help="Top 10 recommendations will be ranked across selected compatible providers.",
+                f"Providers to include ({len(llm_provider_options)} available for LLM)",
+                options=llm_provider_options,
+                default=llm_provider_options,
+                help="Incompatible providers are automatically excluded during ranking and shown in diagnostics.",
             )
 
             with st.expander("Advanced options", expanded=False):
@@ -567,8 +564,6 @@ with catalog_tab:
 
     preview_limit = st.selectbox("Preview row limit", options=[50, 100, 200, 500], index=2)
     filtered_rows = [row for row in workload_rows if row.provider in set(selected_global_providers)]
-    if not selected_global_providers:
-        st.warning("No providers selected. Pick providers from the provider selector at the top.")
     preview_rows = [
         {
             "provider": row.provider,
