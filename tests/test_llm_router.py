@@ -85,6 +85,18 @@ def test_router_raises_when_all_parse_providers_fail() -> None:
         router.parse_workload("test")
 
 
+def test_router_parse_failure_message_includes_provider_error_types() -> None:
+    router = LLMRouter(
+        adapters={"gpt_5_2": _FailAdapter("gpt_5_2"), "opus_4_6": _FailAdapter("opus_4_6")},
+        config=RouterConfig(primary_provider="gpt_5_2", fallback_provider="opus_4_6"),
+    )
+    with pytest.raises(RuntimeError) as exc_info:
+        router.parse_workload("test")
+    msg = str(exc_info.value)
+    assert "gpt_5_2 [RuntimeError]" in msg
+    assert "opus_4_6 [RuntimeError]" in msg
+
+
 def test_router_uses_fallback_for_explain() -> None:
     primary = _FailAdapter("gpt_5_2")
     fallback = _SuccessAdapter(

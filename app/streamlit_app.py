@@ -10,10 +10,12 @@ from datetime import datetime, timezone
 import streamlit as st
 
 from inference_atlas import (
+    analyze_invoice_csv,
     get_catalog_v2_rows,
     get_provider_compatibility,
     rank_configs,
 )
+from inference_atlas.config import TRAFFIC_PATTERN_LABELS, TRAFFIC_PATTERN_PEAK_TO_AVG_DEFAULT
 from inference_atlas.data_loader import get_catalog_v2_metadata, get_models
 from inference_atlas.llm import LLMRouter, RouterConfig, WorkloadSpec
 from inference_atlas.workload_types import WorkloadType
@@ -25,9 +27,7 @@ st.caption("Category-first workload planning and provider pricing intelligence."
 MODEL_REQUIREMENTS = get_models()
 has_llm_key = bool(os.getenv("OPENAI_API_KEY") or os.getenv("ANTHROPIC_API_KEY"))
 
-pattern_to_label = {"steady": "Steady", "business_hours": "Business Hours", "bursty": "Bursty"}
-label_to_pattern = {"Steady": "steady", "Business Hours": "business_hours", "Bursty": "bursty"}
-pattern_default_peak_to_avg = {"steady": 1.5, "business_hours": 2.5, "bursty": 3.5}
+label_to_pattern = {label: token for token, label in TRAFFIC_PATTERN_LABELS.items()}
 
 
 def _get_ask_ia_router() -> LLMRouter:
@@ -146,98 +146,6 @@ def _build_catalog_context(
         )
     lines.append("rows_sample_end")
     return "\n".join(lines)
-
-
-def _canonical_workload_from_invoice(raw: str) -> str:
-    token = raw.strip().lower()
-    aliases = {
-        "llm": "llm",
-        "speech_to_text": "speech_to_text",
-        "transcription": "speech_to_text",
-        "stt": "speech_to_text",
-        "text_to_speech": "text_to_speech",
-        "tts": "text_to_speech",
-        "embeddings": "embeddings",
-        "embedding": "embeddings",
-        "rerank": "embeddings",
-        "image_generation": "image_generation",
-        "image_gen": "image_generation",
-        "vision": "vision",
-        "video_generation": "video_generation",
-        "moderation": "moderation",
-    }
-    return aliases.get(token, token)
-
-
-def _analyze_invoice(csv_bytes: bytes, catalog_rows: list[object]) -> tuple[list[dict[str, object]], dict[str, float]]:
-    text = csv_bytes.decode("utf-8", errors="replace")
-    reader = csv.DictReader(io.StringIO(text))
-    required = {"provider", "workload_type", "usage_qty", "usage_unit", "amount_usd"}
-    if reader.fieldnames is None or not required.issubset(set(reader.fieldnames)):
-        missing = sorted(required - set(reader.fieldnames or []))
-        raise ValueError(
-            "Invoice CSV missing required columns: " + ", ".join(missing)
-        )
-
-    suggestions: list[dict[str, object]] = []
-    total_spend = 0.0
-    total_savings = 0.0
-
-    for idx, row in enumerate(reader, start=2):
-        try:
-            provider = str(row["provider"]).strip()
-            workload = _canonical_workload_from_invoice(str(row["workload_type"]))
-            usage_qty = float(str(row["usage_qty"]).strip())
-            usage_unit = str(row["usage_unit"]).strip()
-            amount_usd = float(str(row["amount_usd"]).strip())
-        except (KeyError, ValueError):
-            continue
-
-        if usage_qty <= 0 or amount_usd <= 0:
-            continue
-
-        effective_unit_price = amount_usd / usage_qty
-        total_spend += amount_usd
-
-        pool = [
-            c
-            for c in catalog_rows
-            if c.workload_type == workload and c.unit_name == usage_unit
-        ]
-        if not pool:
-            continue
-        best = min(pool, key=lambda c: c.unit_price_usd)
-        savings_per_unit = max(0.0, effective_unit_price - best.unit_price_usd)
-        savings_usd = savings_per_unit * usage_qty
-        if savings_usd <= 0:
-            continue
-
-        total_savings += savings_usd
-        suggestions.append(
-            {
-                "invoice_line": idx,
-                "current_provider": provider,
-                "workload_type": workload,
-                "usage_qty": usage_qty,
-                "usage_unit": usage_unit,
-                "amount_usd": round(amount_usd, 2),
-                "effective_unit_price": round(effective_unit_price, 8),
-                "best_provider": best.provider,
-                "best_offering": best.sku_name,
-                "best_unit_price": round(best.unit_price_usd, 8),
-                "estimated_savings_usd": round(savings_usd, 2),
-                "savings_pct": round((savings_usd / amount_usd) * 100.0, 2),
-                "source_kind": best.source_kind,
-            }
-        )
-
-    suggestions.sort(key=lambda row: float(row["estimated_savings_usd"]), reverse=True)
-    summary = {
-        "invoice_lines_analyzed": float(len(suggestions)),
-        "total_spend_usd": round(total_spend, 2),
-        "total_estimated_savings_usd": round(total_savings, 2),
-    }
-    return suggestions, summary
 
 
 all_rows = get_catalog_v2_rows()
@@ -458,10 +366,10 @@ if page_mode == "Optimize Workload":
             st.session_state["ia_tokens_per_day"] = float(tokens_per_day)
             pattern_label = st.selectbox(
                 "Traffic pattern",
-                ["Steady", "Business Hours", "Bursty"],
-                index=["steady", "business_hours", "bursty"].index(
+                options=[TRAFFIC_PATTERN_LABELS[key] for key in TRAFFIC_PATTERN_LABELS],
+                index=list(TRAFFIC_PATTERN_LABELS).index(
                     str(ai_defaults.get("pattern", "steady"))
-                    if str(ai_defaults.get("pattern", "steady")) in {"steady", "business_hours", "bursty"}
+                    if str(ai_defaults.get("pattern", "steady")) in set(TRAFFIC_PATTERN_LABELS)
                     else "steady"
                 ),
             )
@@ -509,7 +417,9 @@ if page_mode == "Optimize Workload":
                     ranked_plans = rank_configs(
                         tokens_per_day=float(tokens_per_day),
                         model_bucket=model_bucket_preview,
-                        peak_to_avg=float(pattern_default_peak_to_avg[label_to_pattern[pattern_label]]),
+                        peak_to_avg=float(
+                            TRAFFIC_PATTERN_PEAK_TO_AVG_DEFAULT[label_to_pattern[pattern_label]]
+                        ),
                         top_k=10,
                         provider_ids=set(selected_provider_ids),
                     )
@@ -646,7 +556,7 @@ if page_mode == "Invoice Analyzer":
     )
     if uploaded is not None:
         try:
-            suggestions, summary = _analyze_invoice(uploaded.getvalue(), all_rows)
+            suggestions, summary = analyze_invoice_csv(uploaded.getvalue(), all_rows)
             c1, c2 = st.columns(2)
             with c1:
                 st.metric("Invoice Spend", f"${summary['total_spend_usd']:,.2f}")

@@ -63,6 +63,7 @@ class LLMRouter:
     ) -> tuple[WorkloadSpec, str, dict[str, object]]:
         """Parse workload and return provider + raw payload metadata."""
         errors: list[str] = []
+        last_exception: Exception | None = None
         for provider_name in self._provider_order():
             adapter = self.adapters.get(provider_name)
             if adapter is None:
@@ -75,15 +76,17 @@ class LLMRouter:
                     raw_payload = dict(raw_payload)
                 return workload, provider_name, raw_payload
             except Exception as exc:  # noqa: BLE001 - router must catch adapter errors
-                errors.append(f"{provider_name}: {exc}")
+                last_exception = exc
+                errors.append(f"{provider_name} [{type(exc).__name__}]: {exc}")
 
         raise RuntimeError(
             "All LLM providers failed to parse workload. Details: " + " | ".join(errors)
-        )
+        ) from last_exception
 
     def explain(self, recommendation_summary: str, workload: WorkloadSpec) -> str:
         """Generate explanation via primary provider with fallback."""
         errors: list[str] = []
+        last_exception: Exception | None = None
         for provider_name in self._provider_order():
             adapter = self.adapters.get(provider_name)
             if adapter is None:
@@ -96,8 +99,9 @@ class LLMRouter:
                     return cleaned
                 raise ValueError("empty explanation")
             except Exception as exc:  # noqa: BLE001 - router must catch adapter errors
-                errors.append(f"{provider_name}: {exc}")
+                last_exception = exc
+                errors.append(f"{provider_name} [{type(exc).__name__}]: {exc}")
 
         raise RuntimeError(
             "All LLM providers failed to generate explanation. Details: " + " | ".join(errors)
-        )
+        ) from last_exception

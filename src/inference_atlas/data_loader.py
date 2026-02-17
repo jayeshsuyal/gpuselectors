@@ -404,7 +404,8 @@ def validate_mvp_catalogs(force: bool = False) -> dict[str, int]:
 def get_mvp_catalog(catalog_name: str) -> dict[str, Any]:
     """Return one schema-validated MVP catalog JSON object."""
     validate_mvp_catalogs()
-    assert _mvp_catalog_data_cache is not None
+    if _mvp_catalog_data_cache is None:
+        raise RuntimeError("MVP catalog cache is empty after validation")
     if catalog_name not in _mvp_catalog_data_cache:
         valid = ", ".join(sorted(_mvp_catalog_data_cache))
         raise KeyError(f"Unknown catalog '{catalog_name}'. Valid options: {valid}")
@@ -458,7 +459,8 @@ def get_huggingface_models(
     if min_downloads < 0:
         raise ValueError("min_downloads must be >= 0")
     validate_huggingface_catalog()
-    assert _huggingface_models_cache is not None
+    if _huggingface_models_cache is None:
+        raise RuntimeError("Hugging Face model cache is empty after validation")
     models = [
         row
         for row in _huggingface_models_cache
@@ -472,7 +474,8 @@ def get_huggingface_models(
 def get_huggingface_catalog_metadata() -> dict[str, Any]:
     """Return metadata for the local Hugging Face catalog snapshot."""
     validate_huggingface_catalog()
-    assert _huggingface_catalog_meta_cache is not None
+    if _huggingface_catalog_meta_cache is None:
+        raise RuntimeError("Hugging Face catalog metadata cache is empty after validation")
     return deepcopy(_huggingface_catalog_meta_cache)
 
 
@@ -508,7 +511,8 @@ def get_catalog_v2_rows(workload_type: WorkloadType | str | None = None) -> list
 def get_catalog_v2_metadata() -> dict[str, Any]:
     """Return metadata for the unified catalog_v2 snapshot."""
     _load_catalog_v2_rows()
-    assert _catalog_v2_meta_cache is not None
+    if _catalog_v2_meta_cache is None:
+        raise RuntimeError("catalog_v2 metadata cache is empty after loading rows")
     return deepcopy(_catalog_v2_meta_cache)
 
 

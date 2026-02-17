@@ -6,6 +6,7 @@ import math
 from dataclasses import dataclass
 from typing import Any
 
+from inference_atlas.contracts import ConfidenceLevel
 from inference_atlas.data_loader import get_mvp_catalog
 
 
@@ -15,14 +16,6 @@ DEFAULT_SCALING_BETA = 0.08
 DEFAULT_AUTOSCALE_INEFFICIENCY = 1.15
 DEFAULT_ALPHA = 1.0
 DEFAULT_OUTPUT_TOKEN_RATIO = 0.30
-CONFIDENCE_ORDER = {
-    "high": 3,
-    "official": 3,
-    "medium": 2,
-    "estimated": 2,
-    "low": 1,
-    "vendor_list": 1,
-}
 
 
 @dataclass(frozen=True)
@@ -136,8 +129,14 @@ def _bucket_token(model_bucket: str) -> str:
 
 
 def _lower_confidence(a: str, b: str) -> str:
-    a_score = CONFIDENCE_ORDER.get(a, 0)
-    b_score = CONFIDENCE_ORDER.get(b, 0)
+    def _score(raw: str) -> int:
+        try:
+            return ConfidenceLevel(raw.strip().lower()).score
+        except ValueError:
+            return 0
+
+    a_score = _score(a)
+    b_score = _score(b)
     return a if a_score <= b_score else b
 
 
@@ -391,7 +390,8 @@ def _is_feasible(
             return True, None
         return cfg.tps_cap >= workload.required_capacity_tok_s, None
 
-    assert cfg.gpu_type is not None
+    if cfg.gpu_type is None:
+        raise ValueError("gpu_type is required for GPU-backed billing modes")
     cap = capacity(
         model_bucket=model_bucket,
         gpu_type=cfg.gpu_type,
@@ -413,10 +413,12 @@ def compute_monthly_cost(
         raise ValueError("autoscale_inefficiency must be >= 1.0")
 
     if cfg.billing_mode == "per_token":
-        assert cfg.price_per_1m_tokens_usd is not None
+        if cfg.price_per_1m_tokens_usd is None:
+            raise ValueError("price_per_1m_tokens_usd is required for per_token pricing")
         return (workload.tokens_per_month / 1_000_000.0) * cfg.price_per_1m_tokens_usd
 
-    assert cfg.price_per_gpu_hour_usd is not None
+    if cfg.price_per_gpu_hour_usd is None:
+        raise ValueError("price_per_gpu_hour_usd is required for hourly billing modes")
     if cfg.billing_mode == "dedicated_hourly":
         return cfg.gpu_count * cfg.price_per_gpu_hour_usd * 24 * 30
 

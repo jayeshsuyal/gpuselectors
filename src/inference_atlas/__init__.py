@@ -42,6 +42,7 @@ from inference_atlas.llm import (
     parse_workload_text,
     validate_workload_payload,
 )
+from inference_atlas.invoice_analyzer import analyze_invoice_csv, canonical_workload_from_invoice
 from inference_atlas.mvp_planner import (
     CapacityEstimate,
     NormalizedWorkload,
@@ -125,4 +126,7 @@ __all__ = [
     "parse_workload_text",
     "WorkloadSpec",
     "validate_workload_payload",
+    # Invoice analyzer
+    "analyze_invoice_csv",
+    "canonical_workload_from_invoice",
 ]

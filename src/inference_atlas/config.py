@@ -41,3 +41,17 @@ TRAFFIC_PATTERNS = {
         "batch_mult": 1.35,  # Higher batching gains under load
     },
 }
+
+# Display labels used in UI flows.
+TRAFFIC_PATTERN_LABELS = {
+    "steady": "Steady",
+    "business_hours": "Business Hours",
+    "bursty": "Bursty",
+}
+
+# Planner peak-to-average defaults (kept separate from legacy burst_factor).
+TRAFFIC_PATTERN_PEAK_TO_AVG_DEFAULT = {
+    "steady": 1.5,
+    "business_hours": 2.5,
+    "bursty": 3.5,
+}
