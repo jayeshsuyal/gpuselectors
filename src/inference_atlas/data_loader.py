@@ -16,7 +16,32 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 # Add project root to path to allow importing from data/
-_project_root = Path(__file__).parent.parent.parent
+def _discover_project_root() -> Path:
+    """Locate repo root in both editable and installed environments."""
+    here = Path(__file__).resolve()
+    cwd = Path.cwd().resolve()
+    candidates: list[Path] = [
+        here.parent.parent.parent,
+        cwd,
+        *list(cwd.parents),
+    ]
+
+    seen: set[Path] = set()
+    for candidate in candidates:
+        if candidate in seen:
+            continue
+        seen.add(candidate)
+        data_dir = candidate / "data"
+        if (data_dir / "catalog_v2" / "pricing_catalog.json").exists():
+            return candidate
+        if (data_dir / "models.json").exists() and (data_dir / "providers.json").exists():
+            return candidate
+
+    # Fallback to previous behavior.
+    return here.parent.parent.parent
+
+
+_project_root = _discover_project_root()
 if str(_project_root) not in sys.path:
     sys.path.insert(0, str(_project_root))
 
