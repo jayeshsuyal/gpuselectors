@@ -4,6 +4,8 @@
 
 InferenceAtlas is a Streamlit-based tool for comparing AI inference pricing across providers. It supports multiple workload types (LLM, speech, embeddings, image generation, and more), uses a unified live catalog updated daily, and provides an Invoice Analyzer to identify savings opportunities against current market rates.
 
+**Live demo:** https://inferenceatlas-hjcltilq4njm6vrez4o877.streamlit.app/
+
 ---
 
 ## What It Does
@@ -14,7 +16,7 @@ InferenceAtlas is a Streamlit-based tool for comparing AI inference pricing acro
 | LLM deployment optimizer (GPU/token cost + capacity modeling) | ✅ Production |
 | Pricing catalog browser (filterable, exportable) | ✅ Production |
 | Invoice Analyzer — find savings vs. current catalog | ✅ Beta |
-| Non-LLM optimizer (price-per-unit ranking) | 🧪 Beta — throughput not modeled |
+| Non-LLM optimizer (demand-aware ranking) | 🧪 Beta — throughput checks when metadata exists |
 | AI assistant + Ask IA AI chat | ✅ Optional (API key required) |
 | Latency queueing model | ❌ Not implemented |
 
@@ -26,8 +28,8 @@ InferenceAtlas is a Streamlit-based tool for comparing AI inference pricing acro
 
 ```bash
 # 1. Clone and install
-git clone https://github.com/jayeshsuyal/gpuselectors.git
-cd gpuselectors
+git clone https://github.com/jayeshsuyal/InferenceAtlas.git
+cd InferenceAtlas
 pip install -e ".[dev]"
 
 # 2. (Optional) Set AI assistant keys
@@ -57,8 +59,8 @@ Select one of three views:
 - **Browse Pricing Catalog** — filterable table of all pricing rows, exportable to CSV
 - **Invoice Analyzer** *(beta)* — upload an invoice CSV to find savings
 
-### Step 3 — Select Providers
-Multi-select filtered to providers that have data for the selected workload. Defaults to all available providers.
+### Step 3 — Optional Provider Filter
+Use the provider filter to narrow ranking/browse scope for the selected workload.
 
 ### LLM Optimize Flow
 1. Choose a curated model (maps to a capacity bucket: 7B / 13B / 34B / 70B / 405B)
@@ -72,10 +74,11 @@ For all non-LLM workloads (speech, images, embeddings, etc.):
 - Select a unit filter to compare apples-to-apples (e.g., `audio_hour`, `1k_chars`)
 - Optionally set a monthly usage estimate for cost projection
 - Optionally set a max monthly budget to filter expensive options
-- Results ranked by unit price only — throughput and SLA are not modeled
+- Results ranked by normalized unit price and monthly estimate
+- Throughput-aware replica estimation applies when throughput metadata is present
 
 ### AI Assistant
-The **AI Suggest** button and the **Ask IA AI** chat at the bottom use Claude or GPT-5 to answer questions grounded in current catalog data. See [docs/ai_assistant.md](docs/ai_assistant.md) for grounding rules.
+The **AI Suggest** panel uses Claude or GPT-5 to answer questions grounded in current catalog data. See [docs/ai_assistant.md](docs/ai_assistant.md) for grounding rules.
 
 ---
 
@@ -243,7 +246,7 @@ pytest tests/test_mvp_planner.py -v
 ## Project Structure
 
 ```
-gpuselectors/
+InferenceAtlas/
 ├── app/
 │   └── streamlit_app.py          # Streamlit UI (category-first, catalog_v2-backed)
 ├── src/inference_atlas/
