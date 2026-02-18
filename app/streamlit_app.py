@@ -233,7 +233,7 @@ with st.sidebar:
     st.sidebar.markdown("---")
     st.sidebar.caption("InferenceAtlas · v0.1 pre-release")
     st.sidebar.markdown(
-        "[⭐ Star on GitHub if this helps you](https://github.com/jayeshsuyal/inference-atlas)"
+        "[⭐ Star on GitHub if this helps you](https://github.com/jayeshsuyal/InferenceAtlas)"
     )
     with st.sidebar.expander("ℹ️ About & Roadmap", expanded=False):
         st.markdown(
@@ -251,7 +251,7 @@ with st.sidebar:
         st.markdown(
             "**Feedback**\n"
             "Building something with this? Ideas for v1?\n"
-            "→ jksuyal@gmail.com"
+            "→ inferenceatlas@gmail.com"
         )
 
 opt_tab, catalog_tab, invoice_tab = st.tabs(
@@ -281,14 +281,14 @@ with opt_tab:
                 help="Cross-unit normalization is not implemented yet. Filter by a single unit for clean comparisons.",
             )
             monthly_usage = st.number_input(
-                "Monthly usage estimate",
+                "Monthly usage estimate (requires unit filter)",
                 min_value=0.0,
                 value=0.0,
                 step=1000.0,
-                help="Optional. Cost estimate only applies when a single unit filter is selected.",
+                help="Set this only after choosing a specific unit.",
             )
             monthly_budget_max = st.number_input(
-                "Max monthly budget (USD, optional)",
+                "Max monthly budget (USD, optional, requires unit filter)",
                 min_value=0.0,
                 value=0.0,
                 step=100.0,
@@ -338,6 +338,20 @@ with opt_tab:
 
         if non_llm_submit:
             unit_filter = None if selected_unit == "All units" else selected_unit
+            effective_monthly_usage = float(monthly_usage)
+            effective_budget = float(monthly_budget_max)
+            if unit_filter is None and (effective_monthly_usage > 0 or effective_budget > 0):
+                recommended_unit = available_units[0] if available_units else "a specific unit"
+                st.warning(
+                    "Usage/budget filters need a single unit. "
+                    "Showing baseline ranking across all units for now."
+                )
+                st.info(
+                    f"To apply budget accurately, set `Unit filter` to one value "
+                    f"(for example: `{recommended_unit}`)."
+                )
+                effective_monthly_usage = 0.0
+                effective_budget = 0.0
             rows_for_rank = workload_rows
             if selected_model != "All models":
                 rows_for_rank = [row for row in workload_rows if row.model_key == selected_model]
@@ -346,11 +360,11 @@ with opt_tab:
                 allowed_providers=set(selected_global_providers),
                 unit_name=unit_filter,
                 top_k=10,
-                monthly_budget_max_usd=float(monthly_budget_max),
+                monthly_budget_max_usd=effective_budget,
                 comparator_mode=comparator_mode,
                 confidence_weighted=confidence_weighted,
                 workload_type=selected_workload,
-                monthly_usage=float(monthly_usage),
+                monthly_usage=effective_monthly_usage,
                 throughput_aware=throughput_aware,
                 peak_to_avg=float(peak_to_avg),
                 util_target=float(util_target),
