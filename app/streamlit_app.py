@@ -9,6 +9,7 @@ from datetime import datetime, timezone
 
 import streamlit as st
 
+from inference_atlas.ai_inference import build_catalog_context, resolve_ai_scope
 from inference_atlas.catalog_ranking import build_provider_diagnostics, rank_catalog_offers
 from inference_atlas.config import TRAFFIC_PATTERN_LABELS, TRAFFIC_PATTERN_PEAK_TO_AVG_DEFAULT
 from inference_atlas.data_loader import get_catalog_v2_metadata, get_catalog_v2_rows, get_models
@@ -105,76 +106,6 @@ def _build_ai_context_workload() -> WorkloadSpec:
     )
 
 
-def _build_catalog_context(
-    *,
-    selected_workload: str | None,
-    selected_providers: list[str],
-    rows: list[object],
-    max_rows: int = 40,
-) -> str:
-    """Build compact, grounded catalog context for AI prompts."""
-    selected_provider_set = set(selected_providers)
-    filtered = [
-        row
-        for row in rows
-        if (selected_workload is None or row.workload_type == selected_workload)
-        and row.provider in selected_provider_set
-    ]
-    if not filtered:
-        return "No matching catalog rows for current workload/provider filters."
-
-    # Sort by unit price for a stable, compact context.
-    filtered.sort(key=lambda row: row.unit_price_usd)
-    sample = filtered[:max_rows]
-    providers = sorted({row.provider for row in filtered})
-    units = sorted({row.unit_name for row in filtered})
-
-    lines = [
-        f"workload={selected_workload if selected_workload is not None else 'all'}",
-        f"providers={','.join(providers)}",
-        f"rows_total={len(filtered)}",
-        f"units={','.join(units)}",
-        "rows_sample_start",
-    ]
-    for row in sample:
-        lines.append(
-            "|".join(
-                [
-                    row.provider,
-                    row.sku_name,
-                    row.model_key,
-                    row.billing_mode,
-                    f"{row.unit_price_usd:.8g}",
-                    row.unit_name,
-                    row.region,
-                    row.confidence,
-                    row.source_kind,
-                ]
-            )
-        )
-    lines.append("rows_sample_end")
-    return "\n".join(lines)
-
-
-def _infer_workload_from_ai_text(ai_text: str, default_workload: str) -> str:
-    """Infer workload intent from free-form AI helper text."""
-    text = ai_text.lower()
-    keyword_map = {
-        "speech_to_text": ["speech to text", "speech-to-text", "stt", "transcription"],
-        "text_to_speech": ["text to speech", "text-to-speech", "tts", "voice synthesis"],
-        "embeddings": ["embedding", "vector search", "semantic search", "retrieval"],
-        "image_generation": ["image generation", "text to image", "text-to-image", "diffusion"],
-        "vision": ["vision", "image understanding", "ocr", "visual qa", "multimodal"],
-        "video_generation": ["video generation", "text to video", "text-to-video"],
-        "moderation": ["moderation", "safety", "content filter"],
-        "llm": ["llm", "chat", "completion", "text generation", "inference"],
-    }
-    for workload, keywords in keyword_map.items():
-        if any(keyword in text for keyword in keywords):
-            return workload
-    return default_workload
-
-
 all_rows = get_catalog_v2_rows()
 available_workloads = sorted({row.workload_type for row in all_rows})
 preferred_order = [
@@ -244,17 +175,13 @@ with st.sidebar:
             disabled=not has_llm_key,
         ):
             try:
-                ai_workload = _infer_workload_from_ai_text(ai_text, selected_workload)
-                ai_providers = selected_global_providers
-                if ai_workload != selected_workload:
-                    ai_providers = sorted(
-                        {
-                            row.provider
-                            for row in all_rows
-                            if row.workload_type == ai_workload
-                        }
-                    )
-                catalog_context = _build_catalog_context(
+                ai_workload, ai_providers = resolve_ai_scope(
+                    ai_text=ai_text,
+                    selected_workload=selected_workload,
+                    selected_providers=selected_global_providers,
+                    rows=all_rows,
+                )
+                catalog_context = build_catalog_context(
                     selected_workload=ai_workload,
                     selected_providers=ai_providers,
                     rows=all_rows,
@@ -262,6 +189,7 @@ with st.sidebar:
                 prompt = (
                     "You are IA AI. Use ONLY the provided catalog context. "
                     "If data is missing, say 'not available in current catalog'. "
+                    "Never answer non-LLM requests using LLM-only pricing rows. "
                     "Do not invent providers/SKUs/prices.\n\n"
                     f"Context:\n{catalog_context}\n\n"
                     f"User asks: {ai_text}\n"
@@ -466,7 +394,6 @@ with opt_tab:
                 provider_ids=set(workload_provider_ids),
             )
             compatibility_by_provider = {row.provider_id: row for row in compatibility}
-            llm_provider_options = sorted(selected_global_providers)
             compatible_filtered = sorted(
                 row.provider_id
                 for row in compatibility
@@ -479,14 +406,10 @@ with opt_tab:
             ]
             monthly_budget_max = 0.0
 
-            selected_provider_ids = st.multiselect(
-                f"Providers to include ({len(llm_provider_options)} available for LLM)",
-                options=llm_provider_options,
-                default=[],
-                help="Incompatible providers are automatically excluded during ranking and shown in diagnostics.",
+            selected_provider_ids = compatible_filtered
+            st.caption(
+                f"Auto provider selection: using {len(selected_provider_ids)} compatible providers for this model."
             )
-            if not selected_provider_ids:
-                st.info("No providers selected - pick one or more to continue.")
 
             with st.expander("Advanced options", expanded=False):
                 monthly_budget_max = st.number_input(
