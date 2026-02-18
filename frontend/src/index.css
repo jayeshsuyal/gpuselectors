@@ -1,0 +1,48 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    border-color: theme('colors.zinc.800');
+    scrollbar-width: thin;
+    scrollbar-color: theme('colors.zinc.700') transparent;
+  }
+
+  body {
+    background-color: theme('colors.zinc.950');
+    color: theme('colors.zinc.100');
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    background-color: theme('colors.zinc.700');
+    border-radius: 3px;
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .bg-grid-pattern {
+    background-image:
+      linear-gradient(rgba(255,255,255,.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255,255,255,.03) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
+  .font-numeric {
+    font-variant-numeric: tabular-nums;
+    font-family: theme('fontFamily.mono');
+  }
+}
