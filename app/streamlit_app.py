@@ -5,9 +5,17 @@ from __future__ import annotations
 import csv
 import io
 import os
+import sys
 from datetime import datetime, timezone
+from pathlib import Path
 
 import streamlit as st
+
+# Ensure Streamlit always imports local source tree (not stale site-packages build).
+_PROJECT_ROOT = Path(__file__).resolve().parents[1]
+_SRC_PATH = _PROJECT_ROOT / "src"
+if str(_SRC_PATH) not in sys.path:
+    sys.path.insert(0, str(_SRC_PATH))
 
 from inference_atlas.ai_inference import build_catalog_context, resolve_ai_scope
 from inference_atlas.catalog_ranking import build_provider_diagnostics, rank_catalog_offers
