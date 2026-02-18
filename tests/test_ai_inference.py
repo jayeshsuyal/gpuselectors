@@ -51,6 +51,46 @@ def test_infer_workload_from_text_detects_tts() -> None:
     assert inferred == "text_to_speech"
 
 
+def test_infer_workload_from_text_prefers_explicit_tts_over_llm_when_both_present() -> None:
+    inferred = infer_workload_from_text(
+        "so im not optimizing for llm im optimizing for tts can u suggest something",
+        "llm",
+    )
+    assert inferred == "text_to_speech"
+
+
+def test_infer_workload_from_text_prefers_embeddings_when_llm_is_negated() -> None:
+    inferred = infer_workload_from_text(
+        "not llm; optimizing for embeddings and vector search",
+        "llm",
+    )
+    assert inferred == "embeddings"
+
+
+def test_infer_workload_from_text_prefers_stt_when_tts_is_negated() -> None:
+    inferred = infer_workload_from_text(
+        "not text to speech, need speech to text for interviews",
+        "llm",
+    )
+    assert inferred == "speech_to_text"
+
+
+def test_infer_workload_from_text_prefers_vision_over_image_gen_when_negated() -> None:
+    inferred = infer_workload_from_text(
+        "not image generation, focused on vision OCR and understanding",
+        "llm",
+    )
+    assert inferred == "vision"
+
+
+def test_infer_workload_from_text_prefers_moderation_when_embeddings_negated() -> None:
+    inferred = infer_workload_from_text(
+        "do not use embeddings; need moderation safety filter",
+        "llm",
+    )
+    assert inferred == "moderation"
+
+
 def test_infer_workload_from_text_detects_vision_typo() -> None:
     inferred = infer_workload_from_text("need a visiom api for OCR", "llm")
     assert inferred == "vision"

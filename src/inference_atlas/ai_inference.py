@@ -57,6 +57,10 @@ def _normalize_text(text: str) -> str:
     return re.sub(r"[^a-z0-9]+", " ", text.lower()).strip()
 
 
+def _keyword_to_pattern(keyword_norm: str) -> str:
+    return r"\s+".join(re.escape(part) for part in keyword_norm.split())
+
+
 def _tokenize(text: str) -> list[str]:
     normalized = _normalize_text(text)
     return [token for token in normalized.split() if token and token not in STOPWORDS]
@@ -105,18 +109,37 @@ def infer_workload_from_text(
 
     best_workload = default_workload
     best_score = 0.0
+    best_match_pos = -1
 
     for workload in candidates:
         keywords = WORKLOAD_KEYWORDS.get(workload, [])
         workload_score = 0.0
+        workload_match_pos = -1
+        negated_match = False
+        explicit_intent_match = False
         for keyword in keywords:
             keyword_norm = _normalize_text(keyword)
             keyword_tokens = _tokenize(keyword)
             if not keyword_norm:
                 continue
+            keyword_pattern = _keyword_to_pattern(keyword_norm)
+
+            if re.search(
+                rf"\b(?:not|no|without|dont|don't)\s+(?:\w+\s+){{0,2}}{keyword_pattern}\b",
+                normalized_text,
+            ):
+                negated_match = True
+
+            if re.search(
+                rf"\b(?:optimiz(?:e|ing)\s+for|focused\s+on|focus\s+on|need|want|looking\s+for)\s+"
+                rf"(?:\w+\s+){{0,4}}{keyword_pattern}\b",
+                normalized_text,
+            ):
+                explicit_intent_match = True
 
             if keyword_norm in normalized_text:
                 workload_score = max(workload_score, 1.0)
+                workload_match_pos = max(workload_match_pos, normalized_text.rfind(keyword_norm))
                 continue
 
             if keyword_tokens:
@@ -137,9 +160,18 @@ def infer_workload_from_text(
                 elif phrase_similarity >= 0.74:
                     workload_score = max(workload_score, 0.68)
 
-        if workload_score > best_score:
+        if explicit_intent_match:
+            workload_score += 0.25
+        if negated_match:
+            workload_score -= 0.5
+        workload_score = max(workload_score, 0.0)
+
+        if workload_score > best_score or (
+            workload_score == best_score and workload_score > 0 and workload_match_pos > best_match_pos
+        ):
             best_score = workload_score
             best_workload = workload
+            best_match_pos = workload_match_pos
 
     if best_score < 0.55:
         return default_workload
