@@ -184,11 +184,6 @@ with st.sidebar:
     st.header("Ask IA AI")
 
     with st.expander("AI Suggest", expanded=False):
-        if not has_llm_key:
-            st.caption(
-                "Set OPENAI_API_KEY or ANTHROPIC_API_KEY to enable AI parsing, "
-                "explanations, and what-if suggestions."
-            )
         ai_text = st.text_area(
             "Ask AI to help configure this workload",
             placeholder=(
@@ -233,6 +228,30 @@ with st.sidebar:
         st.warning(
             f"Catalog is stale ({freshness_days} days old). "
             f"Last sync: {generated_at}. Run daily sync."
+        )
+
+    st.sidebar.markdown("---")
+    st.sidebar.caption("InferenceAtlas · v0.1 pre-release")
+    st.sidebar.markdown(
+        "[⭐ Star on GitHub if this helps you](https://github.com/jayeshsuyal/inference-atlas)"
+    )
+    with st.sidebar.expander("ℹ️ About & Roadmap", expanded=False):
+        st.markdown(
+            "**v0.1 Pre-release**\n"
+            "This is an early build. Expect rough edges and breaking changes before v1."
+        )
+        st.markdown(
+            "**v1 Roadmap**\n"
+            "- Fine-tuning cost estimation\n"
+            "- GPU cluster planning\n"
+            "- Real-time price sync API\n"
+            "- Shareable result links\n"
+            "- REST API + embeddable widget"
+        )
+        st.markdown(
+            "**Feedback**\n"
+            "Building something with this? Ideas for v1?\n"
+            "→ jksuyal@gmail.com"
         )
 
 opt_tab, catalog_tab, invoice_tab = st.tabs(
