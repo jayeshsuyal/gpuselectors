@@ -20,6 +20,19 @@ def test_gpt_parse_workload_extracts_json_from_text_wrapper() -> None:
     assert payload["pattern"] == "steady"
 
 
+def test_gpt_parser_prompt_not_hardcoded_to_legacy_model_list() -> None:
+    adapter = GPT52Adapter(api_key="test-key", client=object())
+    captured: dict[str, str] = {}
+
+    def _fake_generate_text(_system: str, user_prompt: str) -> str:
+        captured["prompt"] = user_prompt
+        return '{"tokens_per_day": 5000000, "pattern": "steady", "model_key": "llama_70b", "latency_requirement_ms": null}'
+
+    adapter._generate_text = _fake_generate_text  # type: ignore[attr-defined]
+    adapter.parse_workload("test")
+    assert "must be one of" not in captured["prompt"]
+
+
 def test_opus_parse_workload_extracts_json_from_text_wrapper() -> None:
     adapter = Opus46Adapter(api_key="test-key", client=object())
     adapter._generate_text = lambda _s, _u: (  # type: ignore[attr-defined]
@@ -28,6 +41,19 @@ def test_opus_parse_workload_extracts_json_from_text_wrapper() -> None:
     payload = adapter.parse_workload("test")
     assert payload["tokens_per_day"] == 2_500_000
     assert payload["pattern"] == "business_hours"
+
+
+def test_opus_parser_prompt_not_hardcoded_to_legacy_model_list() -> None:
+    adapter = Opus46Adapter(api_key="test-key", client=object())
+    captured: dict[str, str] = {}
+
+    def _fake_generate_text(_system: str, user_prompt: str) -> str:
+        captured["prompt"] = user_prompt
+        return '{"tokens_per_day": 2500000, "pattern": "business_hours", "model_key": "llama_70b"}'
+
+    adapter._generate_text = _fake_generate_text  # type: ignore[attr-defined]
+    adapter.parse_workload("test")
+    assert "must be one of" not in captured["prompt"]
 
 
 def test_gpt_explain_returns_text() -> None:

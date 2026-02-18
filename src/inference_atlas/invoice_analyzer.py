@@ -6,29 +6,12 @@ import csv
 import io
 from typing import Any, Iterable
 
-from inference_atlas.data_loader import CatalogV2Row
+from inference_atlas.data_loader import CatalogV2Row, canonicalize_workload_token
 
 
 def canonical_workload_from_invoice(raw: str) -> str:
     """Normalize invoice workload aliases into catalog workload tokens."""
-    token = raw.strip().lower()
-    aliases = {
-        "llm": "llm",
-        "speech_to_text": "speech_to_text",
-        "transcription": "speech_to_text",
-        "stt": "speech_to_text",
-        "text_to_speech": "text_to_speech",
-        "tts": "text_to_speech",
-        "embeddings": "embeddings",
-        "embedding": "embeddings",
-        "rerank": "embeddings",
-        "image_generation": "image_generation",
-        "image_gen": "image_generation",
-        "vision": "vision",
-        "video_generation": "video_generation",
-        "moderation": "moderation",
-    }
-    return aliases.get(token, token)
+    return canonicalize_workload_token(raw)
 
 
 def analyze_invoice_csv(
@@ -102,4 +85,3 @@ def analyze_invoice_csv(
         "total_estimated_savings_usd": round(total_savings, 2),
     }
     return suggestions, summary
-

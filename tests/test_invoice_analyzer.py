@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from inference_atlas.data_loader import CatalogV2Row
+from inference_atlas.data_loader import CatalogV2Row, canonicalize_workload_token
 from inference_atlas.invoice_analyzer import analyze_invoice_csv, canonical_workload_from_invoice
 
 
@@ -8,6 +8,12 @@ def test_canonical_workload_from_invoice_aliases() -> None:
     assert canonical_workload_from_invoice("tts") == "text_to_speech"
     assert canonical_workload_from_invoice("embedding") == "embeddings"
     assert canonical_workload_from_invoice("STT") == "speech_to_text"
+    assert canonical_workload_from_invoice("transcription") == "speech_to_text"
+
+
+def test_invoice_canonicalization_uses_data_loader_aliases() -> None:
+    assert canonical_workload_from_invoice("image_gen") == canonicalize_workload_token("image_gen")
+    assert canonical_workload_from_invoice("rerank") == canonicalize_workload_token("rerank")
 
 
 def test_analyze_invoice_csv_finds_savings() -> None:
@@ -47,4 +53,3 @@ def test_analyze_invoice_csv_missing_columns() -> None:
         assert False, "expected ValueError"
     except ValueError as exc:
         assert "Invoice CSV missing required columns" in str(exc)
-

@@ -146,6 +146,16 @@ selected_workload = workload_options[selected_workload_label]
 workload_rows = get_catalog_v2_rows(selected_workload)
 workload_provider_ids = sorted({row.provider for row in workload_rows})
 selected_global_providers = workload_provider_ids
+with st.expander("Provider filter (optional)", expanded=False):
+    selected_global_providers = st.multiselect(
+        f"Providers ({len(workload_provider_ids)} available for this workload)",
+        options=workload_provider_ids,
+        default=workload_provider_ids,
+        help="Leave all selected for fastest recommendations, or narrow to specific providers.",
+    )
+if not selected_global_providers:
+    st.warning("No providers selected in filter. Using all providers for this workload.")
+    selected_global_providers = workload_provider_ids
 llm_catalog_model_keys = sorted({row.model_key for row in get_catalog_v2_rows("llm") if row.model_key})
 
 meta = get_catalog_v2_metadata()

@@ -13,6 +13,7 @@ except ImportError:  # pragma: no cover - handled at runtime
     RateLimitError = Exception  # type: ignore[assignment]
 
 from inference_atlas.llm.base import LLMAdapter
+from inference_atlas.llm.prompting import build_workload_parser_prompt
 from inference_atlas.llm.schema import WorkloadSpec
 
 PRIMARY_MODEL = "gpt-4-turbo"
@@ -105,26 +106,7 @@ class GPT52Adapter(LLMAdapter):
         raise RuntimeError("OpenAI parse response was not valid JSON object.")
 
     def parse_workload(self, user_text: str) -> dict[str, Any]:
-        parser_prompt = f"""You are a workload parser for LLM deployment cost analysis.
-
-Extract these fields from the user's description:
-- tokens_per_day (float): Total tokens per day
-- pattern (string): Traffic pattern - must be one of: "steady", "business_hours", "bursty"
-- model_key (string): Model identifier - must be one of: "llama_8b", "llama_70b", "llama_405b", "mixtral_8x7b", "mistral_7b"
-- latency_requirement_ms (float, optional): Max latency in milliseconds, or null/omit if not specified
-
-Return ONLY valid JSON with these exact keys.
-
-Examples:
-User: "Chat app with 1000 daily active users, steady traffic, Llama 70B"
-Response: {{"tokens_per_day": 5000000, "pattern": "steady", "model_key": "llama_70b", "latency_requirement_ms": null}}
-
-User: "API serving 10M tokens/day during business hours, need <200ms P99, using Mistral 7B"
-Response: {{"tokens_per_day": 10000000, "pattern": "business_hours", "model_key": "mistral_7b", "latency_requirement_ms": 200}}
-
-Now parse this:
-{user_text}
-"""
+        parser_prompt = build_workload_parser_prompt(user_text)
         text = self._generate_text("Return JSON only.", parser_prompt)
         try:
             return self._extract_json_object(text)

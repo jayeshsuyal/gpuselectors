@@ -212,6 +212,11 @@ def _normalize_workload_type(raw: str, source: Path, row_num: int) -> WorkloadTy
 
 def _canonical_workload_value(raw: str) -> str:
     """Normalize workload alias into canonical WorkloadType.value token."""
+    return canonicalize_workload_token(raw)
+
+
+def canonicalize_workload_token(raw: str) -> str:
+    """Normalize workload aliases into canonical workload tokens."""
     key = raw.strip().lower()
     workload = WORKLOAD_ALIASES.get(key)
     if workload is None:
