@@ -4,7 +4,8 @@
 
 InferenceAtlas is a Streamlit-based tool for comparing AI inference pricing across providers. It supports multiple workload types (LLM, speech, embeddings, image generation, and more), uses a unified live catalog updated daily, and provides an Invoice Analyzer to identify savings opportunities against current market rates.
 
-**Live demo:** https://inferenceatlas-hjcltilq4njm6vrez4o877.streamlit.app/
+**Live demo:** https://inferenceatlas.us  
+Fallback: https://inferenceatlas-hjcltilq4njm6vrez4o877.streamlit.app/
 
 ---
 
