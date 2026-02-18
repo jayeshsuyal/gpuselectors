@@ -319,6 +319,19 @@ with opt_tab:
                 value=True,
                 help="Uses throughput metadata to estimate required replicas when available.",
             )
+            rows_for_metadata = workload_rows
+            if selected_model != "All models":
+                rows_for_metadata = [
+                    row for row in rows_for_metadata if row.model_key == selected_model
+                ]
+            if selected_unit != "All units":
+                rows_for_metadata = [
+                    row for row in rows_for_metadata if row.unit_name == selected_unit
+                ]
+            throughput_metadata_available = any(
+                getattr(row, "throughput_value", None) not in (None, 0, 0.0)
+                for row in rows_for_metadata
+            )
             with st.expander("Advanced options", expanded=False):
                 comparator_mode = st.selectbox(
                     "Comparator",
@@ -350,11 +363,18 @@ with opt_tab:
                     step=0.05,
                     help="Lower target means more headroom and more replicas.",
                 )
-                strict_capacity_check = st.checkbox(
-                    "Strict capacity check",
-                    value=False,
-                    help="Exclude offers that do not have throughput metadata in throughput-aware mode.",
-                )
+                if throughput_metadata_available:
+                    strict_capacity_check = st.checkbox(
+                        "Strict capacity check",
+                        value=False,
+                        help="Exclude offers that do not have throughput metadata in throughput-aware mode.",
+                    )
+                else:
+                    strict_capacity_check = False
+                    st.caption(
+                        "Strict capacity check is unavailable for this selection because "
+                        "throughput metadata is missing."
+                    )
             non_llm_submit = st.form_submit_button("Get Top 10 Offers")
 
         if non_llm_submit:
