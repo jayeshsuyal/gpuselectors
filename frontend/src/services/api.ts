@@ -124,12 +124,16 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>
 }
 
-async function get<T>(path: string, params?: Record<string, string>): Promise<T> {
+async function get<T>(
+  path: string,
+  params?: Record<string, string>,
+  signal?: AbortSignal
+): Promise<T> {
   const url = new URL(`${BASE}${path}`, window.location.origin)
   if (params) {
     Object.entries(params).forEach(([k, v]) => url.searchParams.set(k, v))
   }
-  const res = await fetch(url.toString())
+  const res = await fetch(url.toString(), { signal })
   if (!res.ok) {
     const text = await res.text().catch(() => 'Unknown error')
     throw new Error(`${res.status} ${res.statusText}: ${text}`)
@@ -428,6 +432,7 @@ export async function browseCatalog(filters?: {
   workload_type?: string
   provider?: string
   unit_name?: string
+  signal?: AbortSignal
 }): Promise<CatalogBrowseResponse> {
   if (USE_MOCK) {
     await delay(400)
@@ -444,7 +449,7 @@ export async function browseCatalog(filters?: {
     ...(filters?.workload_type ? { workload_type: filters.workload_type } : {}),
     ...(filters?.provider ? { provider: filters.provider } : {}),
     ...(filters?.unit_name ? { unit_name: filters.unit_name } : {}),
-  })
+  }, filters?.signal)
 }
 
 // ─── Invoice Analysis ─────────────────────────────────────────────────────────

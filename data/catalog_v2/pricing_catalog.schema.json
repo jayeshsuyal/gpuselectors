@@ -101,6 +101,16 @@
           },
           "throughput_unit": {
             "type": "string"
+          },
+          "previous_unit_price_usd": {
+            "type": "number",
+            "exclusiveMinimum": 0
+          },
+          "price_change_abs_usd": {
+            "type": "number"
+          },
+          "price_change_pct": {
+            "type": "number"
           }
         }
       }

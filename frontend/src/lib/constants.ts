@@ -128,4 +128,13 @@ export const WORKLOAD_UNIT_OPTIONS: Record<WorkloadTypeId, string[]> = {
   moderation: ['1m_tokens', 'free'],
 }
 
+export const ASSUMPTION_LABELS: Record<string, string> = {
+  peak_to_avg: 'Peak-to-avg',
+  util_target: 'Util target',
+  scaling_beta: 'Beta',
+  alpha: 'Alpha',
+  output_token_ratio: 'Output ratio',
+  replicas: 'Replicas',
+}
+
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL ?? ''

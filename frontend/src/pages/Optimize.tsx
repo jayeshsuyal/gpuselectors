@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { ArrowLeft } from 'lucide-react'
+import { ArrowLeft, X } from 'lucide-react'
 import { WorkloadSelector } from '@/components/WorkloadSelector'
 import { LLMForm } from '@/components/optimize/LLMForm'
 import { NonLLMForm } from '@/components/optimize/NonLLMForm'
@@ -159,8 +159,15 @@ export function OptimizePage() {
           </div>
 
           {error && (
-            <div className="rounded-md border border-red-800 bg-red-950/30 px-3 py-2.5 text-xs text-red-300">
-              {error}
+            <div className="rounded-md border border-red-800 bg-red-950/30 px-3 py-2.5 text-xs text-red-300 flex items-start justify-between gap-2">
+              <span>{error}</span>
+              <button
+                onClick={() => setError(null)}
+                className="flex-shrink-0 text-red-400 hover:text-red-200 transition-colors mt-0.5"
+                aria-label="Dismiss error"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
             </div>
           )}
 
@@ -190,12 +197,6 @@ export function OptimizePage() {
               {isLLM ? 'Capacity-optimized plans sorted by total cost score' : 'Sorted by normalized price'}
             </p>
           </div>
-
-          {error && (
-            <div className="rounded-md border border-red-800 bg-red-950/30 px-3 py-2.5 text-xs text-red-300">
-              {error}
-            </div>
-          )}
 
           {isLLM ? (
             <ResultsTable

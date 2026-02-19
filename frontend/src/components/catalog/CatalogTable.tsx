@@ -70,8 +70,11 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
     }
 
     out.sort((a, b) => {
-      let av: string | number = a[sortKey]
-      let bv: string | number = b[sortKey]
+      const av: string | number | null = a[sortKey] ?? null
+      const bv: string | number | null = b[sortKey] ?? null
+      if (av === null && bv === null) return 0
+      if (av === null) return 1
+      if (bv === null) return -1
       if (av < bv) return sortDir === 'asc' ? -1 : 1
       if (av > bv) return sortDir === 'asc' ? 1 : -1
       return 0
@@ -170,6 +173,7 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
                 ].map(({ key, label }, i) => (
                   <th
                     key={i}
+                    scope="col"
                     className={cn(
                       'px-4 py-2.5 text-left text-[11px] font-semibold text-zinc-400',
                       key ? 'cursor-pointer hover:text-zinc-200' : ''

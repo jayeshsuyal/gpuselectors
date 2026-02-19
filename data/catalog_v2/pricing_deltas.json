@@ -1,0 +1,1090 @@
+{
+  "schema_version": "1.0.0",
+  "generated_at_utc": "2026-02-19T06:08:36.729974+00:00",
+  "baseline_generated_at_utc": "2026-02-19T06:08:36.654113+00:00",
+  "row_count": 602,
+  "matched_rows": 108,
+  "changed_rows": 0,
+  "changes": [
+    {
+      "provider": "openai",
+      "sku_key": "oa_dalle3_hd",
+      "unit_name": "per_image",
+      "region": "global",
+      "previous_unit_price_usd": 0.08,
+      "unit_price_usd": 0.08,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_dalle3_std",
+      "unit_name": "per_image",
+      "region": "global",
+      "previous_unit_price_usd": 0.04,
+      "unit_price_usd": 0.04,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt35_turbo_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.5,
+      "unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt35_turbo_instruct_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.5,
+      "unit_price_usd": 1.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt35_turbo_instruct_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt35_turbo_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.5,
+      "unit_price_usd": 1.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.5,
+      "unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.1,
+      "unit_price_usd": 0.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.4,
+      "unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.6,
+      "unit_price_usd": 1.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_nano_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.025,
+      "unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_nano_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.1,
+      "unit_price_usd": 0.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_nano_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.4,
+      "unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt41_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 8.0,
+      "unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 30.0,
+      "unit_price_usd": 30.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 60.0,
+      "unit_price_usd": 60.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4_turbo_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4_turbo_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 30.0,
+      "unit_price_usd": 30.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_audio_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_audio_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.075,
+      "unit_price_usd": 0.075,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.15,
+      "unit_price_usd": 0.15,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.6,
+      "unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_mini_search_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.15,
+      "unit_price_usd": 0.15,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_mini_search_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.6,
+      "unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_search_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt4o_search_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_max_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_max_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_max_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.025,
+      "unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.25,
+      "unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_codex_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt51_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.175,
+      "unit_price_usd": 0.175,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_codex_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.175,
+      "unit_price_usd": 0.175,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_codex_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.75,
+      "unit_price_usd": 1.75,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_codex_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 14.0,
+      "unit_price_usd": 14.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.75,
+      "unit_price_usd": 1.75,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 14.0,
+      "unit_price_usd": 14.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_pro_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 21.0,
+      "unit_price_usd": 21.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt52_pro_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 168.0,
+      "unit_price_usd": 168.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_chat_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_chat_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_chat_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_codex_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.125,
+      "unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_codex_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_codex_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.25,
+      "unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_image_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.25,
+      "unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.025,
+      "unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.25,
+      "unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_nano_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.005,
+      "unit_price_usd": 0.005,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_nano_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.05,
+      "unit_price_usd": 0.05,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_nano_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.4,
+      "unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_pro_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 15.0,
+      "unit_price_usd": 15.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt5_pro_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 120.0,
+      "unit_price_usd": 120.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_audio_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_audio_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.6,
+      "unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_audio_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.4,
+      "unit_price_usd": 2.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_audio_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_120b_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.039,
+      "unit_price_usd": 0.039,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_120b_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.19,
+      "unit_price_usd": 0.19,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_20b_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.03,
+      "unit_price_usd": 0.03,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_20b_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.14,
+      "unit_price_usd": 0.14,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_safeguard_20b_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.037,
+      "unit_price_usd": 0.037,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_safeguard_20b_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.075,
+      "unit_price_usd": 0.075,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_gpt_oss_safeguard_20b_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.3,
+      "unit_price_usd": 0.3,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o1_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 7.5,
+      "unit_price_usd": 7.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o1_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 15.0,
+      "unit_price_usd": 15.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o1_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 60.0,
+      "unit_price_usd": 60.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o1_pro_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 150.0,
+      "unit_price_usd": 150.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o1_pro_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 600.0,
+      "unit_price_usd": 600.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.5,
+      "unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_deep_research_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.5,
+      "unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_deep_research_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 10.0,
+      "unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_deep_research_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 40.0,
+      "unit_price_usd": 40.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.55,
+      "unit_price_usd": 0.55,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.1,
+      "unit_price_usd": 1.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 4.4,
+      "unit_price_usd": 4.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 8.0,
+      "unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_pro_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 20.0,
+      "unit_price_usd": 20.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o3_pro_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 80.0,
+      "unit_price_usd": 80.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.275,
+      "unit_price_usd": 0.275,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_deep_research_cache_read",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 0.5,
+      "unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_deep_research_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 2.0,
+      "unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_deep_research_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 8.0,
+      "unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_input",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 1.1,
+      "unit_price_usd": 1.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_o4_mini_output",
+      "unit_name": "1m_tokens",
+      "region": "global",
+      "previous_unit_price_usd": 4.4,
+      "unit_price_usd": 4.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    },
+    {
+      "provider": "openai",
+      "sku_key": "oa_whisper",
+      "unit_name": "audio_min",
+      "region": "global",
+      "previous_unit_price_usd": 0.006,
+      "unit_price_usd": 0.006,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
+    }
+  ]
+}

@@ -9,6 +9,44 @@ import { aiChatSchema, type AIChatValues } from '@/schemas/forms'
 import { askAI } from '@/services/api'
 import type { AIMessage } from '@/services/types'
 
+// ─── Markdown rendering ───────────────────────────────────────────────────────
+
+function renderInline(text: string): React.ReactNode[] {
+  return text.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
+    part.startsWith('**') && part.endsWith('**') ? (
+      <strong key={i} className="font-semibold text-white">
+        {part.slice(2, -2)}
+      </strong>
+    ) : (
+      <span key={i}>{part}</span>
+    )
+  )
+}
+
+function renderMarkdown(content: string): React.ReactNode {
+  const lines = content.split('\n')
+  return (
+    <>
+      {lines.map((line, i) => {
+        if (line.startsWith('- ') || line.startsWith('* ')) {
+          return (
+            <div key={i} className="flex gap-1.5 mt-0.5 first:mt-0">
+              <span className="text-zinc-500 flex-shrink-0 select-none">•</span>
+              <span>{renderInline(line.slice(2))}</span>
+            </div>
+          )
+        }
+        if (line.trim() === '') {
+          return <div key={i} className="h-1.5" />
+        }
+        return <div key={i}>{renderInline(line)}</div>
+      })}
+    </>
+  )
+}
+
+// ─── Message bubble ───────────────────────────────────────────────────────────
+
 function MessageBubble({ msg }: { msg: AIMessage }) {
   const isUser = msg.role === 'user'
   return (
@@ -26,20 +64,64 @@ function MessageBubble({ msg }: { msg: AIMessage }) {
             : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
         )}
       >
-        {/* Render simple markdown bold */}
-        {msg.content.split(/(\*\*[^*]+\*\*)/).map((part, i) =>
-          part.startsWith('**') && part.endsWith('**') ? (
-            <strong key={i} className="font-semibold text-white">
-              {part.slice(2, -2)}
-            </strong>
-          ) : (
-            <span key={i}>{part}</span>
-          )
-        )}
+        {renderMarkdown(msg.content)}
       </div>
     </div>
   )
 }
+
+// ─── Workload-aware starter prompts ──────────────────────────────────────────
+
+const WORKLOAD_STARTERS: Record<string, [string, string, string]> = {
+  llm: [
+    'Cheapest 70B provider for business hours?',
+    'Per-token vs dedicated GPU pricing?',
+    'Explain risk scores',
+  ],
+  speech_to_text: [
+    'Cheapest STT for batch transcription?',
+    'Deepgram vs OpenAI Whisper cost?',
+    'Real-time vs batch STT pricing',
+  ],
+  text_to_speech: [
+    'Best value TTS under $0.02 / 1K chars?',
+    'ElevenLabs vs OpenAI TTS pricing?',
+    'Per-character vs per-minute billing',
+  ],
+  embeddings: [
+    'Cheapest embeddings for 1B tokens/month?',
+    'OpenAI vs Cohere embedding cost?',
+    'Voyage AI vs Cohere for semantic search?',
+  ],
+  image_generation: [
+    'Cheapest per-image generation provider?',
+    'Per-image vs GPU-hour billing?',
+    'DALL-E vs Stable Diffusion pricing?',
+  ],
+  vision: [
+    'Best value for high-volume image analysis?',
+    'AWS Rekognition vs Google Vision cost?',
+    'Per-image vs per-1K image pricing',
+  ],
+  video_generation: [
+    'Most cost-effective video generation?',
+    'Per-second vs per-minute pricing?',
+    'What affects video generation cost?',
+  ],
+  moderation: [
+    'Cheapest content moderation API?',
+    'Free tier vs paid moderation options?',
+    'AWS vs OpenAI moderation pricing?',
+  ],
+}
+
+const DEFAULT_STARTERS: [string, string, string] = [
+  'Cheapest STT provider?',
+  'Explain risk scores',
+  'LLM vs dedicated GPU pricing',
+]
+
+// ─── Panel ────────────────────────────────────────────────────────────────────
 
 interface AIAssistantPanelProps {
   context?: {
@@ -47,12 +129,6 @@ interface AIAssistantPanelProps {
     providers: string[]
   }
 }
-
-const STARTER_PROMPTS = [
-  "Cheapest STT provider?",
-  "Explain risk scores",
-  "LLM vs dedicated pricing",
-]
 
 export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
   const [messages, setMessages] = useState<AIMessage[]>([])
@@ -104,6 +180,11 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
     void onSubmit({ message: prompt })
   }
 
+  const starters: [string, string, string] =
+    context?.workload_type
+      ? (WORKLOAD_STARTERS[context.workload_type] ?? DEFAULT_STARTERS)
+      : DEFAULT_STARTERS
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
@@ -126,7 +207,7 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
               Ask anything about inference pricing, risk scores, or provider comparisons.
             </p>
             <div className="space-y-1.5">
-              {STARTER_PROMPTS.map((p) => (
+              {starters.map((p) => (
                 <button
                   key={p}
                   onClick={() => sendStarter(p)}
@@ -158,7 +239,7 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
         <form onSubmit={handleSubmit(onSubmit)} className="relative">
           <Textarea
             {...register('message')}
-            placeholder="Ask about pricing..."
+            placeholder="Ask about pricing…"
             className="min-h-[60px] max-h-[120px] text-xs pr-9 resize-none"
             onKeyDown={(e) => {
               if (e.key === 'Enter' && !e.shiftKey) {

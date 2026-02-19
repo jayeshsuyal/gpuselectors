@@ -10,8 +10,9 @@ import { Checkbox } from '@/components/ui/checkbox'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import { ProviderPicker } from '@/components/ui/ProviderPicker'
 import { nonLLMFormSchema, type NonLLMFormValues } from '@/schemas/forms'
-import { PROVIDERS, UNIT_NAMES, WORKLOAD_UNIT_OPTIONS } from '@/lib/constants'
+import { UNIT_NAMES, WORKLOAD_UNIT_OPTIONS } from '@/lib/constants'
 
 interface NonLLMFormProps {
   workloadType: string
@@ -50,19 +51,15 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
   const budget = watch('monthly_budget_max_usd')
   const throughputAware = watch('throughput_aware')
   const selectedProviders = watch('provider_ids')
+
+  // Only show units relevant to this workload type
   const workloadUnitIds = WORKLOAD_UNIT_OPTIONS[workloadType as keyof typeof WORKLOAD_UNIT_OPTIONS] ?? []
   const workloadUnits = UNIT_NAMES.filter((u) => workloadUnitIds.includes(u.id))
 
-  // Warn: budget set but unit is null
+  // Warn when budget is set but no unit selected (can't filter without a unit)
   const showUnitWarning = budget > 0 && unitName === null
 
-  function toggleProvider(id: string, current: string[], onChange: (v: string[]) => void) {
-    if (current.includes(id)) {
-      onChange(current.filter((p) => p !== id))
-    } else {
-      onChange([...current, id])
-    }
-  }
+  const selectedUnitLabel = UNIT_NAMES.find((u) => u.id === unitName)?.label
 
   return (
     <form
@@ -80,11 +77,11 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
               value={field.value ?? '__all__'}
               onValueChange={(v) => field.onChange(v === '__all__' ? null : v)}
             >
-                <SelectTrigger>
+              <SelectTrigger>
                 <SelectValue placeholder="All units for this workload" />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="__all__">All units for this workload</SelectItem>
+                <SelectItem value="__all__">All units (browse mode)</SelectItem>
                 {workloadUnits.map((u) => (
                   <SelectItem key={u.id} value={u.id}>{u.label}</SelectItem>
                 ))}
@@ -92,18 +89,23 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
             </Select>
           )}
         />
+        <p className="text-[10px] text-zinc-500">
+          {unitName === null
+            ? 'Browse mode — shows all offers without normalizing prices across units.'
+            : `Ranked by normalized ${selectedUnitLabel} price. Monthly estimate requires usage below.`}
+        </p>
         {errors.unit_name && (
           <p className="text-[11px] text-red-400">{errors.unit_name.message}</p>
         )}
       </div>
 
-      {/* Unit warning */}
+      {/* Unit + budget mismatch warning */}
       {showUnitWarning && (
         <div className="flex gap-2 items-start rounded-md border border-amber-800 bg-amber-950/30 px-3 py-2.5">
           <AlertTriangle className="h-4 w-4 text-amber-400 flex-shrink-0 mt-0.5" />
           <div className="text-xs text-amber-300">
-            <strong>Select a specific unit</strong> to use monthly budget filtering.
-            Budget cannot be applied when "All units" is selected.
+            <strong>Select a specific unit above</strong> to use budget filtering.
+            Budget filtering requires a single comparable unit — it cannot apply across mixed units.
           </div>
         </div>
       )}
@@ -112,11 +114,9 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
       <div className="space-y-1.5">
         <Label htmlFor="monthly_usage">
           Monthly usage
-          {unitName ? (
-            <span className="text-zinc-500 font-normal ml-1">
-              ({UNIT_NAMES.find((u) => u.id === unitName)?.label ?? unitName})
-            </span>
-          ) : null}
+          {selectedUnitLabel && (
+            <span className="text-zinc-500 font-normal ml-1">({selectedUnitLabel})</span>
+          )}
         </Label>
         <Input
           id="monthly_usage"
@@ -124,6 +124,9 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
           {...register('monthly_usage', { valueAsNumber: true })}
           placeholder="1000"
         />
+        <p className="text-[10px] text-zinc-500">
+          Used to calculate the monthly cost estimate for each offer.
+        </p>
         {errors.monthly_usage && (
           <p className="text-[11px] text-red-400">{errors.monthly_usage.message}</p>
         )}
@@ -131,7 +134,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
 
       {/* Budget */}
       <div className="space-y-1.5">
-        <Label htmlFor="monthly_budget_max_usd">Monthly budget max (USD)</Label>
+        <Label htmlFor="monthly_budget_max_usd">Monthly budget max <span className="text-zinc-500 font-normal">(USD)</span></Label>
         <Input
           id="monthly_budget_max_usd"
           type="number"
@@ -139,40 +142,30 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
           {...register('monthly_budget_max_usd', { valueAsNumber: true })}
           placeholder="0 = no limit"
         />
+        <p className="text-[10px] text-zinc-500">
+          0 = no limit. Offers with estimated monthly cost above this are excluded.
+          Requires a specific unit to be selected.
+        </p>
       </div>
 
       {/* Providers */}
       <div className="space-y-1.5">
-        <Label>Providers <span className="text-zinc-500 font-normal">(optional)</span></Label>
+        <Label>Providers <span className="text-zinc-500 font-normal">(optional — all included if none selected)</span></Label>
         <Controller
           name="provider_ids"
           control={control}
           render={({ field }) => (
-            <div className="flex flex-wrap gap-1.5">
-              {PROVIDERS.map((p) => {
-                const isSelected = field.value.includes(p)
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => toggleProvider(p, field.value, field.onChange)}
-                    className={cn(
-                      'rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors',
-                      isSelected
-                        ? 'border-indigo-600 bg-indigo-950/60 text-indigo-300'
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
-                    )}
-                  >
-                    {p}
-                  </button>
-                )
-              })}
-            </div>
+            <ProviderPicker
+              value={field.value}
+              onChange={field.onChange}
+              helperText={
+                selectedProviders.length === 0
+                  ? 'All providers with data for this workload will be included.'
+                  : `${selectedProviders.length} selected`
+              }
+            />
           )}
         />
-        <p className="text-[10px] text-zinc-500">
-          {selectedProviders.length === 0 ? 'All providers' : `${selectedProviders.length} selected`}
-        </p>
       </div>
 
       {/* Throughput toggle */}
@@ -191,7 +184,8 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
         <div>
           <Label htmlFor="throughput_aware" className="cursor-pointer">Throughput-aware ranking</Label>
           <p className="text-[10px] text-zinc-500 mt-0.5">
-            Account for provider throughput limits when ranking. Requires providers to publish throughput data.
+            Factors in provider throughput limits when ranking. Providers without published
+            throughput data will be ranked last or excluded (with strict mode).
           </p>
         </div>
       </div>
@@ -201,6 +195,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
+          aria-expanded={showAdvanced}
           className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
         >
           Advanced parameters
@@ -209,6 +204,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
 
         {showAdvanced && (
           <div className="px-4 py-3 space-y-3 border-t border-zinc-800 bg-zinc-900/50">
+            {/* Throughput params — only meaningful when throughput_aware is on */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="adv_peak_to_avg">Peak-to-avg ratio</Label>
@@ -219,6 +215,9 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
                   disabled={!throughputAware}
                   {...register('peak_to_avg', { valueAsNumber: true })}
                 />
+                {!throughputAware && (
+                  <p className="text-[10px] text-zinc-600">Enable throughput-aware to use.</p>
+                )}
               </div>
               <div className="space-y-1">
                 <Label htmlFor="adv_util">Utilization target</Label>
@@ -229,9 +228,13 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
                   disabled={!throughputAware}
                   {...register('util_target', { valueAsNumber: true })}
                 />
+                {!throughputAware && (
+                  <p className="text-[10px] text-zinc-600">Enable throughput-aware to use.</p>
+                )}
               </div>
             </div>
 
+            {/* Comparator mode */}
             <Controller
               name="comparator_mode"
               control={control}
@@ -251,10 +254,13 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
                             : 'border-zinc-700 bg-zinc-900 text-zinc-400'
                         )}
                       >
-                        {m === 'normalized' ? 'Normalized' : 'Listed price'}
+                        {m === 'normalized' ? 'Normalized price' : 'Listed price'}
                       </button>
                     ))}
                   </div>
+                  <p className="text-[10px] text-zinc-600">
+                    Normalized converts all units to a common base (e.g. per audio hour) before ranking.
+                  </p>
                 </div>
               )}
             />
@@ -271,9 +277,14 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
                   />
                 )}
               />
-              <Label htmlFor="confidence_weighted" className="cursor-pointer">
-                Confidence-weighted ranking
-              </Label>
+              <div>
+                <Label htmlFor="confidence_weighted" className="cursor-pointer">
+                  Confidence-weighted ranking
+                </Label>
+                <p className="text-[10px] text-zinc-500 mt-0.5">
+                  Penalizes estimated/low-confidence prices by up to 25% in the ranking score.
+                </p>
+              </div>
             </div>
 
             {throughputAware && (
@@ -294,7 +305,8 @@ export function NonLLMForm({ workloadType, onSubmit, loading }: NonLLMFormProps)
                     Strict capacity check
                   </Label>
                   <p className="text-[10px] text-zinc-500 mt-0.5">
-                    Exclude providers with unknown throughput
+                    Exclude providers that don't publish throughput data. Without this,
+                    they appear with an "unknown" capacity label.
                   </p>
                 </div>
               </div>

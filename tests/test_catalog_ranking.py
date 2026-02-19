@@ -429,3 +429,35 @@ def test_rank_catalog_offers_tie_break_is_deterministic() -> None:
         workload_type="speech_to_text",
     )
     assert [r.provider for r in ranked] == ["a", "b"]
+
+
+def test_rank_catalog_offers_carries_price_delta_fields() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_hour",
+            unit_price_usd=1.0,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+            previous_unit_price_usd=1.2,
+            price_change_abs_usd=-0.2,
+            price_change_pct=-16.6667,
+        ),
+    ]
+    ranked, _, _ = rank_catalog_offers(
+        rows=rows,
+        allowed_providers={"a"},
+        unit_name="audio_hour",
+        top_k=3,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="normalized",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+    )
+    assert ranked
+    assert ranked[0].previous_unit_price_usd == pytest.approx(1.2)
+    assert ranked[0].price_change_abs_usd == pytest.approx(-0.2)
+    assert ranked[0].price_change_pct == pytest.approx(-16.6667)

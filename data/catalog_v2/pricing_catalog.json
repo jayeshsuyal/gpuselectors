@@ -1,6 +1,6 @@
 {
   "schema_version": "1.0.0",
-  "generated_at_utc": "2026-02-19T05:59:08.718950+00:00",
+  "generated_at_utc": "2026-02-19T06:08:36.729974+00:00",
   "providers_synced": [
     "anthropic",
     "assemblyai",
@@ -5940,7 +5940,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.08,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -5955,7 +5958,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.04,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -5970,7 +5976,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -5985,7 +5994,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6000,7 +6012,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6015,7 +6030,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6030,7 +6048,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6045,7 +6066,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6060,7 +6084,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6075,7 +6102,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6090,7 +6120,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6105,7 +6138,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6120,7 +6156,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6135,7 +6174,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6150,7 +6192,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6165,7 +6210,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 30.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6180,7 +6228,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 60.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6195,7 +6246,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6210,7 +6264,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 30.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6225,7 +6282,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6240,7 +6300,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6255,7 +6318,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6270,7 +6336,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6285,7 +6354,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.075,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6300,7 +6372,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.15,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6315,7 +6390,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6330,7 +6408,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.15,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6345,7 +6426,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6360,7 +6444,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6375,7 +6462,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6390,7 +6480,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6405,7 +6498,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6420,7 +6516,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6435,7 +6534,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6450,7 +6552,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6465,7 +6570,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6480,7 +6588,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6495,7 +6606,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6510,7 +6624,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6525,7 +6642,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6540,7 +6660,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6555,7 +6678,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6570,7 +6696,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6585,7 +6714,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.175,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6600,7 +6732,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.175,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6615,7 +6750,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.75,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6630,7 +6768,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 14.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6645,7 +6786,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.75,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6660,7 +6804,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 14.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6675,7 +6822,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 21.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6690,7 +6840,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 168.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6705,7 +6858,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6720,7 +6876,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6735,7 +6894,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6750,7 +6912,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6765,7 +6930,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.125,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6780,7 +6948,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6795,7 +6966,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6810,7 +6984,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6825,7 +7002,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6840,7 +7020,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6855,7 +7038,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6870,7 +7056,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6885,7 +7074,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6900,7 +7092,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6915,7 +7110,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.025,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6930,7 +7128,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.25,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6945,7 +7146,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6960,7 +7164,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.005,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6975,7 +7182,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.05,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -6990,7 +7200,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7005,7 +7218,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7020,7 +7236,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 15.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7035,7 +7254,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 120.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7050,7 +7272,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7065,7 +7290,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.6,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7080,7 +7308,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7095,7 +7326,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7110,7 +7344,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.039,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7125,7 +7362,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.19,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7140,7 +7380,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.03,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7155,7 +7398,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.14,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7170,7 +7416,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.037,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7185,7 +7434,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.075,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7200,7 +7452,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.3,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7215,7 +7470,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 7.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7230,7 +7488,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 15.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7245,7 +7506,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 60.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7260,7 +7524,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 150.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7275,7 +7542,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 600.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7290,7 +7560,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7305,7 +7578,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7320,7 +7596,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 10.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7335,7 +7614,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 40.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7350,7 +7632,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7365,7 +7650,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.55,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7380,7 +7668,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7395,7 +7686,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 4.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7410,7 +7704,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7425,7 +7722,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 20.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7440,7 +7740,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 80.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7455,7 +7758,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.275,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7470,7 +7776,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.5,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7485,7 +7794,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 2.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7500,7 +7812,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 8.0,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7515,7 +7830,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 1.1,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7530,7 +7848,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 4.4,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "openai",
@@ -7545,7 +7866,10 @@
       "source_url": "https://openai.com/api/pricing/",
       "source_date": "2026-02-18",
       "confidence": "official",
-      "source_kind": "provider_csv"
+      "source_kind": "provider_csv",
+      "previous_unit_price_usd": 0.006,
+      "price_change_abs_usd": 0.0,
+      "price_change_pct": 0.0
     },
     {
       "provider": "replicate",

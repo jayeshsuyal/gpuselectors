@@ -26,6 +26,9 @@ class RankedCatalogOffer:
     required_replicas: int | None = None
     capacity_check: str | None = None
     exclusion_reason: str | None = None
+    previous_unit_price_usd: float | None = None
+    price_change_abs_usd: float | None = None
+    price_change_pct: float | None = None
 
 
 CATALOG_TUNING_PRESETS: dict[str, dict[str, dict[str, float]]] = {
@@ -296,6 +299,9 @@ def rank_catalog_offers(
                     total_risk=total_risk,
                     required_replicas=required_replicas,
                     capacity_check=capacity_check,
+                    previous_unit_price_usd=getattr(row, "previous_unit_price_usd", None),
+                    price_change_abs_usd=getattr(row, "price_change_abs_usd", None),
+                    price_change_pct=getattr(row, "price_change_pct", None),
                 )
             )
 

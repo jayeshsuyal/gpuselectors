@@ -3,6 +3,7 @@ import { ChevronDown, ChevronUp, Info, Trophy } from 'lucide-react'
 import { cn, formatUSD, formatPercent, riskLevel, confidenceLabel, billingModeLabel, capacityLabel } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import type { RankedPlan, RankedCatalogOffer, ProviderDiagnostic } from '@/services/types'
+import { ASSUMPTION_LABELS } from '@/lib/constants'
 
 // ─── Confidence badge ─────────────────────────────────────────────────────────
 
@@ -27,15 +28,6 @@ function CapacityBadge({ check }: { check: string }) {
 
 function LLMResultCard({ plan, isFirst }: { plan: RankedPlan; isFirst: boolean }) {
   const [expanded, setExpanded] = useState(false)
-
-  const ASSUMPTION_LABELS: Record<string, string> = {
-    peak_to_avg: 'Peak-to-avg',
-    util_target: 'Util target',
-    scaling_beta: 'Beta',
-    alpha: 'Alpha',
-    output_token_ratio: 'Output ratio',
-    replicas: 'Replicas',
-  }
 
   return (
     <div
@@ -244,8 +236,10 @@ export function ResultsTable({
   if (mode === 'llm' && plans.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-zinc-500 text-sm">No feasible configurations found</div>
-        <div className="text-zinc-600 text-xs mt-1">Try broader provider selection or different model size</div>
+        <div className="text-zinc-500 text-sm mb-1">No feasible configurations found</div>
+        <div className="text-zinc-600 text-xs leading-relaxed max-w-xs">
+          Try adding more providers, selecting a smaller model size, or reducing your daily token volume.
+        </div>
       </div>
     )
   }
@@ -253,8 +247,10 @@ export function ResultsTable({
   if (mode === 'non-llm' && offers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-zinc-500 text-sm">No offers found for this workload</div>
-        <div className="text-zinc-600 text-xs mt-1">Try different providers or unit selection</div>
+        <div className="text-zinc-500 text-sm mb-1">No offers found for this workload</div>
+        <div className="text-zinc-600 text-xs leading-relaxed max-w-xs">
+          Try removing provider filters, switching to &ldquo;All units&rdquo; (browse mode), or setting budget to 0.
+        </div>
       </div>
     )
   }

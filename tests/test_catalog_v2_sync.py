@@ -23,6 +23,18 @@ def test_sync_catalog_v2_openai_and_validate_schema() -> None:
     errors = list(validator.iter_errors(data))
     assert not errors
 
+    deltas_path = Path("data/catalog_v2/pricing_deltas.json")
+    assert deltas_path.exists()
+    deltas = json.loads(deltas_path.read_text(encoding="utf-8"))
+    assert int(deltas.get("row_count", 0)) >= int(payload["row_count"])
+    assert "matched_rows" in deltas
+    assert "changed_rows" in deltas
+    assert isinstance(deltas.get("changes"), list)
+
+    history_dir = Path("data/catalog_v2/history")
+    assert history_dir.exists()
+    assert any(history_dir.glob("pricing_catalog_*.json"))
+
 
 def test_sync_catalog_v2_all_providers_includes_expected_count() -> None:
     payload = sync_catalog_v2(providers=["all"])

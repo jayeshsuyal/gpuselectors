@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useForm, Controller } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronDown, Info } from 'lucide-react'
@@ -5,9 +6,9 @@ import { cn } from '@/lib/utils'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { ProviderPicker } from '@/components/ui/ProviderPicker'
 import { llmFormSchema, type LLMFormValues } from '@/schemas/forms'
-import { MODEL_BUCKETS, TRAFFIC_PATTERNS, PROVIDERS } from '@/lib/constants'
-import { useState } from 'react'
+import { MODEL_BUCKETS, PROVIDERS, TRAFFIC_PATTERNS } from '@/lib/constants'
 
 interface LLMFormProps {
   onSubmit: (values: LLMFormValues) => void
@@ -41,18 +42,9 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
     },
   })
 
-  const selectedProviders = watch('provider_ids')
   const trafficPattern = watch('traffic_pattern')
-
-  function toggleProvider(id: string, current: string[], onChange: (v: string[]) => void) {
-    if (current.includes(id)) {
-      onChange(current.filter((p) => p !== id))
-    } else {
-      onChange([...current, id])
-    }
-  }
-
   const patternInfo = TRAFFIC_PATTERNS.find((p) => p.id === trafficPattern)
+  const selectedBucket = watch('model_bucket')
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
@@ -65,10 +57,12 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
           {...register('tokens_per_day', { valueAsNumber: true })}
           placeholder="5000000"
         />
+        <p className="text-[10px] text-zinc-500">
+          Total input + output tokens per day. 1M tokens/day ≈ 35 active users.
+        </p>
         {errors.tokens_per_day && (
           <p className="text-[11px] text-red-400">{errors.tokens_per_day.message}</p>
         )}
-        <p className="text-[10px] text-zinc-500">Combined input + output tokens per day</p>
       </div>
 
       {/* Model bucket */}
@@ -97,11 +91,9 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
             </div>
           )}
         />
-        {watch('model_bucket') && (
-          <p className="text-[10px] text-zinc-500">
-            {MODEL_BUCKETS.find((b) => b.id === watch('model_bucket'))?.description}
-          </p>
-        )}
+        <p className="text-[10px] text-zinc-500">
+          {MODEL_BUCKETS.find((b) => b.id === selectedBucket)?.description ?? 'Select a model size above'}
+        </p>
         {errors.model_bucket && (
           <p className="text-[11px] text-red-400">{errors.model_bucket.message}</p>
         )}
@@ -135,43 +127,30 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
         />
         {patternInfo && (
           <p className="text-[10px] text-zinc-500">
-            {patternInfo.description} · peak_to_avg: {patternInfo.peakToAvg}×
+            {patternInfo.description} · sets peak-to-avg to {patternInfo.peakToAvg}×
           </p>
         )}
       </div>
 
       {/* Providers */}
       <div className="space-y-1.5">
-        <Label>Providers</Label>
+        <Label>Providers <span className="text-zinc-500 font-normal">(select at least one)</span></Label>
         <Controller
           name="provider_ids"
           control={control}
           render={({ field }) => (
-            <div className="flex flex-wrap gap-1.5">
-              {PROVIDERS.map((p) => {
-                const isSelected = field.value.includes(p)
-                return (
-                  <button
-                    key={p}
-                    type="button"
-                    onClick={() => toggleProvider(p, field.value, field.onChange)}
-                    className={cn(
-                      'rounded-full px-2.5 py-1 text-[11px] font-medium border transition-colors',
-                      isSelected
-                        ? 'border-indigo-600 bg-indigo-950/60 text-indigo-300'
-                        : 'border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
-                    )}
-                  >
-                    {p}
-                  </button>
-                )
-              })}
-            </div>
+            <ProviderPicker
+              value={field.value}
+              onChange={field.onChange}
+              allowedProviders={PROVIDERS}
+              helperText={
+                field.value.length === 0
+                  ? 'No providers selected — select at least one to rank'
+                  : `${field.value.length} selected · only providers with catalog data for this model size will appear in results`
+              }
+            />
           )}
         />
-        <p className="text-[10px] text-zinc-500">
-          {selectedProviders.length} selected · all included if none match catalog data
-        </p>
         {errors.provider_ids && (
           <p className="text-[11px] text-red-400">{errors.provider_ids.message}</p>
         )}
@@ -182,6 +161,7 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
+          aria-expanded={showAdvanced}
           className="w-full flex items-center justify-between px-4 py-2.5 text-xs font-medium text-zinc-400 hover:text-zinc-200 hover:bg-zinc-900 transition-colors"
         >
           <div className="flex items-center gap-2">
@@ -196,74 +176,43 @@ export function LLMForm({ onSubmit, loading }: LLMFormProps) {
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="peak_to_avg">Peak-to-avg ratio</Label>
-                <Input
-                  id="peak_to_avg"
-                  type="number"
-                  step="0.1"
-                  {...register('peak_to_avg', { valueAsNumber: true })}
-                />
+                <Input id="peak_to_avg" type="number" step="0.1" {...register('peak_to_avg', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Ratio of peak to average load. Drives replica count.</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="util_target">Utilization target</Label>
-                <Input
-                  id="util_target"
-                  type="number"
-                  step="0.05"
-                  {...register('util_target', { valueAsNumber: true })}
-                />
+                <Input id="util_target" type="number" step="0.05" {...register('util_target', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Max GPU utilization before scaling out (0–0.99).</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="output_token_ratio">Output token ratio</Label>
-                <Input
-                  id="output_token_ratio"
-                  type="number"
-                  step="0.05"
-                  {...register('output_token_ratio', { valueAsNumber: true })}
-                />
+                <Input id="output_token_ratio" type="number" step="0.05" {...register('output_token_ratio', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Share of tokens that are outputs. Affects blended price.</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="beta">Scaling beta</Label>
-                <Input
-                  id="beta"
-                  type="number"
-                  step="0.01"
-                  {...register('beta', { valueAsNumber: true })}
-                />
+                <Input id="beta" type="number" step="0.01" {...register('beta', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Risk penalty coefficient for overload probability.</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="alpha">Risk alpha</Label>
-                <Input
-                  id="alpha"
-                  type="number"
-                  step="0.1"
-                  {...register('alpha', { valueAsNumber: true })}
-                />
+                <Input id="alpha" type="number" step="0.1" {...register('alpha', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Ops complexity weight in the composite score.</p>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="autoscale_inefficiency">Autoscale inefficiency</Label>
-                <Input
-                  id="autoscale_inefficiency"
-                  type="number"
-                  step="0.01"
-                  {...register('autoscale_inefficiency', { valueAsNumber: true })}
-                />
+                <Label htmlFor="autoscale_inefficiency">Autoscale overhead</Label>
+                <Input id="autoscale_inefficiency" type="number" step="0.01" {...register('autoscale_inefficiency', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Cost multiplier for autoscale billing inefficiency (e.g. 1.15 = +15%).</p>
               </div>
               <div className="space-y-1">
-                <Label htmlFor="monthly_budget_max_usd">Monthly budget (0 = none)</Label>
-                <Input
-                  id="monthly_budget_max_usd"
-                  type="number"
-                  step="0.01"
-                  {...register('monthly_budget_max_usd', { valueAsNumber: true })}
-                />
+                <Label htmlFor="monthly_budget_max_usd">Monthly budget max</Label>
+                <Input id="monthly_budget_max_usd" type="number" step="1" {...register('monthly_budget_max_usd', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">0 = no limit. Plans above this cost are excluded.</p>
               </div>
               <div className="space-y-1">
                 <Label htmlFor="top_k">Top K results</Label>
-                <Input
-                  id="top_k"
-                  type="number"
-                  {...register('top_k', { valueAsNumber: true })}
-                />
+                <Input id="top_k" type="number" {...register('top_k', { valueAsNumber: true })} />
+                <p className="text-[10px] text-zinc-600">Maximum number of plans to return (1–20).</p>
               </div>
             </div>
           </div>
