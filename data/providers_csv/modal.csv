@@ -1,9 +1,9 @@
 workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
-llm,modal,per_second,h100_gpu,H100 80GB,h100,3.9492,gpu_hour,,,80,,global,Converted from $0.001097/sec,https://modal.com/pricing,2026-02-13,high,
-llm,modal,per_second,a100_80gb,A100 80GB,a100_80gb,2.4984,gpu_hour,,,80,,global,Converted from $0.000694/sec,https://modal.com/pricing,2026-02-13,high,
-llm,modal,per_second,a100_40gb,A100 40GB,a100_40gb,2.0988,gpu_hour,,,40,,global,Converted from $0.000583/sec,https://modal.com/pricing,2026-02-13,high,
-llm,modal,per_second,l40s,L40S,l40s,1.9512,gpu_hour,,,48,,global,Converted from $0.000542/sec,https://modal.com/pricing,2026-02-13,high,
-llm,modal,per_second,a10,A10,a10,1.1016,gpu_hour,,,24,,global,Converted from $0.000306/sec,https://modal.com/pricing,2026-02-13,high,
-llm,modal,per_second,t4,T4,t4,0.5904,gpu_hour,,,16,,global,Converted from $0.000164/sec,https://modal.com/pricing,2026-02-13,high,
-image_gen,modal,per_second,h200_gpu,H200 GPU,h200,6.2496,gpu_hour,,,,,global,Converted from $0.001736/sec,https://modal.com/pricing,2026-02-13,high,
-image_gen,modal,per_second,l4,L4,l4,0.7992,gpu_hour,,,24,,global,Converted from $0.000222/sec,https://modal.com/pricing,2026-02-13,high,
+llm,modal,per_second,h100_gpu,H100 80GB,h100,3.9492,gpu_hour,,,80,,,global,Converted from $0.001097/sec,https://modal.com/pricing,2026-02-13,high
+llm,modal,per_second,a100_80gb,A100 80GB,a100_80gb,2.4984,gpu_hour,,,80,,,global,Converted from $0.000694/sec,https://modal.com/pricing,2026-02-13,high
+llm,modal,per_second,a100_40gb,A100 40GB,a100_40gb,2.0988,gpu_hour,,,40,,,global,Converted from $0.000583/sec,https://modal.com/pricing,2026-02-13,high
+llm,modal,per_second,l40s,L40S,l40s,1.9512,gpu_hour,,,48,,,global,Converted from $0.000542/sec,https://modal.com/pricing,2026-02-13,high
+llm,modal,per_second,a10,A10,a10,1.1016,gpu_hour,,,24,,,global,Converted from $0.000306/sec,https://modal.com/pricing,2026-02-13,high
+llm,modal,per_second,t4,T4,t4,0.5904,gpu_hour,,,16,,,global,Converted from $0.000164/sec,https://modal.com/pricing,2026-02-13,high
+image_gen,modal,per_second,h200_gpu,H200 GPU,h200,6.2496,gpu_hour,,,,,,global,Converted from $0.001736/sec,https://modal.com/pricing,2026-02-13,high
+image_gen,modal,per_second,l4,L4,l4,0.7992,gpu_hour,,,24,,,global,Converted from $0.000222/sec,https://modal.com/pricing,2026-02-13,high

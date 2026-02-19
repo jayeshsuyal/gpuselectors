@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from collections import Counter
 from pathlib import Path
 
 from jsonschema import Draft202012Validator
@@ -30,3 +31,16 @@ def test_sync_catalog_v2_all_providers_includes_expected_count() -> None:
     assert len(providers) == 16
     assert "openai" in providers
     assert "anthropic" in providers
+
+    rows = payload["rows"]
+    keys = [
+        (
+            str(row.get("provider") or "").strip(),
+            str(row.get("sku_key") or "").strip(),
+            str(row.get("unit_name") or "").strip(),
+            str(row.get("region") or "").strip(),
+        )
+        for row in rows
+    ]
+    counts = Counter(keys)
+    assert not any(count > 1 for count in counts.values())

@@ -1,6 +1,6 @@
 workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
-llm,replicate,per_second,a100_80gb,A100 80GB,a100_80gb,0.00140,gpu_second,,,80,,global,Billed by second on-demand,https://replicate.com/pricing,2026-02-13,high,
-llm,replicate,per_second,h100_sxm,H100 SXM,h100_sxm,0.00165,gpu_second,,,80,,global,On-demand per-second billing,https://replicate.com/pricing,2026-02-13,high,
-llm,replicate,per_second,l40s,L40S,l40s,0.00090,gpu_second,,,48,,global,Mid-tier GPU pricing,https://replicate.com/pricing,2026-02-13,high,
-llm,replicate,per_second,t4,T4,t4,0.00015,gpu_second,,,16,,global,Entry-level GPU,https://replicate.com/pricing,2026-02-13,high,
-image_gen,replicate,per_second,a100_image,A100 Image Gen,a100,0.00140,gpu_second,,,80,,global,Image generation workloads,https://replicate.com/pricing,2026-02-13,high,
+llm,replicate,per_second,a100_80gb,A100 80GB,a100_80gb,0.00140,gpu_second,,,80,,,global,Billed by second on-demand,https://replicate.com/pricing,2026-02-13,high
+llm,replicate,per_second,h100_sxm,H100 SXM,h100_sxm,0.00165,gpu_second,,,80,,,global,On-demand per-second billing,https://replicate.com/pricing,2026-02-13,high
+llm,replicate,per_second,l40s,L40S,l40s,0.00090,gpu_second,,,48,,,global,Mid-tier GPU pricing,https://replicate.com/pricing,2026-02-13,high
+llm,replicate,per_second,t4,T4,t4,0.00015,gpu_second,,,16,,,global,Entry-level GPU,https://replicate.com/pricing,2026-02-13,high
+image_gen,replicate,per_second,a100_image,A100 Image Gen,a100,0.00140,gpu_second,,,80,,,global,Image generation workloads,https://replicate.com/pricing,2026-02-13,high
