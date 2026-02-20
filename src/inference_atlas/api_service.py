@@ -26,7 +26,10 @@ from inference_atlas.api_models import (
     RankedPlan,
     RiskBreakdown,
 )
-from inference_atlas.catalog_ranking import build_provider_diagnostics, rank_catalog_offers
+from inference_atlas.catalog_ranking import (
+    build_provider_diagnostics,
+    run_catalog_ranking_with_relaxation,
+)
 from inference_atlas.data_loader import get_catalog_v2_rows
 from inference_atlas.invoice_analyzer import analyze_invoice_csv
 from inference_atlas.mvp_planner import get_provider_compatibility, rank_configs
@@ -155,7 +158,7 @@ def run_rank_catalog(payload: CatalogRankingRequest) -> CatalogRankingResponse:
         )
 
     allowed = set(payload.allowed_providers) if payload.allowed_providers else {r.provider for r in rows}
-    ranked, provider_reasons, excluded_count = rank_catalog_offers(
+    run = run_catalog_ranking_with_relaxation(
         rows=rows,
         allowed_providers=allowed,
         unit_name=payload.unit_name,
@@ -176,7 +179,7 @@ def run_rank_catalog(payload: CatalogRankingRequest) -> CatalogRankingResponse:
     diagnostics = build_provider_diagnostics(
         workload_provider_ids=workload_provider_ids,
         selected_global_providers=selected_global_providers,
-        provider_reasons=provider_reasons,
+        provider_reasons=run.provider_reasons,
     )
     offers = [
         RankedCatalogOffer(
@@ -199,16 +202,23 @@ def run_rank_catalog(payload: CatalogRankingRequest) -> CatalogRankingResponse:
             price_change_abs_usd=row.price_change_abs_usd,
             price_change_pct=row.price_change_pct,
         )
-        for idx, row in enumerate(ranked, start=1)
+        for idx, row in enumerate(run.ranked, start=1)
     ]
     warnings: list[str] = []
     if not offers:
         warnings.append("No offers matched the selected providers/unit/budget filter.")
+    if run.selected_step != "strict" and offers:
+        warnings.append(
+            f"Applied fallback step '{run.selected_step}' to return best available matches."
+        )
     return CatalogRankingResponse(
         offers=offers,
         provider_diagnostics=diagnostics,
-        excluded_count=excluded_count,
+        excluded_count=run.excluded_offer_count,
         warnings=warnings,
+        relaxation_applied=run.selected_step != "strict",
+        relaxation_steps=run.relaxation_trace,
+        exclusion_breakdown=run.exclusion_breakdown,
     )
 
 

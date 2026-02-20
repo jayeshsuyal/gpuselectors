@@ -9,6 +9,7 @@ from inference_atlas.catalog_ranking import (
     get_catalog_tuning_preset,
     normalize_unit_price_for_workload,
     rank_catalog_offers,
+    run_catalog_ranking_with_relaxation,
 )
 
 
@@ -272,6 +273,89 @@ def test_build_provider_diagnostics_included_excluded() -> None:
     assert by_provider["a"]["status"] == "included"
     assert by_provider["b"]["reason"] == "Not selected by user."
     assert by_provider["c"]["status"] == "excluded"
+
+
+def test_relaxation_flow_relaxes_unit_then_returns_rows() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="vision_a",
+            unit_name="video_min",
+            unit_price_usd=20.0,
+            confidence="high",
+            sku_name="vision-a",
+            billing_mode="per_minute",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="vision_b",
+            unit_name="video_min",
+            unit_price_usd=30.0,
+            confidence="high",
+            sku_name="vision-b",
+            billing_mode="per_minute",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+    ]
+    run = run_catalog_ranking_with_relaxation(
+        rows=rows,
+        allowed_providers={"vision_a", "vision_b"},
+        unit_name="1k_images",
+        top_k=5,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="listed",
+        confidence_weighted=False,
+        workload_type="vision",
+        monthly_usage=5.0,
+    )
+    assert run.selected_step == "relax_unit"
+    assert len(run.ranked) == 2
+    assert run.relaxation_trace[0]["step"] == "strict"
+    assert run.relaxation_trace[0]["count"] == 0
+
+
+def test_relaxation_breakdown_tracks_reason_buckets() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_min",
+            unit_price_usd=0.5,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="b",
+            unit_name="audio_hour",
+            unit_price_usd=60.0,
+            confidence="high",
+            sku_name="b-stt",
+            billing_mode="per_unit",
+            throughput_value=0.0,
+            throughput_unit="per_hour",
+        ),
+    ]
+    run = run_catalog_ranking_with_relaxation(
+        rows=rows,
+        allowed_providers={"a"},
+        unit_name="audio_hour",
+        top_k=5,
+        monthly_budget_max_usd=1.0,
+        comparator_mode="normalized",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+        monthly_usage=10.0,
+        throughput_aware=True,
+        strict_capacity_check=True,
+    )
+    assert run.exclusion_breakdown["provider_filtered_out"] >= 1
+    assert run.exclusion_breakdown["unit_mismatch"] >= 1
+    assert set(run.exclusion_breakdown).issuperset(
+        {"provider_filtered_out", "unit_mismatch", "non_comparable_normalization", "missing_throughput", "budget"}
+    )
 
 
 def test_rank_catalog_offers_validates_parameters() -> None:

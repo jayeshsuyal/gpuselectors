@@ -92,6 +92,8 @@ def test_run_rank_catalog_returns_rows_for_non_llm() -> None:
     )
     assert response.excluded_count >= 0
     assert len(response.provider_diagnostics) >= 1
+    assert isinstance(response.relaxation_steps, list)
+    assert isinstance(response.exclusion_breakdown, dict)
 
 
 def test_run_browse_catalog_filters_workload() -> None:
@@ -118,3 +120,21 @@ def test_run_ai_assist_returns_grounded_reply() -> None:
         )
     )
     assert "lowest current unit prices" in response.reply
+
+
+def test_run_rank_catalog_sets_relaxation_metadata_on_fallback() -> None:
+    response = run_rank_catalog(
+        CatalogRankingRequest(
+            workload_type="vision",
+            allowed_providers=[],
+            unit_name="audio_min",
+            monthly_usage=10.0,
+            monthly_budget_max_usd=0.0,
+            top_k=5,
+            confidence_weighted=True,
+            comparator_mode="listed",
+            throughput_aware=False,
+        )
+    )
+    assert response.relaxation_applied is True
+    assert any(step["step"] == "relax_unit" for step in response.relaxation_steps)

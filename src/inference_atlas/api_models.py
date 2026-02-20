@@ -108,6 +108,9 @@ class CatalogRankingResponse(BaseModel):
     provider_diagnostics: list[ProviderDiagnostic]
     excluded_count: int
     warnings: list[str] = Field(default_factory=list)
+    relaxation_applied: bool = False
+    relaxation_steps: list[dict[str, Any]] = Field(default_factory=list)
+    exclusion_breakdown: dict[str, int] = Field(default_factory=dict)
 
 
 class CatalogBrowseResponse(BaseModel):
