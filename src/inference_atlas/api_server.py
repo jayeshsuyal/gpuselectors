@@ -1,21 +1,35 @@
-"""Optional FastAPI server for InferenceAtlas endpoints.
-
-This server is intentionally lightweight. It currently exposes:
-- POST /api/v1/ai/copilot
-"""
+"""Optional FastAPI server for InferenceAtlas endpoints."""
 
 from __future__ import annotations
 
 import os
 
-from inference_atlas.api_models import CopilotTurnRequest, CopilotTurnResponse
-from inference_atlas.api_service import run_copilot_turn
+from inference_atlas.api_models import (
+    AIAssistRequest,
+    AIAssistResponse,
+    CatalogBrowseResponse,
+    CatalogRankingRequest,
+    CatalogRankingResponse,
+    CopilotTurnRequest,
+    CopilotTurnResponse,
+    InvoiceAnalysisResponse,
+    LLMPlanningRequest,
+    LLMPlanningResponse,
+)
+from inference_atlas.api_service import (
+    run_ai_assist,
+    run_browse_catalog,
+    run_copilot_turn,
+    run_invoice_analyze,
+    run_plan_llm,
+    run_rank_catalog,
+)
 
 
 def create_app():
     """Create FastAPI app lazily so base package has no hard FastAPI dependency."""
     try:
-        from fastapi import FastAPI, HTTPException
+        from fastapi import FastAPI, File, HTTPException, UploadFile
         from fastapi.middleware.cors import CORSMiddleware
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError(
@@ -45,5 +59,59 @@ def create_app():
             return run_copilot_turn(payload)
         except Exception as exc:  # noqa: BLE001
             raise HTTPException(status_code=400, detail=str(exc)) from exc
+
+    @app.post("/api/v1/plan/llm", response_model=LLMPlanningResponse)
+    def plan_llm(payload: LLMPlanningRequest) -> LLMPlanningResponse:
+        try:
+            return run_plan_llm(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.post("/api/v1/rank/catalog", response_model=CatalogRankingResponse)
+    def rank_catalog(payload: CatalogRankingRequest) -> CatalogRankingResponse:
+        try:
+            return run_rank_catalog(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.get("/api/v1/catalog", response_model=CatalogBrowseResponse)
+    def browse_catalog(
+        workload_type: str | None = None,
+        provider: str | None = None,
+        unit_name: str | None = None,
+    ) -> CatalogBrowseResponse:
+        try:
+            return run_browse_catalog(
+                workload_type=workload_type,
+                provider=provider,
+                unit_name=unit_name,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.post("/api/v1/invoice/analyze", response_model=InvoiceAnalysisResponse)
+    async def analyze_invoice(file: UploadFile = File(...)) -> InvoiceAnalysisResponse:
+        try:
+            content = await file.read()
+            return run_invoice_analyze(content)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.post("/api/v1/ai/assist", response_model=AIAssistResponse)
+    def ai_assist(payload: AIAssistRequest) -> AIAssistResponse:
+        try:
+            return run_ai_assist(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return app

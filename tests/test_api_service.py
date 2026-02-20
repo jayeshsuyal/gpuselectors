@@ -3,8 +3,21 @@ from __future__ import annotations
 import pytest
 from pydantic import ValidationError
 
-from inference_atlas.api_models import CopilotTurnRequest
-from inference_atlas.api_service import run_copilot_turn
+from inference_atlas.api_models import (
+    AIAssistContext,
+    AIAssistRequest,
+    CatalogRankingRequest,
+    CopilotTurnRequest,
+    LLMPlanningRequest,
+)
+from inference_atlas.api_service import (
+    run_ai_assist,
+    run_browse_catalog,
+    run_copilot_turn,
+    run_invoice_analyze,
+    run_plan_llm,
+    run_rank_catalog,
+)
 
 
 def test_run_copilot_turn_returns_valid_response() -> None:
@@ -48,3 +61,60 @@ def test_run_copilot_turn_accepts_frontend_shape() -> None:
     response = run_copilot_turn(payload)
     assert response.extracted_spec["workload_type"] == "vision"
     assert response.extracted_spec["monthly_usage"] == 2000
+
+
+def test_run_plan_llm_returns_ranked_plans() -> None:
+    response = run_plan_llm(
+        LLMPlanningRequest(
+            tokens_per_day=5_000_000,
+            model_bucket="7b",
+            provider_ids=[],
+            top_k=3,
+        )
+    )
+    assert response.plans
+    assert response.plans[0].rank == 1
+    assert response.plans[0].monthly_cost_usd > 0
+
+
+def test_run_rank_catalog_returns_rows_for_non_llm() -> None:
+    response = run_rank_catalog(
+        CatalogRankingRequest(
+            workload_type="speech_to_text",
+            allowed_providers=[],
+            unit_name=None,
+            monthly_usage=100.0,
+            top_k=5,
+            confidence_weighted=True,
+            comparator_mode="normalized",
+            throughput_aware=False,
+        )
+    )
+    assert response.excluded_count >= 0
+    assert len(response.provider_diagnostics) >= 1
+
+
+def test_run_browse_catalog_filters_workload() -> None:
+    response = run_browse_catalog(workload_type="llm")
+    assert response.total >= 1
+    assert all(row["workload_type"] == "llm" for row in response.rows)
+
+
+def test_run_invoice_analyze_returns_line_items() -> None:
+    csv_bytes = (
+        "provider,workload_type,usage_qty,usage_unit,amount_usd\n"
+        "openai,speech_to_text,120,audio_min,12.0\n"
+    ).encode("utf-8")
+    response = run_invoice_analyze(csv_bytes)
+    assert response.grand_total > 0
+    assert response.line_items
+
+
+def test_run_ai_assist_returns_grounded_reply() -> None:
+    response = run_ai_assist(
+        AIAssistRequest(
+            message="cheapest speech to text provider",
+            context=AIAssistContext(workload_type="speech_to_text", providers=[]),
+        )
+    )
+    assert "lowest current unit prices" in response.reply
