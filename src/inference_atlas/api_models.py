@@ -41,7 +41,7 @@ class RankedPlan(BaseModel):
 
 
 class LLMPlanningRequest(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", protected_namespaces=())
 
     tokens_per_day: float = Field(gt=0)
     model_bucket: str = Field(min_length=1)

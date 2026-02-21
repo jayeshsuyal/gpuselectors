@@ -90,6 +90,16 @@ def test_ai_assist_endpoint() -> None:
     assert isinstance(body["reply"], str)
 
 
+def test_copilot_endpoint_accepts_frontend_shape() -> None:
+    client = _client()
+    payload = {"message": "Need llm under $300", "history": [], "workload_type": "llm"}
+    response = client.post("/api/v1/ai/copilot", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert "reply" in body
+    assert "is_ready" in body
+
+
 def test_invoice_analyze_endpoint() -> None:
     client = _client()
     content = (
@@ -104,3 +114,29 @@ def test_invoice_analyze_endpoint() -> None:
     body = response.json()
     assert body["grand_total"] > 0
     assert body["line_items"]
+
+
+def test_rank_catalog_endpoint_rejects_invalid_payload() -> None:
+    client = _client()
+    payload = {
+        "workload_type": "llm",
+        "allowed_providers": [],
+        "unit_name": None,
+        "monthly_usage": 10.0,
+        "monthly_budget_max_usd": 0.0,
+        "top_k": 5,
+        "confidence_weighted": True,
+        "comparator_mode": "invalid_mode",
+        "throughput_aware": False,
+        "peak_to_avg": 2.5,
+        "util_target": 0.75,
+        "strict_capacity_check": False,
+    }
+    response = client.post("/api/v1/rank/catalog", json=payload)
+    assert response.status_code == 422
+
+
+def test_invoice_analyze_endpoint_requires_file() -> None:
+    client = _client()
+    response = client.post("/api/v1/invoice/analyze", files={})
+    assert response.status_code == 422
