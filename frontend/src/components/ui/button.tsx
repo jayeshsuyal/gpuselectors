@@ -7,19 +7,19 @@ const buttonVariants = cva(
   [
     'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium',
     'transition-all duration-200 ease-out',
-    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent)] focus-visible:ring-offset-2 focus-visible:ring-offset-[#09090b]',
+    'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--bg-base)]',
     'disabled:pointer-events-none disabled:opacity-40',
     '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
   ].join(' '),
   {
     variants: {
       variant: {
-        // Primary — indigo with subtle glow on hover
+        // Primary — brand violet with glow on hover
         default:
-          'bg-indigo-600 text-white shadow-sm shadow-indigo-900/50 hover:bg-indigo-500 hover:shadow-glow-sm active:bg-indigo-700 active:scale-[0.98]',
+          'bg-brand text-white shadow-sm shadow-brand/20 hover:bg-brand-hover hover:shadow-glow-sm active:brightness-90 active:scale-[0.98]',
         // Secondary — glass surface
         secondary:
-          'bg-zinc-800/80 text-zinc-100 border border-white/[0.07] shadow-inner-highlight hover:bg-zinc-700/80 hover:border-white/[0.11] active:bg-zinc-800 active:scale-[0.98]',
+          'bg-surface-elevated text-zinc-100 border border-white/[0.07] shadow-inner-highlight hover:bg-white/[0.06] hover:border-white/[0.11] active:bg-surface active:scale-[0.98]',
         // Ghost — no background until hover
         ghost:
           'text-zinc-400 hover:text-zinc-100 hover:bg-white/[0.06] active:bg-white/[0.04]',
@@ -31,7 +31,7 @@ const buttonVariants = cva(
           'bg-red-600 text-white hover:bg-red-500 shadow-sm active:bg-red-700 active:scale-[0.98]',
         // Link
         link:
-          'text-indigo-400 underline-offset-4 hover:underline hover:text-indigo-300 p-0 h-auto',
+          'text-[var(--brand-hover)] underline-offset-4 hover:underline hover:text-[var(--brand)] p-0 h-auto',
         // Glass — translucent panel button
         glass:
           'glass-card text-zinc-200 hover:border-white/[0.14] hover:text-white card-hover active:scale-[0.98]',

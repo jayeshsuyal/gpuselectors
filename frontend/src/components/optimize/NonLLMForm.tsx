@@ -193,7 +193,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading, initialValues }: N
       </div>
 
       {/* Advanced */}
-      <div className="border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border-subtle)' }}>
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
@@ -205,7 +205,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading, initialValues }: N
         </button>
 
         {showAdvanced && (
-          <div className="px-4 py-3 space-y-3 border-t border-zinc-800 bg-zinc-900/50">
+          <div className="px-4 py-3 space-y-3 border-t" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)' }}>
             {/* Throughput params — only meaningful when throughput_aware is on */}
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
@@ -248,13 +248,12 @@ export function NonLLMForm({ workloadType, onSubmit, loading, initialValues }: N
                       <button
                         key={m}
                         type="button"
+                        aria-pressed={field.value === m}
                         onClick={() => field.onChange(m)}
-                        className={cn(
-                          'rounded-md border px-3 py-1.5 text-xs font-medium transition-colors',
-                          field.value === m
-                            ? 'border-indigo-500 bg-indigo-950/60 text-indigo-300'
-                            : 'border-zinc-700 bg-zinc-900 text-zinc-400'
-                        )}
+                        className="rounded-md border px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                        style={field.value === m
+                          ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                          : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
                       >
                         {m === 'normalized' ? 'Normalized price' : 'Listed price'}
                       </button>

@@ -79,13 +79,12 @@ export function LLMForm({ onSubmit, loading, initialValues }: LLMFormProps) {
                 <button
                   key={b.id}
                   type="button"
+                  aria-pressed={field.value === b.id}
                   onClick={() => field.onChange(b.id)}
-                  className={cn(
-                    'rounded-md border px-2 py-2 text-xs font-medium text-center transition-colors',
-                    field.value === b.id
-                      ? 'border-indigo-500 bg-indigo-950/60 text-indigo-300'
-                      : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
-                  )}
+                  className="rounded-md border px-2 py-2 text-xs font-medium text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                  style={field.value === b.id
+                    ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                    : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
                 >
                   {b.id.toUpperCase()}
                 </button>
@@ -113,13 +112,12 @@ export function LLMForm({ onSubmit, loading, initialValues }: LLMFormProps) {
                 <button
                   key={p.id}
                   type="button"
+                  aria-pressed={field.value === p.id}
                   onClick={() => field.onChange(p.id)}
-                  className={cn(
-                    'rounded-md border px-2 py-2 text-xs font-medium text-center transition-colors',
-                    field.value === p.id
-                      ? 'border-indigo-500 bg-indigo-950/60 text-indigo-300'
-                      : 'border-zinc-700 bg-zinc-900 text-zinc-400 hover:border-zinc-600 hover:text-zinc-300'
-                  )}
+                  className="rounded-md border px-2 py-2 text-xs font-medium text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                  style={field.value === p.id
+                    ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                    : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-tertiary)' }}
                 >
                   {p.label}
                 </button>
@@ -159,7 +157,7 @@ export function LLMForm({ onSubmit, loading, initialValues }: LLMFormProps) {
       </div>
 
       {/* Advanced */}
-      <div className="border border-zinc-800 rounded-lg overflow-hidden">
+      <div className="border rounded-lg overflow-hidden" style={{ borderColor: 'var(--border-subtle)' }}>
         <button
           type="button"
           onClick={() => setShowAdvanced(!showAdvanced)}
@@ -174,7 +172,7 @@ export function LLMForm({ onSubmit, loading, initialValues }: LLMFormProps) {
         </button>
 
         {showAdvanced && (
-          <div className="px-4 py-3 space-y-3 border-t border-zinc-800 bg-zinc-900/50">
+          <div className="px-4 py-3 space-y-3 border-t" style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)' }}>
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1">
                 <Label htmlFor="peak_to_avg">Peak-to-avg ratio</Label>

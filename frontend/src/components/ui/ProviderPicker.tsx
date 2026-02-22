@@ -42,10 +42,12 @@ export function ProviderPicker({
               onClick={() => toggle(p)}
               className={cn(
                 'rounded-full px-2 py-1 text-[11px] font-medium border transition-colors inline-flex items-center gap-1.5',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]',
                 isSelected
-                  ? 'border-indigo-600 bg-indigo-950/60 text-indigo-300'
-                  : 'border-zinc-700 bg-zinc-900 text-zinc-500 hover:border-zinc-600 hover:text-zinc-400'
+                  ? 'text-[color:var(--brand-hover)]'
+                  : 'border-white/[0.08] bg-surface text-zinc-500 hover:border-white/[0.12] hover:text-zinc-300'
               )}
+              style={isSelected ? { borderColor: 'rgba(124,92,252,0.35)', background: 'rgba(124,92,252,0.08)' } : {}}
             >
               <ProviderLogo provider={p} size="sm" />
               <span>{providerDisplayName(p)}</span>

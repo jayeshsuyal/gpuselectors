@@ -85,7 +85,10 @@ function ExtractedSpecCard({ spec }: { spec: CopilotTurnResponse['extracted_spec
   if (entries.length === 0) return null
 
   return (
-    <div className="rounded-md border border-zinc-800 bg-zinc-900/60 px-3 py-2.5">
+    <div
+      className="rounded-md border px-3 py-2.5"
+      style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+    >
       <div className="text-[10px] font-semibold text-zinc-500 uppercase tracking-wider mb-2 flex items-center gap-1.5">
         <CheckCircle2 className="h-3 w-3 text-emerald-500" />
         Understood so far
@@ -177,17 +180,19 @@ function MessageBubble({ msg }: { msg: CopilotMessage }) {
   return (
     <div className={cn('flex gap-2', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center mt-0.5">
-          <Sparkles className="w-3 h-3 text-indigo-300" />
+        <div
+          className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center mt-0.5"
+          style={{ background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.35)' }}
+        >
+          <Sparkles className="w-3 h-3" style={{ color: 'var(--brand-hover)' }} />
         </div>
       )}
       <div
-        className={cn(
-          'rounded-lg px-3 py-2 text-xs leading-relaxed max-w-[88%]',
-          isUser
-            ? 'bg-indigo-600 text-white'
-            : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
-        )}
+        className="rounded-lg px-3 py-2 text-xs leading-relaxed max-w-[88%]"
+        style={isUser
+          ? { background: 'var(--brand)', color: '#fff' }
+          : { background: 'var(--bg-elevated)', color: 'var(--text-secondary)', border: '1px solid var(--border-default)' }
+        }
       >
         {renderMarkdown(msg.content)}
       </div>
@@ -261,6 +266,8 @@ export function CopilotPanel({ workloadType, isLLM, onApply }: CopilotPanelProps
       {/* Chat area */}
       <div
         ref={scrollRef}
+        aria-live="polite"
+        aria-label="Conversation"
         className={cn('space-y-3 overflow-y-auto', messages.length > 0 && 'max-h-56')}
       >
         {messages.length === 0 ? (
@@ -272,10 +279,16 @@ export function CopilotPanel({ workloadType, isLLM, onApply }: CopilotPanelProps
         )}
         {loading && (
           <div className="flex gap-2 justify-start">
-            <div className="flex-shrink-0 w-5 h-5 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center">
-              <Sparkles className="w-3 h-3 text-indigo-300" />
+            <div
+              className="flex-shrink-0 w-5 h-5 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.35)' }}
+            >
+              <Sparkles className="w-3 h-3" style={{ color: 'var(--brand-hover)' }} />
             </div>
-            <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
+            <div
+              className="rounded-lg px-3 py-2"
+              style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)' }}
+            >
               <Loader2 className="w-3.5 h-3.5 text-zinc-400 animate-spin" />
             </div>
           </div>
@@ -326,7 +339,11 @@ export function CopilotPanel({ workloadType, isLLM, onApply }: CopilotPanelProps
                 key={preset}
                 type="button"
                 onClick={() => applyPreset(preset)}
-                className="flex flex-col items-center gap-1 rounded-md border border-zinc-800 bg-zinc-900 hover:border-zinc-700 hover:bg-zinc-800 px-2 py-2.5 transition-colors text-center"
+                aria-label={`${meta.label}: ${meta.description}`}
+                className="flex flex-col items-center gap-1 rounded-md border px-2 py-2.5 transition-colors text-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-elevated)' }}
+                onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-default)' }}
+                onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-subtle)' }}
               >
                 <span className="text-base leading-none">{meta.icon}</span>
                 <span className="text-[11px] font-medium text-zinc-300">{meta.label}</span>
@@ -359,7 +376,8 @@ export function CopilotPanel({ workloadType, isLLM, onApply }: CopilotPanelProps
           size="icon-sm"
           variant="ghost"
           disabled={loading}
-          className="absolute right-2 bottom-2 h-6 w-6 text-zinc-400 hover:text-indigo-400"
+          aria-label="Send message"
+          className="absolute right-2 bottom-2 h-6 w-6 ai-send-btn"
         >
           <Send className="h-3 w-3" />
         </Button>

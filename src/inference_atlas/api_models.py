@@ -243,4 +243,6 @@ class ReportGenerateResponse(BaseModel):
     title: str
     mode: Literal["llm", "catalog"]
     sections: list[ReportSection] = Field(default_factory=list)
+    chart_data: dict[str, Any] = Field(default_factory=dict)
+    metadata: dict[str, Any] = Field(default_factory=dict)
     markdown: str

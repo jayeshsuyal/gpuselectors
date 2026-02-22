@@ -15,6 +15,8 @@ import type {
   CopilotTurnRequest,
   CopilotTurnResponse,
   CopilotApplyPayload,
+  ReportGenerateRequest,
+  ReportGenerateResponse,
 } from './types'
 
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_API ?? 'true').toLowerCase() !== 'false'
@@ -646,4 +648,48 @@ export async function askAI(req: AIAssistRequest): Promise<AIAssistResponse> {
     return mock.MOCK_AI_RESPONSES.default!
   }
   return post<AIAssistResponse>('/api/v1/ai/assist', req)
+}
+
+export async function generateReport(req: ReportGenerateRequest): Promise<ReportGenerateResponse> {
+  if (USE_MOCK) {
+    await delay(500)
+    const now = new Date().toISOString()
+    const mode = req.mode
+    const title = req.title ?? 'InferenceAtlas Optimization Report'
+    const markdown = [
+      `# ${title}`,
+      '',
+      `- Mode: \`${mode}\``,
+      `- Generated at (UTC): \`${now}\``,
+      '',
+      '## Executive Summary',
+      mode === 'llm'
+        ? `- Plans included: ${req.llm_planning?.plans.length ?? 0}.`
+        : `- Offers included: ${req.catalog_ranking?.offers.length ?? 0}.`,
+      '',
+      '## Notes',
+      '- Mock report generated in frontend mode.',
+      '',
+    ].join('\n')
+    return {
+      report_id: `rep_mock_${Date.now().toString(36)}`,
+      generated_at_utc: now,
+      title,
+      mode,
+      sections: [
+        {
+          title: 'Executive Summary',
+          bullets: [
+            mode === 'llm'
+              ? `Plans included: ${req.llm_planning?.plans.length ?? 0}.`
+              : `Offers included: ${req.catalog_ranking?.offers.length ?? 0}.`,
+          ],
+        },
+      ],
+      chart_data: {},
+      metadata: {},
+      markdown,
+    }
+  }
+  return post<ReportGenerateResponse>('/api/v1/report/generate', req)
 }

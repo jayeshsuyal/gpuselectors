@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { Search, ArrowUpDown, ArrowUp, ArrowDown } from 'lucide-react'
@@ -32,6 +32,7 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
   const [sortKey, setSortKey] = useState<SortKey>('unit_price_usd')
   const [sortDir, setSortDir] = useState<SortDir>('asc')
   const [browseMode, setBrowseMode] = useState<'workload_first' | 'provider_first'>('workload_first')
+  const [scopeNotice, setScopeNotice] = useState('')
 
   const { register, watch, setValue } = useForm<CatalogFilterValues>({
     resolver: zodResolver(catalogFilterSchema),
@@ -106,6 +107,41 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
     return [...new Set(s.map((r) => r.unit_name))].sort()
   }, [rows, filters.workload_type, filters.provider, filters.model_name])
 
+  // Keep dependent filters valid as users switch browse direction or parent filters.
+  useEffect(() => {
+    if (filters.provider && !uniqueProviders.includes(filters.provider)) {
+      setValue('provider', '')
+      setScopeNotice('Filters updated to match current browse scope.')
+    }
+  }, [filters.provider, uniqueProviders, setValue])
+
+  useEffect(() => {
+    if (filters.workload_type && !uniqueWorkloads.includes(filters.workload_type)) {
+      setValue('workload_type', '')
+      setScopeNotice('Filters updated to match current browse scope.')
+    }
+  }, [filters.workload_type, uniqueWorkloads, setValue])
+
+  useEffect(() => {
+    if (filters.model_name && !uniqueModels.includes(filters.model_name)) {
+      setValue('model_name', '')
+      setScopeNotice('Filters updated to match current browse scope.')
+    }
+  }, [filters.model_name, uniqueModels, setValue])
+
+  useEffect(() => {
+    if (filters.unit_name && !uniqueUnits.includes(filters.unit_name)) {
+      setValue('unit_name', '')
+      setScopeNotice('Filters updated to match current browse scope.')
+    }
+  }, [filters.unit_name, uniqueUnits, setValue])
+
+  useEffect(() => {
+    if (!scopeNotice) return
+    const timer = window.setTimeout(() => setScopeNotice(''), 2200)
+    return () => window.clearTimeout(timer)
+  }, [scopeNotice])
+
   const COLS = [
     { key: 'provider' as SortKey, label: 'Provider' },
     { key: 'workload_type' as SortKey, label: 'Workload' },
@@ -128,16 +164,20 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
           <button
             key={opt.value}
             type="button"
-            onClick={() => setBrowseMode(opt.value)}
+            onClick={() => {
+              setBrowseMode(opt.value)
+              // Reset lower-granularity filters on mode switch to avoid stale intersections.
+              setValue('model_name', '')
+              setValue('unit_name', '')
+            }}
             className={cn(
               'rounded-full px-2.5 py-1 text-[11px] border transition-all duration-200',
-              browseMode === opt.value
-                ? 'text-[#c4b5fd]'
-                : 'border-white/[0.07] text-zinc-500 hover:text-zinc-300 hover:border-white/[0.12]'
+              browseMode !== opt.value && 'border-white/[0.07] text-zinc-500 hover:text-zinc-300 hover:border-white/[0.12]'
             )}
             style={browseMode === opt.value ? {
               background: 'rgba(124,92,252,0.10)',
               borderColor: 'rgba(124,92,252,0.30)',
+              color: 'var(--brand-hover)',
             } : {}}
           >
             {opt.label}
@@ -229,6 +269,16 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
           </>
         )}
       </div>
+      {scopeNotice && (
+        <div
+          role="status"
+          aria-live="polite"
+          className="scope-notice text-[11px] rounded-md px-2.5 py-1.5 inline-block"
+          style={{ color: 'var(--text-tertiary)', background: 'var(--bg-elevated)', border: '1px solid var(--border-default)' }}
+        >
+          {scopeNotice}
+        </div>
+      )}
 
       {/* Table — sticky header inside scroll container */}
       <div
@@ -248,12 +298,15 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
                   <th
                     key={i}
                     scope="col"
+                    tabIndex={key ? 0 : undefined}
+                    role={key ? 'button' : undefined}
                     className={cn(
                       'px-4 py-3 text-left text-[11px] font-semibold whitespace-nowrap select-none',
-                      key ? 'cursor-pointer transition-colors' : ''
+                      key ? 'cursor-pointer transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-[var(--brand)] focus-visible:ring-inset' : ''
                     )}
                     style={{ color: key === sortKey ? 'var(--brand-hover)' : 'var(--text-tertiary)' }}
                     onClick={key ? () => handleSort(key) : undefined}
+                    onKeyDown={key ? (e) => { if (e.key === 'Enter' || e.key === ' ') handleSort(key) } : undefined}
                   >
                     <div className="flex items-center gap-1.5">
                       {label}

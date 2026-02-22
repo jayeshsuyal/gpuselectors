@@ -5,7 +5,7 @@ from __future__ import annotations
 import csv
 import hashlib
 import io
-from collections import defaultdict
+from collections import Counter, defaultdict
 from datetime import datetime, timezone
 from typing import Any
 
@@ -35,7 +35,7 @@ from inference_atlas.catalog_ranking import (
     build_provider_diagnostics,
     run_catalog_ranking_with_relaxation,
 )
-from inference_atlas.data_loader import get_catalog_v2_rows
+from inference_atlas.data_loader import get_catalog_v2_metadata, get_catalog_v2_rows
 from inference_atlas.invoice_analyzer import analyze_invoice_csv
 from inference_atlas.mvp_planner import get_provider_compatibility, rank_configs
 
@@ -480,14 +480,65 @@ def _sections_to_markdown(title: str, mode: str, generated_at_utc: str, sections
     return "\n".join(lines).strip() + "\n"
 
 
+def _build_llm_report_chart_data(response: LLMPlanningResponse) -> dict[str, Any]:
+    confidence_counts = Counter(plan.confidence for plan in response.plans)
+    return {
+        "cost_by_rank": [
+            {
+                "rank": plan.rank,
+                "provider_id": plan.provider_id,
+                "provider_name": plan.provider_name,
+                "monthly_cost_usd": plan.monthly_cost_usd,
+                "score": plan.score,
+                "total_risk": plan.risk.total_risk,
+            }
+            for plan in response.plans
+        ],
+        "risk_breakdown": [
+            {
+                "rank": plan.rank,
+                "provider_id": plan.provider_id,
+                "risk_overload": plan.risk.risk_overload,
+                "risk_complexity": plan.risk.risk_complexity,
+                "total_risk": plan.risk.total_risk,
+            }
+            for plan in response.plans
+        ],
+        "confidence_distribution": dict(sorted(confidence_counts.items())),
+    }
+
+
+def _build_catalog_report_chart_data(response: CatalogRankingResponse) -> dict[str, Any]:
+    confidence_counts = Counter(offer.confidence for offer in response.offers)
+    return {
+        "cost_by_rank": [
+            {
+                "rank": offer.rank,
+                "provider": offer.provider,
+                "sku_name": offer.sku_name,
+                "monthly_estimate_usd": offer.monthly_estimate_usd,
+                "unit_price_usd": offer.unit_price_usd,
+                "unit_name": offer.unit_name,
+            }
+            for offer in response.offers
+        ],
+        "exclusion_breakdown": dict(response.exclusion_breakdown),
+        "relaxation_trace": list(response.relaxation_steps),
+        "confidence_distribution": dict(sorted(confidence_counts.items())),
+    }
+
+
 def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateResponse:
     generated_at_utc = datetime.now(timezone.utc).isoformat()
+    catalog_meta = get_catalog_v2_metadata()
     if payload.mode == "llm":
         assert payload.llm_planning is not None
         sections = _llm_report_sections(payload.llm_planning)
+        chart_data = _build_llm_report_chart_data(payload.llm_planning)
     else:
         assert payload.catalog_ranking is not None
         sections = _catalog_report_sections(payload.catalog_ranking)
+        chart_data = _build_catalog_report_chart_data(payload.catalog_ranking)
     markdown = _sections_to_markdown(
         title=payload.title,
         mode=payload.mode,
@@ -495,12 +546,20 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
         sections=sections,
     )
     report_hash = hashlib.sha1(markdown.encode("utf-8")).hexdigest()[:12]
+    metadata = {
+        "catalog_generated_at_utc": catalog_meta.get("generated_at_utc"),
+        "catalog_schema_version": catalog_meta.get("schema_version"),
+        "catalog_row_count": catalog_meta.get("row_count"),
+        "catalog_providers_synced_count": len(catalog_meta.get("providers_synced") or []),
+    }
     return ReportGenerateResponse(
         report_id=f"rep_{report_hash}",
         generated_at_utc=generated_at_utc,
         title=payload.title,
         mode=payload.mode,
         sections=sections,
+        chart_data=chart_data,
+        metadata=metadata,
         markdown=markdown,
     )
 

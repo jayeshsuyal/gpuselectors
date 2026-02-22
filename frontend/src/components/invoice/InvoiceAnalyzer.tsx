@@ -29,10 +29,15 @@ function DropZone({
     <div
       className={cn(
         'relative rounded-lg border-2 border-dashed p-8 text-center transition-colors cursor-pointer',
-        dragging
-          ? 'border-indigo-500 bg-indigo-950/30'
-          : 'border-zinc-700 bg-zinc-900/30 hover:border-zinc-600 hover:bg-zinc-900/50'
+        !dragging && 'border-zinc-700 bg-zinc-900/30 hover:border-zinc-600 hover:bg-zinc-900/50'
       )}
+      style={dragging ? { borderColor: 'rgba(124,92,252,0.45)', background: 'rgba(124,92,252,0.06)' } : {}}
+      tabIndex={file ? undefined : 0}
+      role={!file ? 'button' : undefined}
+      aria-label="Upload CSV invoice file"
+      onKeyDown={(e) => {
+        if ((e.key === 'Enter' || e.key === ' ') && !file) { e.preventDefault(); inputRef.current?.click() }
+      }}
       onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
       onDragLeave={() => setDragging(false)}
       onDrop={handleDrop}
@@ -48,13 +53,14 @@ function DropZone({
 
       {file ? (
         <div className="flex items-center justify-center gap-3">
-          <FileText className="h-5 w-5 text-indigo-400" />
+          <FileText className="h-5 w-5" style={{ color: 'var(--brand-hover)' }} />
           <div className="text-left">
             <div className="text-sm font-medium text-zinc-200">{file.name}</div>
             <div className="text-[11px] text-zinc-500">{(file.size / 1024).toFixed(1)} KB</div>
           </div>
           <button
             onClick={(e) => { e.stopPropagation(); onClear() }}
+            aria-label="Remove file"
             className="ml-2 p-1 rounded hover:bg-zinc-700 text-zinc-400 hover:text-zinc-200"
           >
             <X className="h-3.5 w-3.5" />
@@ -186,8 +192,8 @@ export function InvoiceAnalyzer(_props: InvoiceAnalyzerProps) {
                       <div className="w-24 text-xs text-zinc-300 font-medium">{provider}</div>
                       <div className="flex-1 bg-zinc-800 rounded-full h-2 overflow-hidden">
                         <div
-                          className="h-full bg-indigo-600 rounded-full"
-                          style={{ width: `${pct * 100}%` }}
+                          className="h-full rounded-full"
+                          style={{ width: `${pct * 100}%`, background: 'var(--brand)' }}
                         />
                       </div>
                       <div className="w-16 text-right text-xs font-bold text-zinc-100 font-numeric">

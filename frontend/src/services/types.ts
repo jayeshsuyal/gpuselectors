@@ -109,6 +109,9 @@ export interface CatalogRankingResponse {
   provider_diagnostics: ProviderDiagnostic[]
   excluded_count: number
   warnings: string[]
+  relaxation_applied?: boolean
+  relaxation_steps?: Array<Record<string, unknown>>
+  exclusion_breakdown?: Record<string, number>
 }
 
 // ─── Catalog Browse ───────────────────────────────────────────────────────────
@@ -233,4 +236,30 @@ export interface CopilotTurnResponse {
   follow_up_questions: string[]
   apply_payload: CopilotApplyPayload | null
   is_ready: boolean
+}
+
+// ─── Report Generation ────────────────────────────────────────────────────────
+
+export interface ReportSection {
+  title: string
+  bullets: string[]
+}
+
+export interface ReportGenerateRequest {
+  mode: 'llm' | 'catalog'
+  title?: string
+  include_charts?: boolean
+  llm_planning?: LLMPlanningResponse
+  catalog_ranking?: CatalogRankingResponse
+}
+
+export interface ReportGenerateResponse {
+  report_id: string
+  generated_at_utc: string
+  title: string
+  mode: 'llm' | 'catalog'
+  sections: ReportSection[]
+  chart_data: Record<string, unknown>
+  metadata: Record<string, unknown>
+  markdown: string
 }

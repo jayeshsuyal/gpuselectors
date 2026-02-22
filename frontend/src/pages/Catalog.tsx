@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback } from 'react'
-import { RefreshCw } from 'lucide-react'
+import { RefreshCw, Database } from 'lucide-react'
 import { CatalogTable } from '@/components/catalog/CatalogTable'
 import { browseCatalog } from '@/services/api'
 import type { CatalogRow } from '@/services/types'
@@ -15,9 +15,7 @@ export function CatalogPage() {
     browseCatalog({ signal })
       .then((res) => { setRows(res.rows); setLoading(false) })
       .catch((e: unknown) => {
-        if (e instanceof DOMException && e.name === 'AbortError') {
-          return
-        }
+        if (e instanceof DOMException && e.name === 'AbortError') return
         setError(e instanceof Error ? e.message : 'Failed to load catalog')
         setLoading(false)
       })
@@ -29,28 +27,56 @@ export function CatalogPage() {
     return () => controller.abort()
   }, [fetchCatalog])
 
+  const providerCount = new Set(rows.map((r) => r.provider)).size
+  const workloadCount = new Set(rows.map((r) => r.workload_type)).size
+
   return (
-    <div className="max-w-6xl mx-auto px-4 py-6 sm:px-6">
-      <div className="mb-6">
-        <h1 className="text-base font-semibold text-zinc-100">Pricing Catalog</h1>
-        <p className="text-xs text-zinc-500 mt-0.5">
-          Browse raw pricing data across all providers and workload types. Filter, sort, and export.
+    <div className="max-w-6xl mx-auto px-4 py-8 sm:px-6">
+      {/* ── Page header ── */}
+      <div className="mb-8 page-section">
+        <div className="eyebrow mb-2">Pricing Intelligence</div>
+        <h1 className="text-2xl font-bold tracking-tight mb-2">
+          <span className="text-gradient">Pricing</span>{' '}
+          <span style={{ color: 'var(--text-primary)' }}>Catalog</span>
+        </h1>
+        <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)' }}>
+          Browse raw inference pricing across all providers and workload types.
+          Filter, sort, and compare.
         </p>
+
+        {/* Stats strip */}
+        {!loading && rows.length > 0 && (
+          <div className="flex flex-wrap items-center gap-2 animate-enter section-delay-1">
+            <span className="stat-chip">
+              <Database className="h-3 w-3 opacity-60" />
+              {rows.length.toLocaleString()} entries
+            </span>
+            <span className="stat-chip">{providerCount} providers</span>
+            <span className="stat-chip">{workloadCount} workload types</span>
+          </div>
+        )}
       </div>
 
+      {/* ── Content ── */}
       {error ? (
-        <div className="rounded-md border border-red-800 bg-red-950/30 px-4 py-3 text-sm text-red-300 flex items-center justify-between">
+        <div
+          className="rounded-lg border px-4 py-3 text-sm flex items-center justify-between animate-enter"
+          style={{ borderColor: 'var(--danger-border)', background: 'var(--danger-bg)', color: 'var(--danger-text)' }}
+        >
           <span>{error}</span>
           <button
             onClick={() => fetchCatalog()}
-            className="flex items-center gap-1.5 text-xs text-red-400 hover:text-red-200 transition-colors ml-4 flex-shrink-0"
+            className="flex items-center gap-1.5 text-xs ml-4 flex-shrink-0 transition-colors hover:text-white"
+            style={{ color: 'var(--danger-text)' }}
           >
             <RefreshCw className="h-3 w-3" />
             Retry
           </button>
         </div>
       ) : (
-        <CatalogTable rows={rows} loading={loading} />
+        <div className="page-section section-delay-1">
+          <CatalogTable rows={rows} loading={loading} />
+        </div>
       )}
     </div>
   )

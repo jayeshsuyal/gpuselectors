@@ -1,17 +1,18 @@
 import { lazy, Suspense, useState } from 'react'
-import { ChevronDown, ChevronUp, Info, Trophy } from 'lucide-react'
+import { ChevronDown, ChevronUp, Info } from 'lucide-react'
 import { cn, formatUSD, formatPercent, riskLevel, confidenceLabel, billingModeLabel, capacityLabel } from '@/lib/utils'
 import { Badge } from '@/components/ui/badge'
 import { ProviderLogo, providerDisplayName } from '@/components/ui/provider-logo'
 import type { RankedPlan, RankedCatalogOffer, ProviderDiagnostic } from '@/services/types'
 import { ASSUMPTION_LABELS } from '@/lib/constants'
+
 const InsightsCharts = lazy(() =>
   import('@/components/optimize/InsightsCharts').then((module) => ({
     default: module.InsightsCharts,
   }))
 )
 
-// ─── Confidence badge ─────────────────────────────────────────────────────────
+// ─── Semantic badges ──────────────────────────────────────────────────────────
 
 function ConfidenceBadge({ confidence }: { confidence: string }) {
   const variant = confidence as 'high' | 'official' | 'medium' | 'estimated' | 'low' | 'vendor_list'
@@ -37,67 +38,100 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
 
   return (
     <div
-      style={{ animationDelay: `${index * 50}ms` }}
+      style={{
+        animationDelay: `${index * 50}ms`,
+        ...(isFirst
+          ? {
+              borderColor: 'rgba(124,92,252,0.28)',
+              background: 'rgba(124,92,252,0.04)',
+            }
+          : {
+              borderColor: 'rgba(255,255,255,0.06)',
+              background: 'var(--bg-elevated)',
+            }),
+      }}
       className={cn(
-        'rounded-lg border transition-all duration-200 animate-enter',
-        'hover:-translate-y-px hover:shadow-md',
-        isFirst
-          ? 'border-indigo-500/30 bg-indigo-950/20 shadow-[0_0_18px_rgba(99,102,241,0.12)] ring-1 ring-indigo-500/20'
-          : 'border-white/[0.07] bg-zinc-900/60 hover:border-white/[0.11]'
+        'relative rounded-lg border overflow-hidden transition-all duration-200 animate-enter',
+        'hover:-translate-y-px',
+        !isFirst && 'hover:border-white/[0.11]'
       )}
     >
-      <div className="p-4">
-        {/* Rank + header */}
-        <div className="flex items-start justify-between gap-3 mb-3">
-          <div className="flex items-center gap-2.5">
-            <div
-              className={cn(
-                'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-                isFirst
-                  ? 'bg-indigo-600 text-white shadow-glow-sm'
-                  : 'bg-zinc-800/80 text-zinc-400 border border-white/[0.06]'
+      {/* Brand gradient top accent for #1 */}
+      {isFirst && (
+        <div className="h-[1.5px]" style={{ background: 'var(--brand-gradient)' }} />
+      )}
+
+      <div className="p-5">
+        {/* Header: rank label + provider + cost */}
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex-1 min-w-0">
+            {/* Rank + best-value tag */}
+            <div className="flex items-center gap-2 mb-2">
+              <span
+                className="text-[10px] font-mono font-bold tracking-[0.12em]"
+                style={{ color: isFirst ? 'var(--brand)' : 'var(--text-disabled)' }}
+              >
+                #{String(plan.rank).padStart(2, '0')}
+              </span>
+              {isFirst && (
+                <span
+                  className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
+                  style={{ background: 'rgba(124,92,252,0.15)', color: 'var(--brand-hover)' }}
+                >
+                  Best value
+                </span>
               )}
-            >
-              {isFirst ? <Trophy className="w-3.5 h-3.5" /> : plan.rank}
             </div>
-            <div>
-              <div className="text-sm font-semibold text-zinc-100 flex items-center gap-2">
-                <ProviderLogo provider={plan.provider_id} size="sm" />
-                <span>{providerDisplayName(plan.provider_id) || plan.provider_name}</span>
-              </div>
-              <div className="text-[11px] text-zinc-500 font-mono mt-0.5">{plan.offering_id}</div>
+            {/* Provider */}
+            <div className="flex items-center gap-2">
+              <ProviderLogo provider={plan.provider_id} size="sm" />
+              <span className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>
+                {providerDisplayName(plan.provider_id) || plan.provider_name}
+              </span>
+            </div>
+            <div className="text-[10px] font-mono mt-1 truncate" style={{ color: 'var(--text-disabled)' }}>
+              {plan.offering_id}
             </div>
           </div>
+
+          {/* Cost — hero number */}
           <div className="text-right flex-shrink-0">
-            <div className={cn(
-              'text-lg font-bold font-numeric',
-              isFirst ? 'text-indigo-200' : 'text-zinc-100'
-            )}>
+            <div className="micro-label mb-1">est. monthly</div>
+            <div
+              className="font-bold font-numeric leading-none"
+              style={{
+                fontSize: isFirst ? '1.875rem' : '1.375rem',
+                letterSpacing: '-0.035em',
+                color: isFirst ? 'var(--brand-hover)' : 'var(--text-primary)',
+              }}
+            >
               {formatUSD(plan.monthly_cost_usd, 0)}
             </div>
-            <div className="text-[10px] text-zinc-500">/ month</div>
           </div>
         </div>
 
         {/* Badges */}
-        <div className="flex flex-wrap gap-1.5 mb-3">
+        <div className="flex flex-wrap gap-1.5">
           <Badge variant="default">{billingModeLabel(plan.billing_mode)}</Badge>
           <ConfidenceBadge confidence={plan.confidence} />
           <RiskBadge totalRisk={plan.risk.total_risk} />
           {plan.utilization_at_peak !== null && (
-            <Badge variant="default">
-              {formatPercent(plan.utilization_at_peak)} util
-            </Badge>
+            <Badge variant="default">{formatPercent(plan.utilization_at_peak)} util</Badge>
           )}
         </div>
 
-        {/* Why */}
-        <p className="text-xs text-zinc-400 leading-relaxed">{plan.why}</p>
+        {/* Why text */}
+        <p className="text-xs leading-relaxed mt-3" style={{ color: 'var(--text-secondary)' }}>
+          {plan.why}
+        </p>
 
-        {/* Expand assumptions */}
+        {/* Expand trigger */}
         <button
           onClick={() => setExpanded(!expanded)}
-          className="flex items-center gap-1.5 mt-3 text-[11px] text-zinc-500 hover:text-zinc-300 transition-colors"
+          aria-expanded={expanded}
+          aria-controls={`assumptions-${plan.offering_id}`}
+          className="flex items-center gap-1.5 mt-3 text-[11px] transition-colors hover:opacity-100"
+          style={{ color: 'var(--text-disabled)' }}
         >
           <Info className="h-3 w-3" />
           Assumptions
@@ -105,26 +139,34 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
         </button>
       </div>
 
+      {/* Assumptions panel */}
       {expanded && (
-        <div className="px-4 pb-3 border-t border-white/[0.05] pt-3 animate-enter-fast">
-          <div className="grid grid-cols-3 gap-x-4 gap-y-1.5">
+        <div
+          id={`assumptions-${plan.offering_id}`}
+          className="px-5 pb-4 pt-3 animate-enter-fast"
+          style={{ borderTop: '1px solid var(--border-subtle)' }}
+        >
+          <div className="grid grid-cols-3 gap-x-4 gap-y-3">
             {Object.entries(plan.assumptions).map(([key, val]) => (
               <div key={key}>
-                <div className="text-[10px] text-zinc-500">{ASSUMPTION_LABELS[key] ?? key}</div>
-                <div className="text-xs font-mono text-zinc-300">{val}</div>
+                <div className="micro-label mb-0.5">{ASSUMPTION_LABELS[key] ?? key}</div>
+                <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>{val}</div>
               </div>
             ))}
           </div>
-          <div className="mt-2 pt-2 border-t border-white/[0.05] grid grid-cols-2 gap-x-4">
+          <div
+            className="mt-3 pt-3 grid grid-cols-2 gap-x-4"
+            style={{ borderTop: '1px solid var(--border-subtle)' }}
+          >
             <div>
-              <div className="text-[10px] text-zinc-500">Overload risk</div>
-              <div className="text-xs font-mono text-zinc-300">
+              <div className="micro-label mb-0.5">Overload risk</div>
+              <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                 {formatPercent(plan.risk.risk_overload)}
               </div>
             </div>
             <div>
-              <div className="text-[10px] text-zinc-500">Complexity risk</div>
-              <div className="text-xs font-mono text-zinc-300">
+              <div className="micro-label mb-0.5">Complexity risk</div>
+              <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
                 {formatPercent(plan.risk.risk_complexity)}
               </div>
             </div>
@@ -140,51 +182,74 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
 function NonLLMResultRow({ offer, isFirst, index }: { offer: RankedCatalogOffer; isFirst: boolean; index: number }) {
   return (
     <div
-      style={{ animationDelay: `${index * 40}ms` }}
+      style={{
+        animationDelay: `${index * 40}ms`,
+        ...(isFirst
+          ? {
+              borderColor: 'rgba(124,92,252,0.28)',
+              background: 'rgba(124,92,252,0.04)',
+            }
+          : {
+              borderColor: 'rgba(255,255,255,0.06)',
+              background: 'var(--bg-elevated)',
+            }),
+      }}
       className={cn(
-        'flex items-center gap-4 px-4 py-3 rounded-lg border transition-all duration-200 animate-enter',
-        'hover:-translate-y-px hover:shadow-md',
-        isFirst
-          ? 'border-indigo-500/30 bg-indigo-950/20 shadow-[0_0_14px_rgba(99,102,241,0.10)] ring-1 ring-indigo-500/20'
-          : 'border-white/[0.07] bg-zinc-900/60 hover:border-white/[0.11]'
+        'relative flex items-center gap-4 px-4 py-3.5 rounded-lg border overflow-hidden',
+        'transition-all duration-200 animate-enter hover:-translate-y-px',
+        !isFirst && 'hover:border-white/[0.11]'
       )}
     >
+      {/* Left accent strip for #1 */}
+      {isFirst && (
+        <div
+          className="absolute left-0 top-0 bottom-0 w-[2px]"
+          style={{ background: 'var(--brand-gradient)' }}
+        />
+      )}
+
       {/* Rank */}
-      <div
-        className={cn(
-          'flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold',
-          isFirst
-            ? 'bg-indigo-600 text-white shadow-glow-sm'
-            : 'bg-zinc-800/80 text-zinc-400 border border-white/[0.06]'
-        )}
+      <span
+        className="text-[10px] font-mono font-bold tracking-[0.12em] flex-shrink-0 w-7"
+        style={{ color: isFirst ? 'var(--brand)' : 'var(--text-disabled)' }}
       >
-        {isFirst ? <Trophy className="w-3.5 h-3.5" /> : offer.rank}
-      </div>
+        #{String(offer.rank).padStart(2, '0')}
+      </span>
 
       {/* Provider + SKU */}
       <div className="flex-1 min-w-0">
-        <div className="text-sm font-medium text-zinc-100 flex items-center gap-2">
+        <div className="flex items-center gap-2">
           <ProviderLogo provider={offer.provider} size="sm" />
-          <span>{providerDisplayName(offer.provider)}</span>
+          <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+            {providerDisplayName(offer.provider)}
+          </span>
         </div>
-        <div className="text-[11px] text-zinc-500 font-mono truncate">{offer.sku_name}</div>
+        <div className="text-[10px] font-mono truncate mt-0.5" style={{ color: 'var(--text-disabled)' }}>
+          {offer.sku_name}
+        </div>
       </div>
 
       {/* Unit price */}
       <div className="text-right hidden sm:block">
-        <div className="text-xs text-zinc-300 font-numeric">{formatUSD(offer.unit_price_usd, 4)}</div>
-        <div className="text-[10px] text-zinc-500">/{offer.unit_name}</div>
+        <div className="micro-label mb-0.5">unit price</div>
+        <div className="text-xs font-mono" style={{ color: 'var(--text-secondary)' }}>
+          {formatUSD(offer.unit_price_usd, 4)}/{offer.unit_name}
+        </div>
       </div>
 
-      {/* Monthly estimate */}
-      <div className="text-right">
-        <div className={cn(
-          'text-sm font-bold font-numeric',
-          isFirst ? 'text-indigo-200' : 'text-zinc-100'
-        )}>
+      {/* Monthly estimate — hero number */}
+      <div className="text-right flex-shrink-0">
+        <div className="micro-label mb-0.5">monthly est.</div>
+        <div
+          className="font-bold font-numeric leading-none"
+          style={{
+            fontSize: isFirst ? '1.375rem' : '1rem',
+            letterSpacing: '-0.025em',
+            color: isFirst ? 'var(--brand-hover)' : 'var(--text-primary)',
+          }}
+        >
           {offer.monthly_estimate_usd !== null ? formatUSD(offer.monthly_estimate_usd) : '—'}
         </div>
-        <div className="text-[10px] text-zinc-500">/ month</div>
       </div>
 
       {/* Badges */}
@@ -193,10 +258,9 @@ function NonLLMResultRow({ offer, isFirst, index }: { offer: RankedCatalogOffer;
         <CapacityBadge check={offer.capacity_check} />
       </div>
 
-      {/* Replicas */}
       {offer.required_replicas !== null && (
-        <div className="text-[11px] text-zinc-500 hidden md:block">
-          {offer.required_replicas}× replica{offer.required_replicas !== 1 ? 's' : ''}
+        <div className="text-[10px] font-mono hidden md:block flex-shrink-0" style={{ color: 'var(--text-disabled)' }}>
+          {offer.required_replicas}× rep
         </div>
       )}
     </div>
@@ -215,7 +279,10 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: ProviderDiagnostic[] }
     <div className="border border-white/[0.06] rounded-lg overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
-        className="w-full flex items-center justify-between px-4 py-2.5 text-xs text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.03] transition-colors"
+        aria-expanded={open}
+        aria-controls="diagnostics-list"
+        className="w-full flex items-center justify-between px-4 py-2.5 text-xs transition-colors hover:bg-white/[0.02]"
+        style={{ color: 'var(--text-tertiary)' }}
       >
         <span>
           {excluded.length} provider{excluded.length !== 1 ? 's' : ''} excluded or not selected
@@ -223,7 +290,11 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: ProviderDiagnostic[] }
         {open ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
       </button>
       {open && (
-        <div className="border-t border-white/[0.05] divide-y divide-white/[0.04] animate-enter-fast">
+        <div
+          id="diagnostics-list"
+          className="divide-y animate-enter-fast"
+          style={{ borderTop: '1px solid var(--border-subtle)', borderColor: 'var(--border-subtle)' }}
+        >
           {diagnostics.map((d) => (
             <div key={d.provider} className="flex items-center gap-3 px-4 py-2">
               <Badge
@@ -236,11 +307,11 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: ProviderDiagnostic[] }
               </Badge>
               <div className="w-36 flex items-center gap-2">
                 <ProviderLogo provider={d.provider} size="sm" />
-                <span className="text-xs font-medium text-zinc-300 truncate">
+                <span className="text-xs font-medium truncate" style={{ color: 'var(--text-secondary)' }}>
                   {providerDisplayName(d.provider)}
                 </span>
               </div>
-              <span className="text-[11px] text-zinc-500 flex-1">{d.reason}</span>
+              <span className="text-[11px] flex-1" style={{ color: 'var(--text-tertiary)' }}>{d.reason}</span>
             </div>
           ))}
         </div>
@@ -271,8 +342,10 @@ export function ResultsTable({
   if (mode === 'llm' && plans.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-zinc-500 text-sm mb-1">No feasible configurations found</div>
-        <div className="text-zinc-600 text-xs leading-relaxed max-w-xs">
+        <div className="text-sm mb-1" style={{ color: 'var(--text-tertiary)' }}>
+          No feasible configurations found
+        </div>
+        <div className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-disabled)' }}>
           Try adding more providers, selecting a smaller model size, or reducing your daily token volume.
         </div>
       </div>
@@ -282,38 +355,43 @@ export function ResultsTable({
   if (mode === 'non-llm' && offers.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-zinc-500 text-sm mb-1">No offers found for this workload</div>
-        <div className="text-zinc-600 text-xs leading-relaxed max-w-xs">
+        <div className="text-sm mb-1" style={{ color: 'var(--text-tertiary)' }}>
+          No offers found for this workload
+        </div>
+        <div className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-disabled)' }}>
           Try removing provider filters, switching to &ldquo;All units&rdquo; (browse mode), or setting budget to 0.
         </div>
       </div>
     )
   }
 
+  const count = mode === 'llm' ? plans.length : offers.length
+
   return (
     <div className="space-y-3">
       {/* Warnings */}
       {warnings.map((w, i) => (
-        <div key={i} className="flex gap-2 items-start rounded-lg border border-amber-800/40 bg-amber-950/20 px-3 py-2">
-          <span className="text-amber-400 text-xs">⚠</span>
-          <span className="text-xs text-amber-300">{w}</span>
+        <div
+          key={i}
+          className="flex gap-2 items-start rounded-lg border px-3 py-2"
+          style={{ borderColor: 'var(--warning-border)', background: 'var(--warning-bg)' }}
+        >
+          <span className="text-xs" style={{ color: 'var(--warning)' }}>⚠</span>
+          <span className="text-xs" style={{ color: 'var(--warning-text)' }}>{w}</span>
         </div>
       ))}
 
-      {/* Summary */}
-      <div className="flex items-center gap-2 text-[11px] text-zinc-500">
-        <span>
-          {mode === 'llm' ? plans.length : offers.length} result{(mode === 'llm' ? plans.length : offers.length) !== 1 ? 's' : ''}
-        </span>
-        {excludedCount > 0 && (
-          <span>· {excludedCount} excluded</span>
-        )}
+      {/* Summary line */}
+      <div className="flex items-center gap-2 text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+        <span style={{ color: 'var(--text-tertiary)' }}>{count}</span>
+        {' '}result{count !== 1 ? 's' : ''}
+        {excludedCount > 0 && <span>· {excludedCount} excluded</span>}
       </div>
 
-      {/* Insights */}
+      {/* Insights charts */}
       <Suspense
         fallback={
-          <div className="rounded-lg border border-white/[0.06] bg-zinc-900/50 p-4 text-xs text-zinc-500">
+          <div className="rounded-lg border p-4 text-xs" style={{ borderColor: 'var(--border-default)', color: 'var(--text-disabled)' }}>
             Loading insights…
           </div>
         }
@@ -321,7 +399,7 @@ export function ResultsTable({
         <InsightsCharts mode={mode} plans={plans} offers={offers} />
       </Suspense>
 
-      {/* Results */}
+      {/* Result cards */}
       {mode === 'llm'
         ? plans.map((plan, i) => (
             <LLMResultCard key={plan.offering_id} plan={plan} isFirst={i === 0} index={i} />

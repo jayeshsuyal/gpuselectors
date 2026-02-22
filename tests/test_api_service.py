@@ -272,6 +272,33 @@ def test_run_generate_report_llm_mode_produces_markdown() -> None:
     assert report.report_id.startswith("rep_")
     assert "LLM Test Report" in report.markdown
     assert "## Executive Summary" in report.markdown
+    assert set(report.chart_data) >= {"cost_by_rank", "risk_breakdown", "confidence_distribution"}
+    assert isinstance(report.chart_data["cost_by_rank"], list)
+    assert set(report.metadata) >= {
+        "catalog_generated_at_utc",
+        "catalog_schema_version",
+        "catalog_row_count",
+        "catalog_providers_synced_count",
+    }
+    if report.chart_data["cost_by_rank"]:
+        first = report.chart_data["cost_by_rank"][0]
+        assert set(first) == {
+            "rank",
+            "provider_id",
+            "provider_name",
+            "monthly_cost_usd",
+            "score",
+            "total_risk",
+        }
+    if report.chart_data["risk_breakdown"]:
+        first = report.chart_data["risk_breakdown"][0]
+        assert set(first) == {
+            "rank",
+            "provider_id",
+            "risk_overload",
+            "risk_complexity",
+            "total_risk",
+        }
 
 
 def test_run_generate_report_catalog_mode_produces_markdown() -> None:
@@ -297,3 +324,27 @@ def test_run_generate_report_catalog_mode_produces_markdown() -> None:
     assert report.mode == "catalog"
     assert "Catalog Test Report" in report.markdown
     assert "## Top Recommendations" in report.markdown
+    assert set(report.chart_data) >= {
+        "cost_by_rank",
+        "exclusion_breakdown",
+        "relaxation_trace",
+        "confidence_distribution",
+    }
+    assert set(report.metadata) >= {
+        "catalog_generated_at_utc",
+        "catalog_schema_version",
+        "catalog_row_count",
+        "catalog_providers_synced_count",
+    }
+    if report.chart_data["cost_by_rank"]:
+        first = report.chart_data["cost_by_rank"][0]
+        assert set(first) == {
+            "rank",
+            "provider",
+            "sku_name",
+            "monthly_estimate_usd",
+            "unit_price_usd",
+            "unit_name",
+        }
+    assert isinstance(report.chart_data["exclusion_breakdown"], dict)
+    assert isinstance(report.chart_data["relaxation_trace"], list)

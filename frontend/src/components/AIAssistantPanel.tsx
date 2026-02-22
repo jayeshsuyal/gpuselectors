@@ -52,17 +52,24 @@ function MessageBubble({ msg }: { msg: AIMessage }) {
   return (
     <div className={cn('flex gap-2', isUser ? 'justify-end' : 'justify-start')}>
       {!isUser && (
-        <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center mt-0.5">
-          <Bot className="w-3.5 h-3.5 text-indigo-300" />
+        <div
+          className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center mt-0.5"
+          style={{ background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.35)' }}
+        >
+          <Bot className="w-3.5 h-3.5" style={{ color: 'var(--brand-hover)' }} />
         </div>
       )}
       <div
-        className={cn(
-          'rounded-lg px-3 py-2 text-xs leading-relaxed max-w-[85%]',
-          isUser
-            ? 'bg-indigo-600 text-white'
-            : 'bg-zinc-800 text-zinc-200 border border-zinc-700'
-        )}
+        className={cn('rounded-lg px-3 py-2 text-xs leading-relaxed max-w-[85%]')}
+        style={isUser
+          ? { background: 'var(--brand)', color: '#fff' }
+          : {
+              background: 'var(--bg-elevated)',
+              color: 'var(--text-secondary)',
+              border: '1px solid var(--border-default)',
+              borderLeft: '2px solid rgba(124,92,252,0.35)',
+            }
+        }
       >
         {renderMarkdown(msg.content)}
       </div>
@@ -188,12 +195,18 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-3 py-2.5 border-b border-zinc-800 flex items-center gap-2">
-        <div className="w-5 h-5 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center">
-          <Bot className="w-3 h-3 text-indigo-300" />
+      <div
+        className="px-3 py-2.5 flex items-center gap-2"
+        style={{ borderBottom: '1px solid var(--border-subtle)' }}
+      >
+        <div
+          className="w-5 h-5 rounded-full flex items-center justify-center"
+          style={{ background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.35)' }}
+        >
+          <Bot className="w-3 h-3" style={{ color: 'var(--brand-hover)' }} />
         </div>
-        <span className="text-xs font-semibold text-zinc-300">Ask IA</span>
-        <span className="ml-auto text-[10px] text-zinc-600 font-mono">AI</span>
+        <span className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Ask IA</span>
+        <span className="ml-auto micro-label">AI</span>
       </div>
 
       {/* Messages */}
@@ -203,7 +216,7 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
       >
         {messages.length === 0 && (
           <div className="space-y-3">
-            <p className="text-[11px] text-zinc-500 leading-relaxed">
+            <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
               Ask anything about inference pricing, risk scores, or provider comparisons.
             </p>
             <div className="space-y-1.5">
@@ -211,7 +224,7 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
                 <button
                   key={p}
                   onClick={() => sendStarter(p)}
-                  className="w-full text-left text-[11px] px-2.5 py-1.5 rounded-md border border-zinc-800 text-zinc-400 hover:text-zinc-200 hover:border-zinc-700 hover:bg-zinc-800/50 transition-colors"
+                  className="w-full text-left text-[11px] px-2.5 py-1.5 rounded-md ai-starter-btn"
                 >
                   {p}
                 </button>
@@ -224,18 +237,21 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
         ))}
         {loading && (
           <div className="flex gap-2 justify-start">
-            <div className="flex-shrink-0 w-6 h-6 rounded-full bg-indigo-900 border border-indigo-700 flex items-center justify-center">
-              <Bot className="w-3.5 h-3.5 text-indigo-300" />
+            <div
+              className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center"
+              style={{ background: 'rgba(124,92,252,0.15)', border: '1px solid rgba(124,92,252,0.35)' }}
+            >
+              <Bot className="w-3.5 h-3.5" style={{ color: 'var(--brand-hover)' }} />
             </div>
-            <div className="bg-zinc-800 border border-zinc-700 rounded-lg px-3 py-2">
-              <Loader2 className="w-3.5 h-3.5 text-zinc-400 animate-spin" />
+            <div className="rounded-lg px-3 py-2" style={{ background: 'var(--bg-elevated)', border: '1px solid var(--border-default)' }}>
+              <Loader2 className="w-3.5 h-3.5 animate-spin" style={{ color: 'var(--text-disabled)' }} />
             </div>
           </div>
         )}
       </div>
 
       {/* Input */}
-      <div className="p-3 border-t border-zinc-800">
+      <div className="p-3" style={{ borderTop: '1px solid var(--border-subtle)' }}>
         <form onSubmit={handleSubmit(onSubmit)} className="relative">
           <Textarea
             {...register('message')}
@@ -253,7 +269,7 @@ export function AIAssistantPanel({ context }: AIAssistantPanelProps) {
             size="icon-sm"
             variant="ghost"
             disabled={loading}
-            className="absolute right-2 bottom-2 h-6 w-6 text-zinc-400 hover:text-indigo-400"
+            className="absolute right-2 bottom-2 h-6 w-6 ai-send-btn"
           >
             <Send className="h-3 w-3" />
           </Button>

@@ -73,6 +73,7 @@ export type AIChatValues = z.infer<typeof aiChatSchema>
 export const catalogFilterSchema = z.object({
   workload_type: z.string().default(''),
   provider: z.string().default(''),
+  model_name: z.string().default(''),
   unit_name: z.string().default(''),
   search: z.string().default(''),
 })
