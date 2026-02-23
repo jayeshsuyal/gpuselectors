@@ -30,6 +30,13 @@ def _coerce_row(provider_id: str, row: dict[str, Any], source_kind: str) -> Cano
     if not source_url:
         source_url = f"api:{provider_id}"
 
+    throughput_value_raw = row.get("throughput_value")
+    throughput_value: float | None = None
+    if throughput_value_raw not in (None, "", "null"):
+        throughput_value = float(throughput_value_raw)
+        if throughput_value <= 0:
+            throughput_value = None
+
     return CanonicalPricingRow(
         provider=str(row.get("provider") or provider_id),
         workload_type=str(row.get("workload_type") or ""),
@@ -44,6 +51,8 @@ def _coerce_row(provider_id: str, row: dict[str, Any], source_kind: str) -> Cano
         source_date=str(row.get("source_date") or ""),
         confidence=str(row.get("confidence") or "official"),
         source_kind=source_kind,
+        throughput_value=throughput_value,
+        throughput_unit=(str(row.get("throughput_unit") or "").strip() or None),
     )
 
 

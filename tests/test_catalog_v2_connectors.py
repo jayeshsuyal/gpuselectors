@@ -5,6 +5,7 @@ from inference_atlas.catalog_v2.connectors import normalized_catalog
 from inference_atlas.catalog_v2.connectors import API_CONNECTORS
 from inference_atlas.catalog_v2.schema import CanonicalPricingRow
 from inference_atlas.catalog_v2.connectors import list_csv_providers
+from inference_atlas.catalog_v2.connectors import provider_csv
 
 
 def test_fetch_rows_for_provider_uses_api_when_available(monkeypatch) -> None:
@@ -34,9 +35,9 @@ def test_fetch_rows_for_provider_uses_api_when_available(monkeypatch) -> None:
     assert rows[0].sku_key == "api_row"
 
 
-def test_fetch_rows_for_provider_falls_back_when_api_empty(monkeypatch) -> None:
+def test_fetch_rows_for_provider_falls_back_to_provider_csv_when_api_empty(monkeypatch) -> None:
     monkeypatch.setitem(API_CONNECTORS, "fal_ai", lambda: [])
-    expected = normalized_catalog.fetch_rows_for_provider("fal_ai")
+    expected = provider_csv.fetch_rows_for_provider("fal_ai")
     rows = fetch_rows_for_provider("fal_ai")
     assert rows
     assert rows == expected
@@ -52,3 +53,17 @@ def test_list_csv_providers_detects_provider_files() -> None:
     providers = list_csv_providers()
     assert "openai" in providers
     assert "fireworks" in providers
+
+
+def test_provider_csv_connector_maps_throughput_fields(tmp_path, monkeypatch) -> None:
+    csv_path = tmp_path / "demo.csv"
+    csv_path.write_text(
+        "workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence\n"
+        "speech_to_text,demo,per_minute,demo_1,Demo SKU,demo_model,0.01,audio_min,120,per_minute,,,,global,,https://example.com,2026-02-18,high\n",
+        encoding="utf-8",
+    )
+    monkeypatch.setattr(provider_csv, "PROVIDERS_CSV_DIR", tmp_path)
+    rows = provider_csv.fetch_rows_for_provider("demo")
+    assert len(rows) == 1
+    assert rows[0].throughput_value == 120.0
+    assert rows[0].throughput_unit == "per_minute"

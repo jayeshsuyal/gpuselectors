@@ -27,3 +27,5 @@ def test_get_catalog_v2_metadata_has_core_fields() -> None:
     assert "generated_at_utc" in meta
     assert isinstance(meta.get("row_count"), int)
     assert isinstance(meta.get("providers_synced"), list)
+    assert isinstance(meta.get("price_deltas_changed_rows"), int)
+    assert isinstance(meta.get("price_deltas_matched_rows"), int)

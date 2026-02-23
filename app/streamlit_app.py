@@ -479,6 +479,16 @@ with opt_tab:
                             ),
                             "replicas": ranked_row.required_replicas,
                             "capacity_check": ranked_row.capacity_check,
+                            "price_change_abs_usd": (
+                                round(ranked_row.price_change_abs_usd, 8)
+                                if ranked_row.price_change_abs_usd is not None
+                                else None
+                            ),
+                            "price_change_pct": (
+                                round(ranked_row.price_change_pct, 4)
+                                if ranked_row.price_change_pct is not None
+                                else None
+                            ),
                             "risk": "N/A",
                         }
                     )

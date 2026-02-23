@@ -58,6 +58,16 @@ def fetch_rows_for_provider(provider_id: str) -> list[CanonicalPricingRow]:
                 continue
             if unit_price_usd <= 0:
                 continue
+            throughput_raw = (row.get("throughput_value") or "").strip()
+            throughput_value: float | None = None
+            if throughput_raw:
+                try:
+                    throughput_value = float(throughput_raw)
+                except ValueError:
+                    throughput_value = None
+                else:
+                    if throughput_value <= 0:
+                        throughput_value = None
 
             out.append(
                 CanonicalPricingRow(
@@ -74,6 +84,8 @@ def fetch_rows_for_provider(provider_id: str) -> list[CanonicalPricingRow]:
                     source_date=(row.get("source_date") or "").strip(),
                     confidence=(row.get("confidence") or "").strip() or "estimated",
                     source_kind="provider_csv",
+                    throughput_value=throughput_value,
+                    throughput_unit=((row.get("throughput_unit") or "").strip() or None),
                 )
             )
     return out

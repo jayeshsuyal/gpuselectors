@@ -78,6 +78,7 @@ MVP_CATALOG_SCHEMA_FILES = {
 HUGGINGFACE_CATALOG_FILE = _project_root / "data" / "huggingface_models.json"
 HUGGINGFACE_SCHEMA_FILE = _project_root / "data" / "huggingface_models.schema.json"
 CATALOG_V2_FILE = _project_root / "data" / "catalog_v2" / "pricing_catalog.json"
+CATALOG_V2_DELTAS_FILE = _project_root / "data" / "catalog_v2" / "pricing_deltas.json"
 
 REQUIRED_COLUMNS = {
     "workload_type",
@@ -163,6 +164,9 @@ class CatalogV2Row:
     source_kind: str
     throughput_value: float | None = None
     throughput_unit: str | None = None
+    previous_unit_price_usd: float | None = None
+    price_change_abs_usd: float | None = None
+    price_change_pct: float | None = None
 
 
 _pricing_records_cache: list[PricingRecord] | None = None
@@ -350,10 +354,68 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
     if not isinstance(rows, list):
         raise ValueError(f"{CATALOG_V2_FILE} rows must be a list")
 
+    deltas_payload = (
+        _load_json(CATALOG_V2_DELTAS_FILE)
+        if CATALOG_V2_DELTAS_FILE.exists()
+        else {}
+    )
+    delta_lookup: dict[tuple[str, str, str, str], dict[str, Any]] = {}
+    matched_rows = int(deltas_payload.get("matched_rows", 0) or 0)
+    changed_rows = int(deltas_payload.get("changed_rows", 0) or 0)
+    if matched_rows < 0 or changed_rows < 0 or changed_rows > matched_rows:
+        raise ValueError(
+            f"{CATALOG_V2_DELTAS_FILE}: invalid counts "
+            f"(matched_rows={matched_rows}, changed_rows={changed_rows})"
+        )
+    raw_changes = deltas_payload.get("changes", [])
+    if isinstance(raw_changes, list):
+        for change in raw_changes:
+            if not isinstance(change, dict):
+                continue
+            key = (
+                str(change.get("provider") or "").strip(),
+                str(change.get("sku_key") or "").strip(),
+                str(change.get("unit_name") or "").strip(),
+                str(change.get("region") or "").strip(),
+            )
+            if not all(key):
+                continue
+            try:
+                previous_price = change.get("previous_unit_price_usd")
+                current_price = change.get("unit_price_usd")
+                if previous_price not in (None, "", "null"):
+                    float(previous_price)
+                if current_price not in (None, "", "null"):
+                    float(current_price)
+                abs_change = change.get("price_change_abs_usd")
+                if abs_change not in (None, "", "null"):
+                    float(abs_change)
+                pct_change = change.get("price_change_pct")
+                if pct_change not in (None, "", "null"):
+                    float(pct_change)
+            except (TypeError, ValueError) as exc:
+                raise ValueError(
+                    f"{CATALOG_V2_DELTAS_FILE}: invalid numeric value for key={key}: {exc}"
+                ) from exc
+            delta_lookup[key] = change
+
+    if raw_changes and matched_rows > 0 and len(delta_lookup) != len(raw_changes):
+        raise ValueError(
+            f"{CATALOG_V2_DELTAS_FILE}: duplicate or invalid delta keys "
+            f"(raw_changes={len(raw_changes)}, unique_keys={len(delta_lookup)})"
+        )
+
     parsed: list[CatalogV2Row] = []
     for idx, row in enumerate(rows, start=1):
         if not isinstance(row, dict):
             continue
+        row_key = (
+            str(row.get("provider") or "").strip(),
+            str(row.get("sku_key") or "").strip(),
+            str(row.get("unit_name") or "").strip(),
+            str(row.get("region") or "").strip(),
+        )
+        delta_row = delta_lookup.get(row_key, {})
         try:
             parsed.append(
                 CatalogV2Row(
@@ -378,10 +440,52 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
                     throughput_unit=(
                         str(row.get("throughput_unit", "")).strip() or None
                     ),
+                    previous_unit_price_usd=(
+                        float(row["previous_unit_price_usd"])
+                        if row.get("previous_unit_price_usd") not in (None, "", "null")
+                        else (
+                            float(delta_row["previous_unit_price_usd"])
+                            if delta_row.get("previous_unit_price_usd")
+                            not in (None, "", "null")
+                            else None
+                        )
+                    ),
+                    price_change_abs_usd=(
+                        float(row["price_change_abs_usd"])
+                        if row.get("price_change_abs_usd") not in (None, "", "null")
+                        else (
+                            float(delta_row["price_change_abs_usd"])
+                            if delta_row.get("price_change_abs_usd")
+                            not in (None, "", "null")
+                            else None
+                        )
+                    ),
+                    price_change_pct=(
+                        float(row["price_change_pct"])
+                        if row.get("price_change_pct") not in (None, "", "null")
+                        else (
+                            float(delta_row["price_change_pct"])
+                            if delta_row.get("price_change_pct") not in (None, "", "null")
+                            else None
+                        )
+                    ),
                 )
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError(f"{CATALOG_V2_FILE}: invalid row at index {idx}: {exc}") from exc
+
+    if delta_lookup:
+        catalog_keys = {
+            (row.provider, row.sku_key, row.unit_name, row.region)
+            for row in parsed
+        }
+        unknown_delta_keys = sorted(set(delta_lookup) - catalog_keys)
+        if unknown_delta_keys:
+            sample = unknown_delta_keys[0]
+            raise ValueError(
+                f"{CATALOG_V2_DELTAS_FILE}: contains delta keys not present in catalog rows "
+                f"(example={sample})"
+            )
 
     _catalog_v2_rows_cache = parsed
     _catalog_v2_meta_cache = {
@@ -390,6 +494,9 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
         "providers_synced": list(data.get("providers_synced", [])),
         "connector_counts": dict(data.get("connector_counts", {})),
         "schema_version": data.get("schema_version"),
+        "price_deltas_generated_at_utc": deltas_payload.get("generated_at_utc"),
+        "price_deltas_changed_rows": int(deltas_payload.get("changed_rows", 0) or 0),
+        "price_deltas_matched_rows": int(deltas_payload.get("matched_rows", 0) or 0),
     }
     return list(_catalog_v2_rows_cache)
 

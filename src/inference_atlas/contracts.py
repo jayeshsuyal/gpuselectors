@@ -171,6 +171,11 @@ class WorkloadInput(BaseModel):
         le=2.0,
         description="Autoscale overhead factor (e.g., 1.15 = 15% overhead)",
     )
+    monthly_budget_max_usd: float = Field(
+        default=0.0,
+        ge=0,
+        description="Optional monthly budget cap (0 = no budget filter)",
+    )
     output_token_ratio: float = Field(
         default=0.30,
         ge=0,

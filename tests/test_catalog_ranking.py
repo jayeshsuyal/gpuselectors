@@ -6,8 +6,10 @@ import pytest
 
 from inference_atlas.catalog_ranking import (
     build_provider_diagnostics,
+    get_catalog_tuning_preset,
     normalize_unit_price_for_workload,
     rank_catalog_offers,
+    run_catalog_ranking_with_relaxation,
 )
 
 
@@ -90,6 +92,7 @@ def test_rank_catalog_offers_counts_exclusions_and_sorts() -> None:
     assert reasons["b"].startswith("Included")
     assert [row.provider for row in ranked] == ["b", "a"]  # lower weighted comparator first
     assert ranked[0].monthly_estimate_usd is not None
+    assert ranked[0].score <= ranked[1].score
 
 
 def test_rank_catalog_offers_throughput_aware_with_replicas() -> None:
@@ -270,3 +273,275 @@ def test_build_provider_diagnostics_included_excluded() -> None:
     assert by_provider["a"]["status"] == "included"
     assert by_provider["b"]["reason"] == "Not selected by user."
     assert by_provider["c"]["status"] == "excluded"
+
+
+def test_relaxation_flow_relaxes_unit_then_returns_rows() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="vision_a",
+            unit_name="video_min",
+            unit_price_usd=20.0,
+            confidence="high",
+            sku_name="vision-a",
+            billing_mode="per_minute",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="vision_b",
+            unit_name="video_min",
+            unit_price_usd=30.0,
+            confidence="high",
+            sku_name="vision-b",
+            billing_mode="per_minute",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+    ]
+    run = run_catalog_ranking_with_relaxation(
+        rows=rows,
+        allowed_providers={"vision_a", "vision_b"},
+        unit_name="1k_images",
+        top_k=5,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="listed",
+        confidence_weighted=False,
+        workload_type="vision",
+        monthly_usage=5.0,
+    )
+    assert run.selected_step == "relax_unit"
+    assert len(run.ranked) == 2
+    assert run.relaxation_trace[0]["step"] == "strict"
+    assert run.relaxation_trace[0]["count"] == 0
+
+
+def test_relaxation_breakdown_tracks_reason_buckets() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_min",
+            unit_price_usd=0.5,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="b",
+            unit_name="audio_hour",
+            unit_price_usd=60.0,
+            confidence="high",
+            sku_name="b-stt",
+            billing_mode="per_unit",
+            throughput_value=0.0,
+            throughput_unit="per_hour",
+        ),
+    ]
+    run = run_catalog_ranking_with_relaxation(
+        rows=rows,
+        allowed_providers={"a"},
+        unit_name="audio_hour",
+        top_k=5,
+        monthly_budget_max_usd=1.0,
+        comparator_mode="normalized",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+        monthly_usage=10.0,
+        throughput_aware=True,
+        strict_capacity_check=True,
+    )
+    assert run.exclusion_breakdown["provider_filtered_out"] >= 1
+    assert run.exclusion_breakdown["unit_mismatch"] >= 1
+    assert set(run.exclusion_breakdown).issuperset(
+        {"provider_filtered_out", "unit_mismatch", "non_comparable_normalization", "missing_throughput", "budget"}
+    )
+
+
+def test_rank_catalog_offers_validates_parameters() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_min",
+            unit_price_usd=0.2,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+    ]
+    with pytest.raises(ValueError, match="top_k"):
+        rank_catalog_offers(
+            rows=rows,
+            allowed_providers={"a"},
+            unit_name=None,
+            top_k=0,
+            monthly_budget_max_usd=0.0,
+            comparator_mode="normalized",
+            confidence_weighted=False,
+            workload_type="speech_to_text",
+        )
+    with pytest.raises(ValueError, match="comparator_mode"):
+        rank_catalog_offers(
+            rows=rows,
+            allowed_providers={"a"},
+            unit_name=None,
+            top_k=1,
+            monthly_budget_max_usd=0.0,
+            comparator_mode="invalid",
+            confidence_weighted=False,
+            workload_type="speech_to_text",
+        )
+    with pytest.raises(ValueError, match="alpha"):
+        rank_catalog_offers(
+            rows=rows,
+            allowed_providers={"a"},
+            unit_name=None,
+            top_k=1,
+            monthly_budget_max_usd=0.0,
+            comparator_mode="normalized",
+            confidence_weighted=False,
+            workload_type="speech_to_text",
+            alpha=-0.1,
+        )
+
+
+def test_catalog_tuning_preset_balanced_default() -> None:
+    preset = get_catalog_tuning_preset("vision", "balanced")
+    assert preset["peak_to_avg"] == pytest.approx(2.5)
+    assert preset["util_target"] == pytest.approx(0.75)
+    assert preset["alpha"] == pytest.approx(1.0)
+
+
+def test_catalog_tuning_preset_workload_specific() -> None:
+    stt = get_catalog_tuning_preset("speech_to_text", "conservative")
+    assert stt["peak_to_avg"] == pytest.approx(3.5)
+    assert stt["util_target"] == pytest.approx(0.65)
+    assert stt["alpha"] == pytest.approx(1.5)
+
+
+def test_catalog_tuning_preset_invalid_name_raises() -> None:
+    with pytest.raises(ValueError, match="Unknown preset"):
+        get_catalog_tuning_preset("speech_to_text", "not-a-preset")
+
+
+def test_catalog_tuning_preset_unknown_workload_uses_default_group() -> None:
+    preset = get_catalog_tuning_preset("unknown_workload", "balanced")
+    assert preset["peak_to_avg"] == pytest.approx(2.5)
+    assert preset["util_target"] == pytest.approx(0.75)
+    assert preset["alpha"] == pytest.approx(1.0)
+
+
+def test_rank_catalog_offers_accepts_raw_as_listed_mode() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_min",
+            unit_price_usd=0.2,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="b",
+            unit_name="audio_min",
+            unit_price_usd=0.3,
+            confidence="high",
+            sku_name="b-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+    ]
+    listed, _, _ = rank_catalog_offers(
+        rows=rows,
+        allowed_providers={"a", "b"},
+        unit_name=None,
+        top_k=5,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="listed",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+    )
+    raw, _, _ = rank_catalog_offers(
+        rows=rows,
+        allowed_providers={"a", "b"},
+        unit_name=None,
+        top_k=5,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="raw",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+    )
+    assert [r.provider for r in listed] == [r.provider for r in raw]
+
+
+def test_rank_catalog_offers_tie_break_is_deterministic() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="b",
+            unit_name="audio_min",
+            unit_price_usd=0.2,
+            confidence="high",
+            sku_name="same",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_min",
+            unit_price_usd=0.2,
+            confidence="high",
+            sku_name="same",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+        ),
+    ]
+    ranked, _, _ = rank_catalog_offers(
+        rows=rows,
+        allowed_providers={"a", "b"},
+        unit_name=None,
+        top_k=5,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="listed",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+    )
+    assert [r.provider for r in ranked] == ["a", "b"]
+
+
+def test_rank_catalog_offers_carries_price_delta_fields() -> None:
+    rows = [
+        SimpleNamespace(
+            provider="a",
+            unit_name="audio_hour",
+            unit_price_usd=1.0,
+            confidence="high",
+            sku_name="a-stt",
+            billing_mode="per_unit",
+            throughput_value=None,
+            throughput_unit=None,
+            previous_unit_price_usd=1.2,
+            price_change_abs_usd=-0.2,
+            price_change_pct=-16.6667,
+        ),
+    ]
+    ranked, _, _ = rank_catalog_offers(
+        rows=rows,
+        allowed_providers={"a"},
+        unit_name="audio_hour",
+        top_k=3,
+        monthly_budget_max_usd=0.0,
+        comparator_mode="normalized",
+        confidence_weighted=False,
+        workload_type="speech_to_text",
+    )
+    assert ranked
+    assert ranked[0].previous_unit_price_usd == pytest.approx(1.2)
+    assert ranked[0].price_change_abs_usd == pytest.approx(-0.2)
+    assert ranked[0].price_change_pct == pytest.approx(-16.6667)

@@ -20,6 +20,13 @@ class CanonicalPricingRow:
     source_date: str
     confidence: str
     source_kind: str
+    throughput_value: float | None = None
+    throughput_unit: str | None = None
 
     def to_dict(self) -> dict[str, object]:
-        return asdict(self)
+        payload = asdict(self)
+        if payload.get("throughput_value") is None:
+            payload.pop("throughput_value", None)
+        if payload.get("throughput_unit") is None:
+            payload.pop("throughput_unit", None)
+        return payload

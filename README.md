@@ -43,6 +43,23 @@ export ANTHROPIC_API_KEY=sk-ant-...
 
 Open [http://localhost:8501](http://localhost:8501).
 
+### Frontend (React v1 workbench)
+
+```bash
+cd frontend
+cp .env.example .env
+npm install
+npm run dev
+```
+
+By default, frontend runs in mock mode (`VITE_USE_MOCK_API=true`).  
+To use a real backend, set:
+
+```bash
+VITE_USE_MOCK_API=false
+VITE_API_BASE_URL=http://127.0.0.1:8000
+```
+
 ---
 
 ## Streamlit Usage Walkthrough

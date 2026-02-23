@@ -35,6 +35,8 @@ def fetch_rows_for_provider(provider_id: str) -> list[CanonicalPricingRow]:
                 source_date=row.source_date,
                 confidence=row.confidence or "estimated",
                 source_kind="normalized_catalog",
+                throughput_value=row.throughput_value,
+                throughput_unit=row.throughput_unit,
             )
         )
     return out

@@ -5,10 +5,12 @@ import pytest
 from inference_atlas.mvp_planner import (
     CapacityEstimate,
     PlannerConfig,
+    RiskBreakdown,
     capacity,
     compute_monthly_cost,
     enumerate_configs,
     enumerate_configs_for_providers,
+    get_tuning_preset,
     get_provider_compatibility,
     normalize_workload,
     rank_configs,
@@ -155,3 +157,152 @@ def test_rank_configs_returns_sorted_results() -> None:
         ("required" in row.why) or ("throughput cap unspecified" in row.why)
         for row in plans
     )
+
+
+def test_rank_configs_applies_monthly_budget_filter() -> None:
+    baseline = rank_configs(tokens_per_day=8_000_000, model_bucket="70b", top_k=5)
+    budget = baseline[0].monthly_cost_usd
+
+    filtered = rank_configs(
+        tokens_per_day=8_000_000,
+        model_bucket="70b",
+        top_k=5,
+        monthly_budget_max_usd=budget,
+    )
+
+    assert filtered
+    assert len(filtered) <= len(baseline)
+    assert all(plan.monthly_cost_usd <= budget for plan in filtered)
+
+
+def test_rank_configs_raises_when_budget_excludes_all() -> None:
+    with pytest.raises(ValueError, match="No feasible configurations found"):
+        rank_configs(
+            tokens_per_day=8_000_000,
+            model_bucket="70b",
+            top_k=5,
+            monthly_budget_max_usd=0.000001,
+        )
+
+
+def test_get_tuning_preset_returns_balanced_defaults() -> None:
+    preset = get_tuning_preset("balanced")
+    assert preset["peak_to_avg"] == pytest.approx(2.5)
+    assert preset["util_target"] == pytest.approx(0.75)
+    assert preset["beta"] == pytest.approx(0.08)
+    assert preset["alpha"] == pytest.approx(1.0)
+
+
+def test_get_tuning_preset_unknown_raises() -> None:
+    with pytest.raises(ValueError, match="Unknown tuning preset"):
+        get_tuning_preset("not-a-preset")
+
+
+def test_rank_configs_alpha_changes_risk_penalty(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg_a = PlannerConfig(
+        provider_id="a_provider",
+        provider_name="A",
+        offering_id="a_per_token",
+        billing_mode="per_token",
+        gpu_type=None,
+        gpu_count=0,
+        price_per_gpu_hour_usd=None,
+        price_per_1m_tokens_usd=1.0,
+        tps_cap=None,
+        region="global",
+        confidence="high",
+        notes="",
+    )
+    cfg_b = PlannerConfig(
+        provider_id="b_provider",
+        provider_name="B",
+        offering_id="b_per_token",
+        billing_mode="per_token",
+        gpu_type=None,
+        gpu_count=0,
+        price_per_gpu_hour_usd=None,
+        price_per_1m_tokens_usd=1.0,
+        tps_cap=None,
+        region="global",
+        confidence="high",
+        notes="",
+    )
+
+    monkeypatch.setattr(
+        "inference_atlas.mvp_planner.enumerate_configs_for_providers",
+        lambda **_: [cfg_a, cfg_b],
+    )
+    monkeypatch.setattr(
+        "inference_atlas.mvp_planner._is_feasible",
+        lambda **_: (True, None),
+    )
+    monkeypatch.setattr(
+        "inference_atlas.mvp_planner.compute_monthly_cost",
+        lambda **_: 100.0,
+    )
+
+    def _risk(**kwargs):
+        cfg = kwargs["cfg"]
+        if cfg.provider_id == "a_provider":
+            return risk_score(cfg, required_capacity_tok_s=100.0, provided_capacity_tok_s=100.1)
+        return risk_score(cfg, required_capacity_tok_s=100.0, provided_capacity_tok_s=300.0)
+
+    monkeypatch.setattr("inference_atlas.mvp_planner.risk_score", _risk)
+
+    alpha_zero = rank_configs(tokens_per_day=1_000_000, model_bucket="70b", alpha=0.0, top_k=2)
+    alpha_high = rank_configs(tokens_per_day=1_000_000, model_bucket="70b", alpha=2.0, top_k=2)
+
+    assert alpha_zero[0].provider_id == "a_provider"
+    assert alpha_high[0].provider_id == "b_provider"
+
+
+def test_rank_configs_validates_tuning_bounds() -> None:
+    with pytest.raises(ValueError, match="alpha must be >= 0"):
+        rank_configs(tokens_per_day=1_000_000, model_bucket="70b", alpha=-0.1)
+    with pytest.raises(ValueError, match="beta must be >= 0"):
+        rank_configs(tokens_per_day=1_000_000, model_bucket="70b", beta=-0.1)
+    with pytest.raises(ValueError, match="autoscale_inefficiency must be >= 1"):
+        rank_configs(tokens_per_day=1_000_000, model_bucket="70b", autoscale_inefficiency=0.99)
+
+
+def test_rank_configs_tie_break_prefers_higher_confidence(monkeypatch: pytest.MonkeyPatch) -> None:
+    cfg_high = PlannerConfig(
+        provider_id="a_provider",
+        provider_name="A",
+        offering_id="offer_high",
+        billing_mode="per_token",
+        gpu_type=None,
+        gpu_count=0,
+        price_per_gpu_hour_usd=None,
+        price_per_1m_tokens_usd=1.0,
+        tps_cap=None,
+        region="global",
+        confidence="high",
+        notes="",
+    )
+    cfg_low = PlannerConfig(
+        provider_id="b_provider",
+        provider_name="B",
+        offering_id="offer_low",
+        billing_mode="per_token",
+        gpu_type=None,
+        gpu_count=0,
+        price_per_gpu_hour_usd=None,
+        price_per_1m_tokens_usd=1.0,
+        tps_cap=None,
+        region="global",
+        confidence="low",
+        notes="",
+    )
+    monkeypatch.setattr(
+        "inference_atlas.mvp_planner.enumerate_configs_for_providers",
+        lambda **_: [cfg_low, cfg_high],
+    )
+    monkeypatch.setattr("inference_atlas.mvp_planner._is_feasible", lambda **_: (True, None))
+    monkeypatch.setattr("inference_atlas.mvp_planner.compute_monthly_cost", lambda **_: 100.0)
+    monkeypatch.setattr(
+        "inference_atlas.mvp_planner.risk_score",
+        lambda **_: RiskBreakdown(risk_overload=0.2, risk_complexity=0.1, total_risk=0.17),
+    )
+    ranked = rank_configs(tokens_per_day=1_000_000, model_bucket="70b", top_k=2)
+    assert [r.provider_id for r in ranked] == ["a_provider", "b_provider"]

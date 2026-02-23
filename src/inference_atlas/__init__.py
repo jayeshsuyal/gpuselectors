@@ -18,9 +18,20 @@ from inference_atlas.catalog_ranking import (
     RankedCatalogOffer,
     build_provider_diagnostics,
     confidence_multiplier,
+    get_catalog_tuning_preset,
     normalize_unit_price_for_workload,
     rank_catalog_offers,
 )
+from inference_atlas.ai_copilot import (
+    build_apply_payload,
+    extract_spec_updates,
+    get_follow_up_questions,
+    get_missing_fields,
+    get_suggested_presets,
+    next_copilot_turn,
+)
+from inference_atlas.api_models import CopilotTurnRequest, CopilotTurnResponse
+from inference_atlas.api_service import run_copilot_turn
 from inference_atlas.data_loader import (
     get_catalog_v2_metadata,
     get_catalog_v2_rows,
@@ -62,6 +73,7 @@ from inference_atlas.mvp_planner import (
     enumerate_configs,
     enumerate_configs_for_providers,
     get_provider_compatibility,
+    get_tuning_preset,
     normalize_workload,
     rank_configs,
     risk_score,
@@ -117,6 +129,7 @@ __all__ = [
     "compute_monthly_cost",
     "risk_score",
     "rank_configs",
+    "get_tuning_preset",
     "NormalizedWorkload",
     "CapacityEstimate",
     "PlannerConfig",
@@ -140,6 +153,18 @@ __all__ = [
     "normalize_unit_price_for_workload",
     "confidence_multiplier",
     "rank_catalog_offers",
+    "get_catalog_tuning_preset",
     "build_provider_diagnostics",
     "RankedCatalogOffer",
+    # AI copilot helpers
+    "extract_spec_updates",
+    "get_missing_fields",
+    "get_follow_up_questions",
+    "get_suggested_presets",
+    "build_apply_payload",
+    "next_copilot_turn",
+    # API contracts/services
+    "CopilotTurnRequest",
+    "CopilotTurnResponse",
+    "run_copilot_turn",
 ]
