@@ -29,3 +29,7 @@ def test_get_catalog_v2_metadata_has_core_fields() -> None:
     assert isinstance(meta.get("providers_synced"), list)
     assert isinstance(meta.get("price_deltas_changed_rows"), int)
     assert isinstance(meta.get("price_deltas_matched_rows"), int)
+    freshness = meta.get("freshness")
+    assert isinstance(freshness, dict)
+    assert isinstance(freshness.get("rows_with_last_verified_at"), int)
+    assert isinstance(freshness.get("rows_missing_last_verified_at"), int)

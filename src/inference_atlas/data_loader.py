@@ -160,6 +160,7 @@ class CatalogV2Row:
     region: str
     source_url: str
     source_date: str
+    last_verified_at: str
     confidence: str
     source_kind: str
     throughput_value: float | None = None
@@ -430,6 +431,10 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
                     region=str(row["region"]),
                     source_url=str(row["source_url"]),
                     source_date=str(row.get("source_date", "")),
+                    last_verified_at=(
+                        str(row.get("last_verified_at", "")).strip()
+                        or str(row.get("source_date", "")).strip()
+                    ),
                     confidence=str(row.get("confidence", "")),
                     source_kind=str(row.get("source_kind", "")),
                     throughput_value=(
@@ -488,12 +493,22 @@ def _load_catalog_v2_rows() -> list[CatalogV2Row]:
             )
 
     _catalog_v2_rows_cache = parsed
+    verified_dates = [row.last_verified_at for row in parsed if row.last_verified_at]
+    freshness = data.get("freshness")
+    if not isinstance(freshness, dict):
+        freshness = {
+            "rows_with_last_verified_at": len(verified_dates),
+            "rows_missing_last_verified_at": len(parsed) - len(verified_dates),
+            "min_last_verified_at": min(verified_dates) if verified_dates else None,
+            "max_last_verified_at": max(verified_dates) if verified_dates else None,
+        }
     _catalog_v2_meta_cache = {
         "generated_at_utc": data.get("generated_at_utc"),
         "row_count": int(data.get("row_count", len(parsed))),
         "providers_synced": list(data.get("providers_synced", [])),
         "connector_counts": dict(data.get("connector_counts", {})),
         "schema_version": data.get("schema_version"),
+        "freshness": freshness,
         "price_deltas_generated_at_utc": deltas_payload.get("generated_at_utc"),
         "price_deltas_changed_rows": int(deltas_payload.get("changed_rows", 0) or 0),
         "price_deltas_matched_rows": int(deltas_payload.get("matched_rows", 0) or 0),

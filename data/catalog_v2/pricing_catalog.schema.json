@@ -35,6 +35,26 @@
         "minimum": 0
       }
     },
+    "freshness": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "rows_with_last_verified_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "rows_missing_last_verified_at": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "min_last_verified_at": {
+          "type": ["string", "null"]
+        },
+        "max_last_verified_at": {
+          "type": ["string", "null"]
+        }
+      }
+    },
     "rows": {
       "type": "array",
       "items": {
@@ -88,6 +108,9 @@
             "type": "string"
           },
           "source_date": {
+            "type": "string"
+          },
+          "last_verified_at": {
             "type": "string"
           },
           "confidence": {

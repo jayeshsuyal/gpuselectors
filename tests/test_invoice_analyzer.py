@@ -34,6 +34,7 @@ def test_analyze_invoice_csv_finds_savings() -> None:
             region="global",
             source_url="",
             source_date="2026-01-01",
+            last_verified_at="2026-01-01",
             confidence="high",
             source_kind="provider_csv",
         )

@@ -49,6 +49,11 @@ def _coerce_row(provider_id: str, row: dict[str, Any], source_kind: str) -> Cano
         region=str(row.get("region") or "global"),
         source_url=source_url,
         source_date=str(row.get("source_date") or ""),
+        last_verified_at=(
+            str(row.get("last_verified_at") or "").strip()
+            or str(row.get("source_date") or "").strip()
+            or None
+        ),
         confidence=str(row.get("confidence") or "official"),
         source_kind=source_kind,
         throughput_value=throughput_value,

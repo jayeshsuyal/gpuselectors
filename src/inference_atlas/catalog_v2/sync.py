@@ -46,6 +46,13 @@ def _source_date_score(value: object) -> float:
     raw = str(value or "").strip()
     if not raw:
         return 0.0
+
+
+def _effective_verified_date(row: dict[str, object]) -> str:
+    return (
+        str(row.get("last_verified_at") or "").strip()
+        or str(row.get("source_date") or "").strip()
+    )
     try:
         return datetime.fromisoformat(raw.replace("Z", "+00:00")).timestamp()
     except ValueError:
@@ -56,9 +63,19 @@ def _row_priority(row: dict[str, object]) -> tuple[int, int, float, int]:
     return (
         _confidence_score(row.get("confidence")),
         _SOURCE_KIND_SCORE.get(str(row.get("source_kind") or "").strip(), 0),
-        _source_date_score(row.get("source_date")),
+        _source_date_score(_effective_verified_date(row)),
         1 if row.get("throughput_value") not in (None, "") else 0,
     )
+
+
+def _freshness_summary(rows: list[dict[str, object]]) -> dict[str, object]:
+    verified_dates = [date for date in (_effective_verified_date(row) for row in rows) if date]
+    return {
+        "rows_with_last_verified_at": len(verified_dates),
+        "rows_missing_last_verified_at": len(rows) - len(verified_dates),
+        "min_last_verified_at": min(verified_dates) if verified_dates else None,
+        "max_last_verified_at": max(verified_dates) if verified_dates else None,
+    }
 
 
 def _dedupe_rows(rows: list[dict[str, object]]) -> tuple[list[dict[str, object]], int]:
@@ -192,6 +209,7 @@ def sync_catalog_v2(providers: list[str] | None = None) -> dict[str, object]:
         "providers_synced": sorted(selected),
         "row_count": len(rows),
         "connector_counts": connector_counts,
+        "freshness": _freshness_summary(rows),
         "rows": rows,
     }
     deltas_payload: dict[str, object] = {

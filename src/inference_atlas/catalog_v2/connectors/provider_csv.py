@@ -82,6 +82,11 @@ def fetch_rows_for_provider(provider_id: str) -> list[CanonicalPricingRow]:
                     region=(row.get("region") or "").strip(),
                     source_url=(row.get("source_url") or "").strip(),
                     source_date=(row.get("source_date") or "").strip(),
+                    last_verified_at=(
+                        (row.get("last_verified_at") or "").strip()
+                        or (row.get("source_date") or "").strip()
+                        or None
+                    ),
                     confidence=(row.get("confidence") or "").strip() or "estimated",
                     source_kind="provider_csv",
                     throughput_value=throughput_value,
