@@ -1,0 +1,53 @@
+{
+  "top_keys": [
+    "chart_data",
+    "csv_exports",
+    "generated_at_utc",
+    "html",
+    "markdown",
+    "metadata",
+    "mode",
+    "narrative",
+    "output_format",
+    "pdf_base64",
+    "report_id",
+    "sections",
+    "title"
+  ],
+  "mode": "catalog",
+  "output_format": "pdf",
+  "section_count": 3,
+  "section_keys": [
+    "bullets",
+    "title"
+  ],
+  "chart_data_keys": [
+    "confidence_distribution",
+    "cost_by_rank",
+    "exclusion_breakdown",
+    "relaxation_trace"
+  ],
+  "first_cost_row_keys": [
+    "monthly_estimate_usd",
+    "provider",
+    "rank",
+    "sku_name",
+    "unit_name",
+    "unit_price_usd"
+  ],
+  "first_risk_row_keys": [],
+  "metadata_keys": [
+    "catalog_generated_at_utc",
+    "catalog_providers_synced_count",
+    "catalog_row_count",
+    "catalog_schema_version"
+  ],
+  "csv_export_keys": [
+    "provider_diagnostics.csv",
+    "ranked_results.csv"
+  ],
+  "has_markdown": true,
+  "has_html": true,
+  "has_pdf_base64": true,
+  "has_narrative": true
+}

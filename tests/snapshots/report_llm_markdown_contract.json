@@ -1,0 +1,58 @@
+{
+  "top_keys": [
+    "chart_data",
+    "csv_exports",
+    "generated_at_utc",
+    "html",
+    "markdown",
+    "metadata",
+    "mode",
+    "narrative",
+    "output_format",
+    "pdf_base64",
+    "report_id",
+    "sections",
+    "title"
+  ],
+  "mode": "llm",
+  "output_format": "markdown",
+  "section_count": 3,
+  "section_keys": [
+    "bullets",
+    "title"
+  ],
+  "chart_data_keys": [
+    "confidence_distribution",
+    "cost_by_rank",
+    "risk_breakdown"
+  ],
+  "first_cost_row_keys": [
+    "monthly_cost_usd",
+    "provider_id",
+    "provider_name",
+    "rank",
+    "score",
+    "total_risk"
+  ],
+  "first_risk_row_keys": [
+    "provider_id",
+    "rank",
+    "risk_complexity",
+    "risk_overload",
+    "total_risk"
+  ],
+  "metadata_keys": [
+    "catalog_generated_at_utc",
+    "catalog_providers_synced_count",
+    "catalog_row_count",
+    "catalog_schema_version"
+  ],
+  "csv_export_keys": [
+    "provider_diagnostics.csv",
+    "ranked_results.csv"
+  ],
+  "has_markdown": true,
+  "has_html": false,
+  "has_pdf_base64": false,
+  "has_narrative": true
+}
