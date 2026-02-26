@@ -32,7 +32,7 @@ from inference_atlas.api_service import (
 def create_app():
     """Create FastAPI app lazily so base package has no hard FastAPI dependency."""
     try:
-        from fastapi import FastAPI, File, HTTPException, UploadFile
+        from fastapi import FastAPI, File, HTTPException, Response, UploadFile
         from fastapi.middleware.cors import CORSMiddleware
     except ImportError as exc:  # pragma: no cover
         raise RuntimeError(
@@ -125,5 +125,37 @@ def create_app():
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:  # noqa: BLE001
             raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.post("/api/v1/report/download")
+    def download_report(payload: ReportGenerateRequest) -> Response:
+        try:
+            report = run_generate_report(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+        safe_id = report.report_id
+        if report.output_format == "pdf":
+            if not report.pdf_base64:
+                raise HTTPException(status_code=500, detail="PDF output was not generated.")
+            import base64
+
+            body = base64.b64decode(report.pdf_base64.encode("ascii"))
+            media_type = "application/pdf"
+            filename = f"{safe_id}.pdf"
+        elif report.output_format == "html":
+            if report.html is None:
+                raise HTTPException(status_code=500, detail="HTML output was not generated.")
+            body = report.html.encode("utf-8")
+            media_type = "text/html; charset=utf-8"
+            filename = f"{safe_id}.html"
+        else:
+            body = report.markdown.encode("utf-8")
+            media_type = "text/markdown; charset=utf-8"
+            filename = f"{safe_id}.md"
+
+        headers = {"Content-Disposition": f'attachment; filename="{filename}"'}
+        return Response(content=body, media_type=media_type, headers=headers)
 
     return app

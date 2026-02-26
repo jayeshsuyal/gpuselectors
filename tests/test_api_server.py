@@ -223,3 +223,62 @@ def test_generate_report_endpoint_supports_pdf_format() -> None:
     body = response.json()
     assert body["output_format"] == "pdf"
     assert body["pdf_base64"]
+
+
+def _catalog_report_payload(output_format: str) -> dict:
+    return {
+        "mode": "catalog",
+        "title": f"API {output_format.upper()} Report",
+        "output_format": output_format,
+        "catalog_ranking": {
+            "offers": [
+                {
+                    "rank": 1,
+                    "provider": "openai",
+                    "sku_name": "whisper-1",
+                    "billing_mode": "per_unit",
+                    "unit_price_usd": 0.006,
+                    "normalized_price": 0.36,
+                    "unit_name": "audio_min",
+                    "confidence": "official",
+                    "monthly_estimate_usd": 10.0,
+                    "required_replicas": None,
+                    "capacity_check": "unknown",
+                    "previous_unit_price_usd": None,
+                    "price_change_abs_usd": None,
+                    "price_change_pct": None,
+                }
+            ],
+            "provider_diagnostics": [],
+            "excluded_count": 0,
+            "warnings": [],
+            "relaxation_applied": False,
+            "relaxation_steps": [],
+            "exclusion_breakdown": {},
+        },
+    }
+
+
+def test_report_download_endpoint_markdown() -> None:
+    client = _client()
+    response = client.post("/api/v1/report/download", json=_catalog_report_payload("markdown"))
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/markdown")
+    assert "attachment; filename=" in response.headers["content-disposition"]
+    assert response.text.startswith("# ")
+
+
+def test_report_download_endpoint_html() -> None:
+    client = _client()
+    response = client.post("/api/v1/report/download", json=_catalog_report_payload("html"))
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("text/html")
+    assert response.text.lower().startswith("<!doctype html>")
+
+
+def test_report_download_endpoint_pdf() -> None:
+    client = _client()
+    response = client.post("/api/v1/report/download", json=_catalog_report_payload("pdf"))
+    assert response.status_code == 200
+    assert response.headers["content-type"].startswith("application/pdf")
+    assert response.content.startswith(b"%PDF")
