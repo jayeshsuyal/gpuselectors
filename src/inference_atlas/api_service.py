@@ -3,7 +3,9 @@
 from __future__ import annotations
 
 import csv
+import base64
 import hashlib
+import html
 import io
 from collections import Counter, defaultdict
 from datetime import datetime, timezone
@@ -480,6 +482,199 @@ def _sections_to_markdown(title: str, mode: str, generated_at_utc: str, sections
     return "\n".join(lines).strip() + "\n"
 
 
+def _sections_to_html(title: str, mode: str, generated_at_utc: str, sections: list[ReportSection]) -> str:
+    escaped_title = html.escape(title)
+    escaped_mode = html.escape(mode)
+    escaped_generated = html.escape(generated_at_utc)
+    parts = [
+        "<!doctype html>",
+        '<html lang="en"><head><meta charset="utf-8" />'
+        "<meta name=\"viewport\" content=\"width=device-width, initial-scale=1\" />"
+        f"<title>{escaped_title}</title>",
+        "<style>"
+        "body{font-family:Inter,Arial,sans-serif;background:#0b0b0f;color:#e5e7eb;padding:24px;line-height:1.5}"
+        "h1{margin:0 0 12px 0;font-size:28px} h2{margin:22px 0 8px 0;font-size:20px}"
+        "ul{margin:0 0 0 18px;padding:0} li{margin:4px 0}"
+        ".meta{color:#9ca3af;margin-bottom:18px}"
+        ".card{background:#111218;border:1px solid #2b2f3a;border-radius:10px;padding:14px;margin:12px 0}"
+        "</style></head><body>",
+        f"<h1>{escaped_title}</h1>",
+        f"<div class=\"meta\">Mode: <code>{escaped_mode}</code><br/>Generated at (UTC): <code>{escaped_generated}</code></div>",
+    ]
+    for section in sections:
+        parts.append("<section class=\"card\">")
+        parts.append(f"<h2>{html.escape(section.title)}</h2>")
+        if section.bullets:
+            parts.append("<ul>")
+            parts.extend(f"<li>{html.escape(item)}</li>" for item in section.bullets)
+            parts.append("</ul>")
+        else:
+            parts.append("<p>n/a</p>")
+        parts.append("</section>")
+    parts.append("</body></html>")
+    return "".join(parts)
+
+
+def _text_to_minimal_pdf_bytes(text: str) -> bytes:
+    # Minimal deterministic PDF encoder for report export without external dependencies.
+    safe_text = text.replace("\r\n", "\n").replace("\r", "\n")
+    lines = safe_text.split("\n")
+    max_lines_per_page = 42
+    pages: list[list[str]] = [
+        lines[i : i + max_lines_per_page] for i in range(0, len(lines), max_lines_per_page)
+    ] or [[]]
+
+    def _escape_pdf_text(value: str) -> str:
+        return value.replace("\\", "\\\\").replace("(", "\\(").replace(")", "\\)")
+
+    contents: list[str] = []
+    for page_lines in pages:
+        stream_lines = ["BT", "/F1 10 Tf", "50 780 Td", "12 TL"]
+        if page_lines:
+            stream_lines.append(f"({_escape_pdf_text(page_lines[0])}) Tj")
+            for line in page_lines[1:]:
+                stream_lines.append("T*")
+                stream_lines.append(f"({_escape_pdf_text(line)}) Tj")
+        stream_lines.append("ET")
+        contents.append("\n".join(stream_lines))
+
+    objects: list[bytes] = []
+    # 1: Catalog, 2: Pages, 3: Font
+    objects.append(b"<< /Type /Catalog /Pages 2 0 R >>")
+    kids = " ".join(f"{4 + idx * 2} 0 R" for idx in range(len(contents)))
+    objects.append(f"<< /Type /Pages /Count {len(contents)} /Kids [{kids}] >>".encode("utf-8"))
+    objects.append(b"<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>")
+    for idx, content in enumerate(contents):
+        page_obj = f"<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 3 0 R >> >> /Contents {5 + idx * 2} 0 R >>"
+        content_bytes = content.encode("utf-8")
+        content_obj = (
+            b"<< /Length "
+            + str(len(content_bytes)).encode("utf-8")
+            + b" >>\nstream\n"
+            + content_bytes
+            + b"\nendstream"
+        )
+        objects.append(page_obj.encode("utf-8"))
+        objects.append(content_obj)
+
+    out = bytearray(b"%PDF-1.4\n")
+    offsets: list[int] = [0]
+    for idx, obj in enumerate(objects, start=1):
+        offsets.append(len(out))
+        out.extend(f"{idx} 0 obj\n".encode("utf-8"))
+        out.extend(obj)
+        out.extend(b"\nendobj\n")
+    xref_start = len(out)
+    out.extend(f"xref\n0 {len(objects)+1}\n".encode("utf-8"))
+    out.extend(b"0000000000 65535 f \n")
+    for off in offsets[1:]:
+        out.extend(f"{off:010d} 00000 n \n".encode("utf-8"))
+    out.extend(
+        (
+            f"trailer\n<< /Size {len(objects)+1} /Root 1 0 R >>\n"
+            f"startxref\n{xref_start}\n%%EOF\n"
+        ).encode("utf-8")
+    )
+    return bytes(out)
+
+
+def _build_report_narrative(
+    mode: str,
+    sections: list[ReportSection],
+    chart_data: dict[str, Any],
+) -> str:
+    summary = next((section for section in sections if section.title == "Executive Summary"), None)
+    summary_bullet = summary.bullets[0] if summary and summary.bullets else "No summary available."
+    if mode == "llm":
+        top_cost = chart_data.get("cost_by_rank", [])
+        risk = chart_data.get("risk_breakdown", [])
+        risk_lead = risk[0]["total_risk"] if risk else None
+        return (
+            f"Primary recommendation: {summary_bullet} "
+            f"This result is grounded to the current run payload and catalog snapshot. "
+            f"Returned plans: {len(top_cost)}; top-plan risk={risk_lead if risk_lead is not None else 'n/a'}."
+        )
+    top_cost = chart_data.get("cost_by_rank", [])
+    trace = chart_data.get("relaxation_trace", [])
+    return (
+        f"Primary recommendation: {summary_bullet} "
+        f"This ranking uses current catalog rows only; fallback steps attempted={len(trace)}; "
+        f"offers returned={len(top_cost)}."
+    )
+
+
+def _rows_to_csv_text(rows: list[dict[str, Any]]) -> str:
+    if not rows:
+        return ""
+    ordered_keys = list(rows[0].keys())
+    output = io.StringIO()
+    writer = csv.DictWriter(output, fieldnames=ordered_keys)
+    writer.writeheader()
+    for row in rows:
+        writer.writerow({key: row.get(key) for key in ordered_keys})
+    return output.getvalue()
+
+
+def _build_report_csv_exports(payload: ReportGenerateRequest) -> dict[str, str]:
+    if payload.mode == "llm":
+        assert payload.llm_planning is not None
+        plans_rows = [
+            {
+                "rank": plan.rank,
+                "provider_id": plan.provider_id,
+                "provider_name": plan.provider_name,
+                "offering_id": plan.offering_id,
+                "billing_mode": plan.billing_mode,
+                "confidence": plan.confidence,
+                "monthly_cost_usd": plan.monthly_cost_usd,
+                "score": plan.score,
+                "utilization_at_peak": plan.utilization_at_peak,
+                "risk_overload": plan.risk.risk_overload,
+                "risk_complexity": plan.risk.risk_complexity,
+                "total_risk": plan.risk.total_risk,
+                "why": plan.why,
+            }
+            for plan in payload.llm_planning.plans
+        ]
+        diagnostics_rows = [
+            {"provider": d.provider, "status": d.status, "reason": d.reason}
+            for d in payload.llm_planning.provider_diagnostics
+        ]
+        return {
+            "ranked_results.csv": _rows_to_csv_text(plans_rows),
+            "provider_diagnostics.csv": _rows_to_csv_text(diagnostics_rows),
+        }
+
+    assert payload.catalog_ranking is not None
+    offer_rows = [
+        {
+            "rank": offer.rank,
+            "provider": offer.provider,
+            "sku_name": offer.sku_name,
+            "billing_mode": offer.billing_mode,
+            "unit_name": offer.unit_name,
+            "unit_price_usd": offer.unit_price_usd,
+            "normalized_price": offer.normalized_price,
+            "monthly_estimate_usd": offer.monthly_estimate_usd,
+            "confidence": offer.confidence,
+            "required_replicas": offer.required_replicas,
+            "capacity_check": offer.capacity_check,
+            "previous_unit_price_usd": offer.previous_unit_price_usd,
+            "price_change_abs_usd": offer.price_change_abs_usd,
+            "price_change_pct": offer.price_change_pct,
+        }
+        for offer in payload.catalog_ranking.offers
+    ]
+    diagnostics_rows = [
+        {"provider": d.provider, "status": d.status, "reason": d.reason}
+        for d in payload.catalog_ranking.provider_diagnostics
+    ]
+    return {
+        "ranked_results.csv": _rows_to_csv_text(offer_rows),
+        "provider_diagnostics.csv": _rows_to_csv_text(diagnostics_rows),
+    }
+
+
 def _build_llm_report_chart_data(response: LLMPlanningResponse) -> dict[str, Any]:
     confidence_counts = Counter(plan.confidence for plan in response.plans)
     return {
@@ -545,6 +740,13 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
         generated_at_utc=generated_at_utc,
         sections=sections,
     )
+    html_report = _sections_to_html(
+        title=payload.title,
+        mode=payload.mode,
+        generated_at_utc=generated_at_utc,
+        sections=sections,
+    )
+    pdf_bytes = _text_to_minimal_pdf_bytes(markdown)
     report_hash = hashlib.sha1(markdown.encode("utf-8")).hexdigest()[:12]
     metadata = {
         "catalog_generated_at_utc": catalog_meta.get("generated_at_utc"),
@@ -552,15 +754,26 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
         "catalog_row_count": catalog_meta.get("row_count"),
         "catalog_providers_synced_count": len(catalog_meta.get("providers_synced") or []),
     }
+    narrative = (
+        _build_report_narrative(payload.mode, sections=sections, chart_data=chart_data)
+        if payload.include_narrative
+        else None
+    )
+    csv_exports = _build_report_csv_exports(payload) if payload.include_csv_exports else {}
     return ReportGenerateResponse(
         report_id=f"rep_{report_hash}",
         generated_at_utc=generated_at_utc,
         title=payload.title,
         mode=payload.mode,
         sections=sections,
-        chart_data=chart_data,
+        chart_data=chart_data if payload.include_charts else {},
         metadata=metadata,
+        output_format=payload.output_format,
+        narrative=narrative,
+        csv_exports=csv_exports,
         markdown=markdown,
+        html=html_report if payload.output_format in {"html", "pdf"} else None,
+        pdf_base64=base64.b64encode(pdf_bytes).decode("ascii") if payload.output_format == "pdf" else None,
     )
 
 

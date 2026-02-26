@@ -222,7 +222,10 @@ class ReportGenerateRequest(BaseModel):
 
     mode: Literal["llm", "catalog"]
     title: str = Field(default="InferenceAtlas Optimization Report", min_length=1, max_length=200)
+    output_format: Literal["markdown", "html", "pdf"] = "markdown"
     include_charts: bool = True
+    include_csv_exports: bool = True
+    include_narrative: bool = False
     llm_planning: Optional[LLMPlanningResponse] = None
     catalog_ranking: Optional[CatalogRankingResponse] = None
 
@@ -245,4 +248,9 @@ class ReportGenerateResponse(BaseModel):
     sections: list[ReportSection] = Field(default_factory=list)
     chart_data: dict[str, Any] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
+    output_format: Literal["markdown", "html", "pdf"] = "markdown"
+    narrative: Optional[str] = None
+    csv_exports: dict[str, str] = Field(default_factory=dict)
     markdown: str
+    html: Optional[str] = None
+    pdf_base64: Optional[str] = None

@@ -280,6 +280,10 @@ def test_run_generate_report_llm_mode_produces_markdown() -> None:
         "catalog_row_count",
         "catalog_providers_synced_count",
     }
+    assert report.output_format == "markdown"
+    assert report.narrative is None
+    assert "ranked_results.csv" in report.csv_exports
+    assert "provider_diagnostics.csv" in report.csv_exports
     if report.chart_data["cost_by_rank"]:
         first = report.chart_data["cost_by_rank"][0]
         assert set(first) == {
@@ -348,3 +352,89 @@ def test_run_generate_report_catalog_mode_produces_markdown() -> None:
         }
     assert isinstance(report.chart_data["exclusion_breakdown"], dict)
     assert isinstance(report.chart_data["relaxation_trace"], list)
+    assert report.output_format == "markdown"
+    assert report.narrative is None
+    assert "ranked_results.csv" in report.csv_exports
+    assert "provider_diagnostics.csv" in report.csv_exports
+
+
+def test_run_generate_report_can_disable_charts_and_csv_exports() -> None:
+    catalog = run_rank_catalog(
+        CatalogRankingRequest(
+            workload_type="speech_to_text",
+            allowed_providers=[],
+            unit_name=None,
+            monthly_usage=20.0,
+            top_k=3,
+            confidence_weighted=True,
+            comparator_mode="normalized",
+            throughput_aware=False,
+        )
+    )
+    report = run_generate_report(
+        ReportGenerateRequest(
+            mode="catalog",
+            title="No Chart Report",
+            include_charts=False,
+            include_csv_exports=False,
+            catalog_ranking=catalog,
+        )
+    )
+    assert report.chart_data == {}
+    assert report.csv_exports == {}
+
+
+def test_run_generate_report_supports_html_and_pdf_output() -> None:
+    llm = run_plan_llm(
+        LLMPlanningRequest(
+            tokens_per_day=3_000_000,
+            model_bucket="7b",
+            provider_ids=[],
+            top_k=2,
+        )
+    )
+    html_report = run_generate_report(
+        ReportGenerateRequest(
+            mode="llm",
+            title="HTML Report",
+            output_format="html",
+            llm_planning=llm,
+        )
+    )
+    assert html_report.output_format == "html"
+    assert html_report.html is not None
+    assert "<html" in html_report.html.lower()
+    assert html_report.pdf_base64 is None
+
+    pdf_report = run_generate_report(
+        ReportGenerateRequest(
+            mode="llm",
+            title="PDF Report",
+            output_format="pdf",
+            llm_planning=llm,
+        )
+    )
+    assert pdf_report.output_format == "pdf"
+    assert pdf_report.pdf_base64 is not None
+    assert len(pdf_report.pdf_base64) > 20
+
+
+def test_run_generate_report_can_include_narrative() -> None:
+    llm = run_plan_llm(
+        LLMPlanningRequest(
+            tokens_per_day=3_000_000,
+            model_bucket="7b",
+            provider_ids=[],
+            top_k=2,
+        )
+    )
+    report = run_generate_report(
+        ReportGenerateRequest(
+            mode="llm",
+            title="Narrative Report",
+            include_narrative=True,
+            llm_planning=llm,
+        )
+    )
+    assert report.narrative is not None
+    assert "Primary recommendation:" in report.narrative
