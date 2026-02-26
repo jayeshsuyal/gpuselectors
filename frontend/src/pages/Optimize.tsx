@@ -22,6 +22,20 @@ import { WORKLOAD_TYPES } from '@/lib/constants'
 type Step = 'select' | 'configure'
 type ConfigMode = 'copilot' | 'guided'
 
+function errorHint(message: string): string {
+  const token = message.toLowerCase()
+  if (token.includes('failed to fetch') || token.includes('network')) {
+    return 'Check API server/base URL and retry. If backend is down, switch to mock mode for local demos.'
+  }
+  if (token.includes('422') || token.includes('validation') || token.includes('invalid')) {
+    return 'Review form fields and required ranges. Try clearing advanced filters and re-submit.'
+  }
+  if (token.includes('500') || token.includes('internal')) {
+    return 'Backend error. Retry once, then check server logs for this request payload.'
+  }
+  return 'Retry with fewer constraints, or use Relaxed mode from recovery actions if no offers are returned.'
+}
+
 export function OptimizePage() {
   const [step, setStep] = useState<Step>('select')
   const [mode, setMode] = useState<ConfigMode>('copilot')
@@ -31,6 +45,7 @@ export function OptimizePage() {
   const [error, setError] = useState<string | null>(null)
   const [llmResult, setLlmResult] = useState<LLMPlanningResponse | null>(null)
   const [catalogResult, setCatalogResult] = useState<CatalogRankingResponse | null>(null)
+  const [lastNonLLMInput, setLastNonLLMInput] = useState<NonLLMFormValues | null>(null)
   const [reportLoading, setReportLoading] = useState(false)
   const [reportError, setReportError] = useState<string | null>(null)
   const [reportData, setReportData] = useState<ReportGenerateResponse | null>(null)
@@ -104,6 +119,7 @@ export function OptimizePage() {
   async function handleNonLLMSubmit(values: NonLLMFormValues) {
     setLoading(true)
     setError(null)
+    setLastNonLLMInput(values)
     try {
       const res = await rankCatalogOffers({
         workload_type: values.workload_type,
@@ -133,6 +149,22 @@ export function OptimizePage() {
     }
   }
 
+  function handleCatalogRecoveryAction(action: 'clear_budget' | 'clear_unit' | 'all_providers' | 'relaxed_mode') {
+    if (!lastNonLLMInput) return
+    const nextValues: NonLLMFormValues = { ...lastNonLLMInput }
+    if (action === 'clear_budget') nextValues.monthly_budget_max_usd = 0
+    if (action === 'clear_unit') nextValues.unit_name = null
+    if (action === 'all_providers') nextValues.provider_ids = []
+    if (action === 'relaxed_mode') {
+      nextValues.comparator_mode = 'listed'
+      nextValues.confidence_weighted = false
+      nextValues.strict_capacity_check = false
+    }
+    setInitialValues(nextValues)
+    setMode('guided')
+    setError(null)
+  }
+
   const isLLM = workload === 'llm'
   const hasResults = isLLM ? llmResult !== null : catalogResult !== null
   const workloadMeta = WORKLOAD_TYPES.find((w) => w.id === workload)
@@ -146,6 +178,26 @@ export function OptimizePage() {
     chartData['exclusion_breakdown'] !== null &&
     !Array.isArray(chartData['exclusion_breakdown']))
     ? Object.keys(chartData['exclusion_breakdown'] as Record<string, unknown>).length : null
+
+  const catalogGeneratedAt = typeof reportData?.metadata?.catalog_generated_at_utc === 'string'
+    ? reportData.metadata.catalog_generated_at_utc
+    : null
+  const catalogSchemaVersion = reportData?.metadata?.catalog_schema_version
+    ? String(reportData.metadata.catalog_schema_version)
+    : 'n/a'
+  const catalogProvidersSynced = typeof reportData?.metadata?.catalog_providers_synced_count === 'number'
+    ? String(reportData.metadata.catalog_providers_synced_count)
+    : 'n/a'
+
+  function catalogFreshness() {
+    if (!catalogGeneratedAt) return { label: 'Unknown', color: 'var(--text-disabled)', border: 'var(--border-default)' }
+    const ts = Date.parse(catalogGeneratedAt)
+    if (!Number.isFinite(ts)) return { label: 'Unknown', color: 'var(--text-disabled)', border: 'var(--border-default)' }
+    const ageHours = (Date.now() - ts) / (1000 * 60 * 60)
+    if (ageHours <= 72) return { label: 'Fresh', color: '#22c55e', border: 'rgba(34,197,94,0.35)' }
+    return { label: 'Stale', color: '#f59e0b', border: 'rgba(245,158,11,0.35)' }
+  }
+  const freshness = catalogFreshness()
 
   function downloadReportMarkdown(report: ReportGenerateResponse) {
     const blob = new Blob([report.markdown], { type: 'text/markdown;charset=utf-8' })
@@ -313,7 +365,12 @@ export function OptimizePage() {
                   className="rounded-lg px-3 py-2.5 text-xs flex items-start justify-between gap-2 border"
                   style={{ borderColor: 'var(--danger-border)', background: 'var(--danger-bg)', color: 'var(--danger-text)' }}
                 >
-                  <span>{error}</span>
+                  <div className="space-y-1">
+                    <div>{error}</div>
+                    <div className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                      {errorHint(error)}
+                    </div>
+                  </div>
                   <button
                     onClick={() => setError(null)}
                     className="flex-shrink-0 transition-colors hover:text-white mt-0.5"
@@ -366,31 +423,64 @@ export function OptimizePage() {
                     : 'Sorted by normalized unit price'}
                 </p>
               </div>
-              <div className="space-y-2">
-                {/* Format selector */}
-                <div className="flex items-center gap-2" role="group" aria-label="Report format">
-                  <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>Format</span>
-                  <button
-                    type="button"
-                    aria-pressed={true}
-                    className="rounded px-2 py-1 text-[11px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
-                    style={{ borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }}
-                  >
-                    Markdown (.md)
-                  </button>
-                  <button
-                    type="button"
-                    disabled
-                    aria-label="PDF format — coming soon"
-                    className="rounded px-2 py-1 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }}
-                  >
-                    PDF <span className="text-[9px] opacity-70">soon</span>
-                  </button>
-                </div>
 
-                {/* Generate + Download */}
-                <div className="flex items-center gap-2 flex-wrap">
+              {/* Contract/freshness trust bar */}
+              <div
+                className="rounded-lg border px-3 py-2"
+                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+              >
+                <div className="micro-label mb-1.5">Catalog snapshot</div>
+                {reportData ? (
+                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
+                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                      {catalogGeneratedAt
+                        ? new Date(catalogGeneratedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
+                        : 'n/a'}
+                    </span>
+                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                      Schema: {catalogSchemaVersion}
+                    </span>
+                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                      Providers: {catalogProvidersSynced}
+                    </span>
+                    <span className="rounded-md border px-2 py-0.5 font-medium" style={{ borderColor: freshness.border, color: freshness.color }}>
+                      {freshness.label}
+                    </span>
+                  </div>
+                ) : (
+                  <p className="text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+                    Generate a report to view catalog snapshot metadata.
+                  </p>
+                )}
+              </div>
+              <div className="space-y-1.5">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-2">
+                  {/* Format selector */}
+                  <div role="group" aria-label="Report format" className="flex items-center gap-1.5">
+                    <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>Format</span>
+                    <button
+                      type="button"
+                      aria-pressed={true}
+                      className="rounded px-2 py-1 text-[11px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                      style={{ borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }}
+                    >
+                      Markdown (.md)
+                    </button>
+                    <button
+                      type="button"
+                      disabled
+                      aria-label="PDF format — coming soon"
+                      className="rounded px-2 py-1 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }}
+                    >
+                      PDF <span className="text-[9px] opacity-70">soon</span>
+                    </button>
+                  </div>
+
+                  {/* Separator */}
+                  <div className="h-4 w-px" aria-hidden="true" style={{ background: 'var(--border-default)' }} />
+
+                  {/* Generate + Download */}
                   <button
                     type="button"
                     onClick={() => void handleGenerateReport(false)}
@@ -439,6 +529,7 @@ export function OptimizePage() {
                   diagnostics={llmResult?.provider_diagnostics ?? []}
                   warnings={llmResult?.warnings ?? []}
                   excludedCount={llmResult?.excluded_count ?? 0}
+                  chartData={reportData?.chart_data}
                 />
               ) : (
                 <ResultsTable
@@ -447,6 +538,10 @@ export function OptimizePage() {
                   diagnostics={catalogResult?.provider_diagnostics ?? []}
                   warnings={catalogResult?.warnings ?? []}
                   excludedCount={catalogResult?.excluded_count ?? 0}
+                  relaxationSteps={catalogResult?.relaxation_steps ?? []}
+                  exclusionBreakdown={catalogResult?.exclusion_breakdown ?? {}}
+                  onRecoveryAction={handleCatalogRecoveryAction}
+                  chartData={reportData?.chart_data}
                 />
               )}
 

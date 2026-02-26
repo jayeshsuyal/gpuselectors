@@ -146,7 +146,7 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
           className="px-5 pb-4 pt-3 animate-enter-fast"
           style={{ borderTop: '1px solid var(--border-subtle)' }}
         >
-          <div className="grid grid-cols-3 gap-x-4 gap-y-3">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-x-4 gap-y-3">
             {Object.entries(plan.assumptions).map(([key, val]) => (
               <div key={key}>
                 <div className="micro-label mb-0.5">{ASSUMPTION_LABELS[key] ?? key}</div>
@@ -254,7 +254,9 @@ function NonLLMResultRow({ offer, isFirst, index }: { offer: RankedCatalogOffer;
 
       {/* Badges */}
       <div className="flex flex-col gap-1 items-end">
-        <ConfidenceBadge confidence={offer.confidence} />
+        <div className="hidden sm:block">
+          <ConfidenceBadge confidence={offer.confidence} />
+        </div>
         <CapacityBadge check={offer.capacity_check} />
       </div>
 
@@ -329,6 +331,10 @@ interface ResultsTableProps {
   diagnostics?: ProviderDiagnostic[]
   warnings?: string[]
   excludedCount?: number
+  relaxationSteps?: Array<Record<string, unknown>>
+  exclusionBreakdown?: Record<string, number>
+  onRecoveryAction?: (action: 'clear_budget' | 'clear_unit' | 'all_providers' | 'relaxed_mode') => void
+  chartData?: Record<string, unknown>
 }
 
 export function ResultsTable({
@@ -338,15 +344,19 @@ export function ResultsTable({
   diagnostics = [],
   warnings = [],
   excludedCount = 0,
+  relaxationSteps = [],
+  exclusionBreakdown = {},
+  onRecoveryAction,
+  chartData,
 }: ResultsTableProps) {
   if (mode === 'llm' && plans.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-sm mb-1" style={{ color: 'var(--text-tertiary)' }}>
-          No feasible configurations found
+      <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+        <div className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+          No configurations matched your workload
         </div>
-        <div className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-disabled)' }}>
-          Try adding more providers, selecting a smaller model size, or reducing your daily token volume.
+        <div className="text-xs leading-relaxed max-w-[260px]" style={{ color: 'var(--text-disabled)' }}>
+          Add more providers, choose a smaller model size, or lower your daily token volume.
         </div>
       </div>
     )
@@ -354,12 +364,46 @@ export function ResultsTable({
 
   if (mode === 'non-llm' && offers.length === 0) {
     return (
-      <div className="flex flex-col items-center justify-center py-16 text-center">
-        <div className="text-sm mb-1" style={{ color: 'var(--text-tertiary)' }}>
-          No offers found for this workload
+      <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
+        <div className="text-sm font-medium" style={{ color: 'var(--text-tertiary)' }}>
+          No offers matched your filters
         </div>
-        <div className="text-xs leading-relaxed max-w-xs" style={{ color: 'var(--text-disabled)' }}>
-          Try removing provider filters, switching to &ldquo;All units&rdquo; (browse mode), or setting budget to 0.
+        <div className="text-xs leading-relaxed max-w-[260px]" style={{ color: 'var(--text-disabled)' }}>
+          Broaden your filters or try relaxed mode — it removes confidence weighting and strict capacity checks.
+        </div>
+        <div className="mt-2 flex flex-wrap justify-center gap-2 max-w-xs">
+          <button
+            type="button"
+            onClick={() => onRecoveryAction?.('relaxed_mode')}
+            className="rounded-md border px-3 py-1.5 text-[11px] font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+            style={{ borderColor: 'var(--brand-border)', color: 'var(--brand-hover)', background: 'rgba(124,92,252,0.08)' }}
+          >
+            Relaxed mode
+          </button>
+          <button
+            type="button"
+            onClick={() => onRecoveryAction?.('all_providers')}
+            className="rounded-md border px-3 py-1.5 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+            style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
+          >
+            All providers
+          </button>
+          <button
+            type="button"
+            onClick={() => onRecoveryAction?.('clear_budget')}
+            className="rounded-md border px-3 py-1.5 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+            style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
+          >
+            Clear budget
+          </button>
+          <button
+            type="button"
+            onClick={() => onRecoveryAction?.('clear_unit')}
+            className="rounded-md border px-3 py-1.5 text-[11px] transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+            style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)' }}
+          >
+            Clear unit filter
+          </button>
         </div>
       </div>
     )
@@ -373,6 +417,7 @@ export function ResultsTable({
       {warnings.map((w, i) => (
         <div
           key={i}
+          role="alert"
           className="flex gap-2 items-start rounded-lg border px-3 py-2"
           style={{ borderColor: 'var(--warning-border)', background: 'var(--warning-bg)' }}
         >
@@ -388,6 +433,67 @@ export function ResultsTable({
         {excludedCount > 0 && <span>· {excludedCount} excluded</span>}
       </div>
 
+      {/* Relaxation trace */}
+      {mode === 'non-llm' && relaxationSteps.length > 0 && (
+        <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border-default)' }}>
+          <div className="micro-label mb-2">Applied filters</div>
+          <div className="flex flex-wrap items-center gap-1.5">
+            {relaxationSteps
+              .filter((step) => Boolean(step.attempted))
+              .map((step, idx) => {
+                const stepName = String(step.step ?? 'unknown')
+                const matched = Number(step.count ?? 0)
+                const selected = matched > 0
+                const label = stepName.length > 22 ? `${stepName.slice(0, 20)}…` : stepName
+                return (
+                  <div key={`${stepName}-${idx}`} className="flex items-center gap-1.5">
+                    <span
+                      className="rounded-full px-2 py-0.5 text-[10px] border"
+                      title={`${stepName}: ${matched} match${matched !== 1 ? 'es' : ''}`}
+                      style={selected
+                        ? {
+                            background: 'rgba(124,92,252,0.10)',
+                            borderColor: 'rgba(124,92,252,0.30)',
+                            color: 'var(--brand-hover)',
+                          }
+                        : {
+                            borderColor: 'var(--border-default)',
+                            color: 'var(--text-tertiary)',
+                          }}
+                    >
+                      {label} ({matched})
+                    </span>
+                    {idx < relaxationSteps.filter((entry) => Boolean(entry.attempted)).length - 1 && (
+                      <span className="text-[10px]" style={{ color: 'var(--text-disabled)' }}>→</span>
+                    )}
+                  </div>
+                )
+              })}
+          </div>
+        </div>
+      )}
+
+      {/* Exclusion breakdown */}
+      {mode === 'non-llm' && Object.keys(exclusionBreakdown).length > 0 && (
+        <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border-default)' }}>
+          <div className="micro-label mb-2">Exclusion reasons</div>
+          <div className="flex flex-wrap gap-1.5">
+            {Object.entries(exclusionBreakdown)
+              .filter(([, value]) => Number(value) > 0)
+              .sort((a, b) => Number(b[1]) - Number(a[1]))
+              .map(([reason, value]) => (
+                <span
+                  key={reason}
+                  className="rounded-full border px-2 py-0.5 text-[10px]"
+                  style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-tertiary)' }}
+                >
+                  {reason}: {Number(value)}
+                </span>
+              ))}
+          </div>
+        </div>
+      )}
+
       {/* Insights charts */}
       <Suspense
         fallback={
@@ -396,7 +502,7 @@ export function ResultsTable({
           </div>
         }
       >
-        <InsightsCharts mode={mode} plans={plans} offers={offers} />
+        <InsightsCharts mode={mode} plans={plans} offers={offers} chartData={chartData} />
       </Suspense>
 
       {/* Result cards */}
