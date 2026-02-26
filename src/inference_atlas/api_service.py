@@ -28,6 +28,8 @@ from inference_atlas.api_models import (
     ProviderDiagnostic,
     ReportGenerateRequest,
     ReportGenerateResponse,
+    ReportChart,
+    ReportChartSeries,
     ReportSection,
     RankedCatalogOffer,
     RankedPlan,
@@ -49,6 +51,15 @@ EXCLUSION_REASON_LABELS: dict[str, str] = {
     "missing_throughput": "missing throughput metadata",
     "budget": "budget filter",
 }
+
+CONFIDENCE_ORDER = [
+    "official",
+    "high",
+    "medium",
+    "estimated",
+    "low",
+    "vendor_list",
+]
 
 
 def _build_exclusion_summary_warnings(exclusion_breakdown: dict[str, int]) -> list[str]:
@@ -723,6 +734,234 @@ def _build_catalog_report_chart_data(response: CatalogRankingResponse) -> dict[s
     }
 
 
+def _sorted_confidence_distribution(confidence_counts: Counter[str]) -> list[dict[str, Any]]:
+    ordered_keys = [key for key in CONFIDENCE_ORDER if key in confidence_counts]
+    unordered_keys = sorted(key for key in confidence_counts.keys() if key not in set(CONFIDENCE_ORDER))
+    keys = ordered_keys + unordered_keys
+    return [{"confidence": key, "count": int(confidence_counts[key])} for key in keys]
+
+
+def _build_llm_report_charts(response: LLMPlanningResponse) -> list[ReportChart]:
+    plans = sorted(response.plans, key=lambda plan: plan.rank)
+    confidence_counts = Counter(plan.confidence for plan in plans)
+    confidence_points = _sorted_confidence_distribution(confidence_counts)
+    return [
+        ReportChart(
+            id="cost_comparison",
+            title="Cost Comparison",
+            type="bar",
+            x_label="Rank",
+            y_label="Monthly Cost (USD)",
+            series=[
+                ReportChartSeries(
+                    id="monthly_cost_usd",
+                    label="Monthly Cost",
+                    unit="usd",
+                    points=[
+                        {
+                            "rank": plan.rank,
+                            "provider_id": plan.provider_id,
+                            "provider_name": plan.provider_name,
+                            "value": plan.monthly_cost_usd,
+                        }
+                        for plan in plans
+                    ],
+                )
+            ],
+            legend=["Monthly Cost"],
+            meta={"sort": "rank_asc"},
+        ),
+        ReportChart(
+            id="risk_comparison",
+            title="Risk Comparison",
+            type="stacked_bar",
+            x_label="Rank",
+            y_label="Risk Score",
+            series=[
+                ReportChartSeries(
+                    id="risk_overload",
+                    label="Overload Risk",
+                    unit="risk_score",
+                    points=[
+                        {
+                            "rank": plan.rank,
+                            "provider_id": plan.provider_id,
+                            "provider_name": plan.provider_name,
+                            "value": plan.risk.risk_overload,
+                        }
+                        for plan in plans
+                    ],
+                ),
+                ReportChartSeries(
+                    id="risk_complexity",
+                    label="Complexity Risk",
+                    unit="risk_score",
+                    points=[
+                        {
+                            "rank": plan.rank,
+                            "provider_id": plan.provider_id,
+                            "provider_name": plan.provider_name,
+                            "value": plan.risk.risk_complexity,
+                        }
+                        for plan in plans
+                    ],
+                ),
+            ],
+            legend=["Overload Risk", "Complexity Risk"],
+            meta={"sort": "rank_asc", "total_risk_available": True},
+        ),
+        ReportChart(
+            id="confidence_distribution",
+            title="Confidence Distribution",
+            type="bar",
+            x_label="Confidence Tier",
+            y_label="Count",
+            series=[
+                ReportChartSeries(
+                    id="confidence_count",
+                    label="Count",
+                    unit="count",
+                    points=[{"confidence": row["confidence"], "value": row["count"]} for row in confidence_points],
+                )
+            ],
+            legend=["Count"],
+            meta={"confidence_order": CONFIDENCE_ORDER},
+        ),
+        ReportChart(
+            id="fallback_trace",
+            title="Fallback Trace",
+            type="step_line",
+            x_label="Step",
+            y_label="Offers Returned",
+            series=[
+                ReportChartSeries(
+                    id="offers_returned",
+                    label="Offers Returned",
+                    unit="count",
+                    points=[
+                        {
+                            "step_index": 0,
+                            "step": "strict",
+                            "value": len(plans),
+                            "selected": True,
+                        }
+                    ],
+                )
+            ],
+            legend=["Offers Returned"],
+            meta={"relaxation_applied": False},
+        ),
+    ]
+
+
+def _build_catalog_report_charts(response: CatalogRankingResponse) -> list[ReportChart]:
+    offers = sorted(response.offers, key=lambda offer: offer.rank)
+    confidence_counts = Counter(offer.confidence for offer in offers)
+    confidence_points = _sorted_confidence_distribution(confidence_counts)
+    relaxation_trace = list(response.relaxation_steps)
+    fallback_points: list[dict[str, Any]] = []
+    for idx, step in enumerate(relaxation_trace):
+        fallback_points.append(
+            {
+                "step_index": idx,
+                "step": step.get("step", f"step_{idx}"),
+                "attempted": bool(step.get("attempted", False)),
+                "selected": bool(step.get("selected", False)),
+                "value": int(step.get("offers_returned", 0) or 0),
+            }
+        )
+    return [
+        ReportChart(
+            id="cost_comparison",
+            title="Cost Comparison",
+            type="bar",
+            x_label="Rank",
+            y_label="Monthly Estimate (USD)",
+            series=[
+                ReportChartSeries(
+                    id="monthly_estimate_usd",
+                    label="Monthly Estimate",
+                    unit="usd",
+                    points=[
+                        {
+                            "rank": offer.rank,
+                            "provider": offer.provider,
+                            "sku_name": offer.sku_name,
+                            "value": offer.monthly_estimate_usd,
+                        }
+                        for offer in offers
+                    ],
+                )
+            ],
+            legend=["Monthly Estimate"],
+            meta={"sort": "rank_asc"},
+        ),
+        ReportChart(
+            id="risk_comparison",
+            title="Risk Comparison",
+            type="bar",
+            x_label="Provider",
+            y_label="Confidence Risk Proxy",
+            series=[
+                ReportChartSeries(
+                    id="confidence_risk_proxy",
+                    label="Risk Proxy",
+                    unit="risk_score",
+                    points=[
+                        {
+                            "rank": offer.rank,
+                            "provider": offer.provider,
+                            "confidence": offer.confidence,
+                            "value": 0.0
+                            if offer.confidence in {"official", "high"}
+                            else 0.2
+                            if offer.confidence in {"medium", "estimated"}
+                            else 0.4,
+                        }
+                        for offer in offers
+                    ],
+                )
+            ],
+            legend=["Risk Proxy"],
+            meta={"note": "Proxy from confidence tiers for non-LLM catalog offers."},
+        ),
+        ReportChart(
+            id="confidence_distribution",
+            title="Confidence Distribution",
+            type="bar",
+            x_label="Confidence Tier",
+            y_label="Count",
+            series=[
+                ReportChartSeries(
+                    id="confidence_count",
+                    label="Count",
+                    unit="count",
+                    points=[{"confidence": row["confidence"], "value": row["count"]} for row in confidence_points],
+                )
+            ],
+            legend=["Count"],
+            meta={"confidence_order": CONFIDENCE_ORDER},
+        ),
+        ReportChart(
+            id="fallback_trace",
+            title="Fallback Trace",
+            type="step_line",
+            x_label="Relaxation Step",
+            y_label="Offers Returned",
+            series=[
+                ReportChartSeries(
+                    id="offers_returned",
+                    label="Offers Returned",
+                    unit="count",
+                    points=fallback_points,
+                )
+            ],
+            legend=["Offers Returned"],
+            meta={"relaxation_applied": bool(response.relaxation_applied)},
+        ),
+    ]
+
+
 def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateResponse:
     generated_at_utc = datetime.now(timezone.utc).isoformat()
     catalog_meta = get_catalog_v2_metadata()
@@ -730,10 +969,12 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
         assert payload.llm_planning is not None
         sections = _llm_report_sections(payload.llm_planning)
         chart_data = _build_llm_report_chart_data(payload.llm_planning)
+        charts = _build_llm_report_charts(payload.llm_planning)
     else:
         assert payload.catalog_ranking is not None
         sections = _catalog_report_sections(payload.catalog_ranking)
         chart_data = _build_catalog_report_chart_data(payload.catalog_ranking)
+        charts = _build_catalog_report_charts(payload.catalog_ranking)
     markdown = _sections_to_markdown(
         title=payload.title,
         mode=payload.mode,
@@ -766,6 +1007,7 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
         title=payload.title,
         mode=payload.mode,
         sections=sections,
+        charts=charts if payload.include_charts else [],
         chart_data=chart_data if payload.include_charts else {},
         metadata=metadata,
         output_format=payload.output_format,

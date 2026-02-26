@@ -180,6 +180,7 @@ def test_generate_report_endpoint() -> None:
     assert body["mode"] == "catalog"
     assert body["report_id"].startswith("rep_")
     assert "markdown" in body
+    assert "charts" in body
     assert "chart_data" in body
     assert "metadata" in body
     assert "csv_exports" in body

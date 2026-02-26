@@ -217,6 +217,28 @@ class ReportSection(BaseModel):
     bullets: list[str] = Field(default_factory=list)
 
 
+class ReportChartSeries(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: str
+    label: str
+    unit: Optional[str] = None
+    points: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class ReportChart(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    id: str
+    title: str
+    type: Literal["bar", "line", "stacked_bar", "step_line"]
+    x_label: str
+    y_label: str
+    series: list[ReportChartSeries] = Field(default_factory=list)
+    legend: list[str] = Field(default_factory=list)
+    meta: dict[str, Any] = Field(default_factory=dict)
+
+
 class ReportGenerateRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -246,6 +268,7 @@ class ReportGenerateResponse(BaseModel):
     title: str
     mode: Literal["llm", "catalog"]
     sections: list[ReportSection] = Field(default_factory=list)
+    charts: list[ReportChart] = Field(default_factory=list)
     chart_data: dict[str, Any] = Field(default_factory=dict)
     metadata: dict[str, Any] = Field(default_factory=dict)
     output_format: Literal["markdown", "html", "pdf"] = "markdown"

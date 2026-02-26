@@ -1,6 +1,7 @@
 {
   "top_keys": [
     "chart_data",
+    "charts",
     "csv_exports",
     "generated_at_utc",
     "html",

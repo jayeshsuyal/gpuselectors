@@ -272,6 +272,12 @@ def test_run_generate_report_llm_mode_produces_markdown() -> None:
     assert report.report_id.startswith("rep_")
     assert "LLM Test Report" in report.markdown
     assert "## Executive Summary" in report.markdown
+    assert [chart.id for chart in report.charts] == [
+        "cost_comparison",
+        "risk_comparison",
+        "confidence_distribution",
+        "fallback_trace",
+    ]
     assert set(report.chart_data) >= {"cost_by_rank", "risk_breakdown", "confidence_distribution"}
     assert isinstance(report.chart_data["cost_by_rank"], list)
     assert set(report.metadata) >= {
@@ -328,6 +334,12 @@ def test_run_generate_report_catalog_mode_produces_markdown() -> None:
     assert report.mode == "catalog"
     assert "Catalog Test Report" in report.markdown
     assert "## Top Recommendations" in report.markdown
+    assert [chart.id for chart in report.charts] == [
+        "cost_comparison",
+        "risk_comparison",
+        "confidence_distribution",
+        "fallback_trace",
+    ]
     assert set(report.chart_data) >= {
         "cost_by_rank",
         "exclusion_breakdown",
@@ -380,6 +392,7 @@ def test_run_generate_report_can_disable_charts_and_csv_exports() -> None:
             catalog_ranking=catalog,
         )
     )
+    assert report.charts == []
     assert report.chart_data == {}
     assert report.csv_exports == {}
 
