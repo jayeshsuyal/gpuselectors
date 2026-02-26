@@ -46,7 +46,8 @@
     "catalog_generated_at_utc",
     "catalog_providers_synced_count",
     "catalog_row_count",
-    "catalog_schema_version"
+    "catalog_schema_version",
+    "chart_schema_version"
   ],
   "csv_export_keys": [
     "provider_diagnostics.csv",

@@ -281,6 +281,7 @@ def test_run_generate_report_llm_mode_produces_markdown() -> None:
     assert set(report.chart_data) >= {"cost_by_rank", "risk_breakdown", "confidence_distribution"}
     assert isinstance(report.chart_data["cost_by_rank"], list)
     assert set(report.metadata) >= {
+        "chart_schema_version",
         "catalog_generated_at_utc",
         "catalog_schema_version",
         "catalog_row_count",
@@ -347,6 +348,7 @@ def test_run_generate_report_catalog_mode_produces_markdown() -> None:
         "confidence_distribution",
     }
     assert set(report.metadata) >= {
+        "chart_schema_version",
         "catalog_generated_at_utc",
         "catalog_schema_version",
         "catalog_row_count",

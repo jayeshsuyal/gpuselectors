@@ -990,6 +990,7 @@ def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateRespons
     pdf_bytes = _text_to_minimal_pdf_bytes(markdown)
     report_hash = hashlib.sha1(markdown.encode("utf-8")).hexdigest()[:12]
     metadata = {
+        "chart_schema_version": "v1.2",
         "catalog_generated_at_utc": catalog_meta.get("generated_at_utc"),
         "catalog_schema_version": catalog_meta.get("schema_version"),
         "catalog_row_count": catalog_meta.get("row_count"),
