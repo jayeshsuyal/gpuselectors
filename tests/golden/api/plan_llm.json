@@ -1,0 +1,30 @@
+{
+  "keys": [
+    "excluded_count",
+    "plans",
+    "provider_diagnostics",
+    "warnings"
+  ],
+  "plan_keys": [
+    "assumptions",
+    "billing_mode",
+    "confidence",
+    "monthly_cost_usd",
+    "offering_id",
+    "provider_id",
+    "provider_name",
+    "rank",
+    "risk",
+    "score",
+    "utilization_at_peak",
+    "why"
+  ],
+  "assumption_keys": [
+    "alpha",
+    "monthly_budget_max_usd",
+    "output_token_ratio",
+    "peak_to_avg",
+    "scaling_beta",
+    "util_target"
+  ]
+}

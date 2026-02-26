@@ -1,0 +1,25 @@
+{
+  "keys": [
+    "chart_data",
+    "generated_at_utc",
+    "markdown",
+    "metadata",
+    "mode",
+    "report_id",
+    "sections",
+    "title"
+  ],
+  "mode": "catalog",
+  "chart_data_keys": [
+    "confidence_distribution",
+    "cost_by_rank",
+    "exclusion_breakdown",
+    "relaxation_trace"
+  ],
+  "metadata_keys": [
+    "catalog_generated_at_utc",
+    "catalog_providers_synced_count",
+    "catalog_row_count",
+    "catalog_schema_version"
+  ]
+}

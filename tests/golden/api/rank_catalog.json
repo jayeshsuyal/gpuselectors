@@ -1,0 +1,47 @@
+{
+  "keys": [
+    "excluded_count",
+    "exclusion_breakdown",
+    "offers",
+    "provider_diagnostics",
+    "relaxation_applied",
+    "relaxation_steps",
+    "warnings"
+  ],
+  "offer_keys": [
+    "billing_mode",
+    "capacity_check",
+    "confidence",
+    "monthly_estimate_usd",
+    "normalized_price",
+    "previous_unit_price_usd",
+    "price_change_abs_usd",
+    "price_change_pct",
+    "provider",
+    "rank",
+    "required_replicas",
+    "sku_name",
+    "unit_name",
+    "unit_price_usd"
+  ],
+  "provider_diag_keys": [
+    "provider",
+    "reason",
+    "status"
+  ],
+  "relaxation_step_keys": [
+    "attempted",
+    "count",
+    "monthly_budget_max_usd",
+    "provider_count",
+    "step",
+    "unit_name"
+  ],
+  "exclusion_breakdown_keys": [
+    "budget",
+    "missing_throughput",
+    "non_comparable_normalization",
+    "provider_filtered_out",
+    "unit_mismatch"
+  ]
+}

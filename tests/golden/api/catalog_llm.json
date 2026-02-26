@@ -1,0 +1,22 @@
+{
+  "keys": [
+    "rows",
+    "total"
+  ],
+  "row_keys": [
+    "billing_mode",
+    "confidence",
+    "model_name",
+    "previous_unit_price_usd",
+    "price_change_abs_usd",
+    "price_change_pct",
+    "provider",
+    "region",
+    "sku_name",
+    "throughput_unit",
+    "throughput_value",
+    "unit_name",
+    "unit_price_usd",
+    "workload_type"
+  ]
+}

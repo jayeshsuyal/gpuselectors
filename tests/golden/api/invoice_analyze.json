@@ -1,0 +1,19 @@
+{
+  "keys": [
+    "detected_workloads",
+    "grand_total",
+    "line_items",
+    "totals_by_provider",
+    "warnings"
+  ],
+  "line_item_keys": [
+    "line_item",
+    "provider",
+    "quantity",
+    "total",
+    "unit",
+    "unit_price",
+    "workload_type"
+  ],
+  "savings_opportunity_keys": []
+}

@@ -345,6 +345,13 @@ def run_invoice_analyze(file_bytes: bytes) -> InvoiceAnalysisResponse:
 
 def _build_assist_reply(message: str, workload: str | None, providers: list[str]) -> str:
     rows = get_catalog_v2_rows()
+    if not rows:
+        return (
+            "I don't have pricing rows loaded in the current catalog snapshot yet. "
+            "You can still proceed by selecting a workload and broadening provider scope, "
+            "then retry optimization."
+        )
+
     scoped_workload, scoped_providers = resolve_ai_scope(
         ai_text=message,
         selected_workload=workload or "llm",
@@ -357,8 +364,12 @@ def _build_assist_reply(message: str, workload: str | None, providers: list[str]
         rows=rows,
         max_rows=25,
     )
-    if context.startswith("No matching catalog rows"):
-        return "I don't have matching catalog rows for that request yet. Try another workload or provider set."
+    requested_workload = workload or scoped_workload
+    requested_rows = [
+        row for row in rows
+        if requested_workload is not None and row.workload_type == requested_workload
+    ]
+    exact_workload_available = bool(requested_rows)
 
     filtered = [
         row
@@ -366,8 +377,38 @@ def _build_assist_reply(message: str, workload: str | None, providers: list[str]
         if (scoped_workload is None or row.workload_type == scoped_workload)
         and row.provider in set(scoped_providers)
     ]
-    if not filtered:
-        return "No matching rows found in current catalog scope."
+    if context.startswith("No matching catalog rows") or not filtered or not exact_workload_available:
+        # Fallback policy: never return a dead-end/null response.
+        candidate_rows = filtered or requested_rows or rows
+        workload_cheapest: dict[str, Any] = {}
+        for row in candidate_rows:
+            current = workload_cheapest.get(row.workload_type)
+            if current is None or row.unit_price_usd < current.unit_price_usd:
+                workload_cheapest[row.workload_type] = row
+
+        alternatives = sorted(workload_cheapest.values(), key=lambda row: row.unit_price_usd)[:4]
+        lines = []
+        if requested_workload and not exact_workload_available:
+            lines.append(
+                f"I don't have direct rows for `{requested_workload}` in the current catalog scope yet."
+            )
+        elif not filtered:
+            lines.append("I couldn't find direct matches with the current scope/filters.")
+        else:
+            lines.append("I couldn't find an exact direct match, but here are closest actionable options.")
+
+        if alternatives:
+            lines.append("You can consider these alternatives:")
+            for idx, row in enumerate(alternatives, start=1):
+                lines.append(
+                    f"{idx}. {row.workload_type}: {row.provider} · {row.sku_name} "
+                    f"at {row.unit_price_usd:.6g} USD/{row.unit_name}"
+                )
+        else:
+            lines.append("No priced alternatives are currently available in the snapshot.")
+
+        lines.append("Next best actions: use all providers, clear unit/budget filters, or pick a nearby workload category.")
+        return "\n".join(lines)
 
     filtered.sort(key=lambda row: row.unit_price_usd)
     top = filtered[:3]

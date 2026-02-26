@@ -18,6 +18,7 @@ interface InsightsChartsProps {
   mode: 'llm' | 'non-llm'
   plans: RankedPlan[]
   offers: RankedCatalogOffer[]
+  chartData?: Record<string, unknown>
 }
 
 const PROVIDER_COLORS = ['#6366f1', '#14b8a6', '#f59e0b', '#ef4444', '#a855f7', '#22c55e']
@@ -38,18 +39,28 @@ function confidenceOpacity(confidence: string): number {
   return 0.6
 }
 
-function ProviderCostChart({ mode, plans, offers }: InsightsChartsProps) {
-  const source = mode === 'llm'
+function ProviderCostChart({ mode, plans, offers, chartData }: InsightsChartsProps) {
+  const chartRows = Array.isArray(chartData?.cost_by_rank)
+    ? (chartData?.cost_by_rank as Array<Record<string, unknown>>)
+        .filter((row) => typeof row.monthly_cost_usd === 'number')
+        .map((row) => ({
+          provider: String(row.provider_name ?? row.provider ?? row.provider_id ?? 'unknown'),
+          monthly_cost: Number((row.monthly_cost_usd as number).toFixed(2)),
+        }))
+    : []
+  const source = chartRows.length > 0
+    ? chartRows
+    : mode === 'llm'
     ? plans.map((plan) => ({
         provider: plan.provider_name,
         monthly_cost: Number(plan.monthly_cost_usd.toFixed(2)),
       }))
     : offers
-        .filter((offer) => offer.monthly_estimate_usd !== null)
-        .map((offer) => ({
-          provider: offer.provider,
-          monthly_cost: Number((offer.monthly_estimate_usd ?? 0).toFixed(2)),
-        }))
+      .filter((offer) => offer.monthly_estimate_usd !== null)
+      .map((offer) => ({
+        provider: offer.provider,
+        monthly_cost: Number((offer.monthly_estimate_usd ?? 0).toFixed(2)),
+      }))
 
   const byProvider = new Map<string, number>()
   for (const row of source) {
@@ -68,7 +79,7 @@ function ProviderCostChart({ mode, plans, offers }: InsightsChartsProps) {
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Provider Cost Comparison</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Lowest monthly estimate per provider (top 8).
@@ -76,8 +87,12 @@ function ProviderCostChart({ mode, plans, offers }: InsightsChartsProps) {
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-            <XAxis dataKey="provider" tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis
+              dataKey="provider"
+              tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }}
+              tickFormatter={(v: string) => v.length > 10 ? `${v.slice(0, 9)}…` : v}
+            />
             <YAxis tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }} />
             <Tooltip
               formatter={(value: number) => [formatUSD(value), 'Monthly cost']}
@@ -101,22 +116,37 @@ function ProviderCostChart({ mode, plans, offers }: InsightsChartsProps) {
   )
 }
 
-function RiskCostScatter({ plans }: { plans: RankedPlan[] }) {
-  if (plans.length === 0) {
+function RiskCostScatter({ plans, chartData }: { plans: RankedPlan[]; chartData?: Record<string, unknown> }) {
+  const chartRows = Array.isArray(chartData?.cost_by_rank)
+    ? (chartData?.cost_by_rank as Array<Record<string, unknown>>)
+    : []
+  const fromChart = chartRows
+    .filter((row) => typeof row.monthly_cost_usd === 'number' && typeof row.total_risk === 'number')
+    .map((row) => ({
+      provider: String(row.provider_name ?? row.provider_id ?? 'unknown'),
+      rank: Number(row.rank ?? 0),
+      confidence: 'official',
+      monthly_cost: Number((row.monthly_cost_usd as number).toFixed(2)),
+      risk: Number((row.total_risk as number).toFixed(4)),
+      is_frontier: false,
+    }))
+  const base = fromChart.length > 0
+    ? fromChart
+    : plans.map((plan) => ({
+        provider: plan.provider_name,
+        rank: plan.rank,
+        confidence: plan.confidence,
+        monthly_cost: Number(plan.monthly_cost_usd.toFixed(2)),
+        risk: Number(plan.risk.total_risk.toFixed(4)),
+        is_frontier: false,
+      }))
+
+  if (base.length === 0) {
     return null
   }
 
-  const data = plans.map((plan) => ({
-    provider: plan.provider_name,
-    rank: plan.rank,
-    confidence: plan.confidence,
-    monthly_cost: Number(plan.monthly_cost_usd.toFixed(2)),
-    risk: Number(plan.risk.total_risk.toFixed(4)),
-    is_frontier: false,
-  }))
-
   // Pareto frontier (min risk for non-decreasing cost).
-  const byCost = [...data].sort((a, b) => a.monthly_cost - b.monthly_cost)
+  const byCost = [...base].sort((a, b) => a.monthly_cost - b.monthly_cost)
   let bestRisk = Number.POSITIVE_INFINITY
   const frontierSet = new Set<string>()
   for (const point of byCost) {
@@ -125,7 +155,7 @@ function RiskCostScatter({ plans }: { plans: RankedPlan[] }) {
       bestRisk = point.risk
     }
   }
-  const enriched = data.map((point) => ({
+  const enriched = base.map((point) => ({
     ...point,
     is_frontier: frontierSet.has(`${point.provider}:${point.monthly_cost}:${point.risk}`),
   }))
@@ -133,7 +163,7 @@ function RiskCostScatter({ plans }: { plans: RankedPlan[] }) {
   const nonFrontier = enriched.filter((d) => !d.is_frontier)
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Risk vs Cost Frontier</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Lower-left is ideal: lower risk and lower monthly cost.
@@ -141,7 +171,7 @@ function RiskCostScatter({ plans }: { plans: RankedPlan[] }) {
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis
               type="number"
               dataKey="monthly_cost"
@@ -214,7 +244,7 @@ function PriceChangeChart({ offers }: { offers: RankedCatalogOffer[] }) {
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Price Change Since Last Sync</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Negative means cheaper, positive means more expensive.
@@ -222,8 +252,12 @@ function PriceChangeChart({ offers }: { offers: RankedCatalogOffer[] }) {
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-            <XAxis dataKey="provider" tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }} />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
+            <XAxis
+              dataKey="provider"
+              tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }}
+              tickFormatter={(v: string) => v.length > 10 ? `${v.slice(0, 9)}…` : v}
+            />
             <YAxis tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }} />
             <Tooltip
               formatter={(value: number) => [`${value.toFixed(2)}%`, 'Change']}
@@ -298,7 +332,7 @@ export function InsightsCharts(props: InsightsChartsProps) {
       <ChartTakeaway {...props} />
       <ProviderCostChart {...props} />
       {props.mode === 'llm'
-        ? <RiskCostScatter plans={props.plans} />
+        ? <RiskCostScatter plans={props.plans} chartData={props.chartData} />
         : <PriceChangeChart offers={props.offers} />}
     </div>
   )
