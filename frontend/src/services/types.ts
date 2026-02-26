@@ -248,7 +248,10 @@ export interface ReportSection {
 export interface ReportGenerateRequest {
   mode: 'llm' | 'catalog'
   title?: string
+  output_format?: 'markdown' | 'html' | 'pdf'
   include_charts?: boolean
+  include_csv_exports?: boolean
+  include_narrative?: boolean
   llm_planning?: LLMPlanningResponse
   catalog_ranking?: CatalogRankingResponse
 }
@@ -261,5 +264,10 @@ export interface ReportGenerateResponse {
   sections: ReportSection[]
   chart_data: Record<string, unknown>
   metadata: Record<string, unknown>
+  output_format: 'markdown' | 'html' | 'pdf'
+  narrative?: string | null
+  csv_exports: Record<string, string>
   markdown: string
+  html?: string | null
+  pdf_base64?: string | null
 }

@@ -7,7 +7,7 @@ import { NonLLMForm } from '@/components/optimize/NonLLMForm'
 import { CopilotPanel } from '@/components/optimize/CopilotPanel'
 import { ResultsTable } from '@/components/optimize/ResultsTable'
 import { SkeletonCard } from '@/components/ui/skeleton'
-import { generateReport, planLLMWorkload, rankCatalogOffers } from '@/services/api'
+import { downloadReport, generateReport, planLLMWorkload, rankCatalogOffers } from '@/services/api'
 import type { LLMFormValues, NonLLMFormValues } from '@/schemas/forms'
 import type {
   LLMPlanningResponse,
@@ -35,6 +35,7 @@ export function OptimizePage() {
   const [reportError, setReportError] = useState<string | null>(null)
   const [reportData, setReportData] = useState<ReportGenerateResponse | null>(null)
   const [downloadSuccess, setDownloadSuccess] = useState(false)
+  const [reportFormat, setReportFormat] = useState<'markdown' | 'html' | 'pdf'>('markdown')
   const { setAIContext } = useAIContext()
 
   function handleWorkloadSelect(id: WorkloadTypeId) {
@@ -67,6 +68,7 @@ export function OptimizePage() {
     setReportError(null)
     setReportData(null)
     setDownloadSuccess(false)
+    setReportFormat('markdown')
     setAIContext({ workload_type: null, providers: [] })
   }
 
@@ -147,19 +149,24 @@ export function OptimizePage() {
     !Array.isArray(chartData['exclusion_breakdown']))
     ? Object.keys(chartData['exclusion_breakdown'] as Record<string, unknown>).length : null
 
-  function downloadReportMarkdown(report: ReportGenerateResponse) {
-    const blob = new Blob([report.markdown], { type: 'text/markdown;charset=utf-8' })
+  function downloadBlob(blob: Blob, filename: string) {
     const url = URL.createObjectURL(blob)
     const anchor = document.createElement('a')
-    const dateToken = new Date(report.generated_at_utc).toISOString().slice(0, 10)
     anchor.href = url
-    anchor.download = `${report.mode}_report_${dateToken}.md`
+    anchor.download = filename
     document.body.appendChild(anchor)
     anchor.click()
     anchor.remove()
     URL.revokeObjectURL(url)
     setDownloadSuccess(true)
     window.setTimeout(() => setDownloadSuccess(false), 3000)
+  }
+
+  function downloadCsvFromReport(report: ReportGenerateResponse, key: string) {
+    const csvText = report.csv_exports?.[key]
+    if (!csvText) return
+    const blob = new Blob([csvText], { type: 'text/csv;charset=utf-8' })
+    downloadBlob(blob, key)
   }
 
   async function handleGenerateReport(autoDownload = false) {
@@ -171,19 +178,26 @@ export function OptimizePage() {
         ? {
             mode: 'llm',
             title: `${workloadMeta?.label ?? 'LLM'} Optimization Report`,
+            output_format: reportFormat,
             include_charts: true,
+            include_csv_exports: true,
+            include_narrative: true,
             llm_planning: llmResult ?? undefined,
           }
         : {
             mode: 'catalog',
             title: `${workloadMeta?.label ?? 'Catalog'} Optimization Report`,
+            output_format: reportFormat,
             include_charts: true,
+            include_csv_exports: true,
+            include_narrative: true,
             catalog_ranking: catalogResult ?? undefined,
           }
       const report = await generateReport(req)
       setReportData(report)
       if (autoDownload) {
-        downloadReportMarkdown(report)
+        const downloaded = await downloadReport(req)
+        downloadBlob(downloaded.blob, downloaded.filename)
       }
     } catch (e) {
       setReportError(e instanceof Error ? e.message : 'Report generation failed')
@@ -372,20 +386,42 @@ export function OptimizePage() {
                   <span className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>Format</span>
                   <button
                     type="button"
-                    aria-pressed={true}
+                    aria-pressed={reportFormat === 'markdown'}
+                    onClick={() => setReportFormat('markdown')}
                     className="rounded px-2 py-1 text-[11px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
-                    style={{ borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }}
+                    style={
+                      reportFormat === 'markdown'
+                        ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                        : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }
+                    }
                   >
                     Markdown (.md)
                   </button>
                   <button
                     type="button"
-                    disabled
-                    aria-label="PDF format — coming soon"
+                    aria-pressed={reportFormat === 'html'}
+                    onClick={() => setReportFormat('html')}
                     className="rounded px-2 py-1 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
-                    style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }}
+                    style={
+                      reportFormat === 'html'
+                        ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                        : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }
+                    }
                   >
-                    PDF <span className="text-[9px] opacity-70">soon</span>
+                    HTML (.html)
+                  </button>
+                  <button
+                    type="button"
+                    aria-pressed={reportFormat === 'pdf'}
+                    onClick={() => setReportFormat('pdf')}
+                    className="rounded px-2 py-1 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
+                    style={
+                      reportFormat === 'pdf'
+                        ? { borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }
+                        : { borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }
+                    }
+                  >
+                    PDF (.pdf)
                   </button>
                 </div>
 
@@ -403,21 +439,37 @@ export function OptimizePage() {
                   </button>
                   <button
                     type="button"
-                    aria-label="Download report as Markdown file"
-                    onClick={() => {
-                      if (reportData) {
-                        downloadReportMarkdown(reportData)
-                      } else {
-                        void handleGenerateReport(true)
-                      }
-                    }}
+                    aria-label="Download report file"
+                    onClick={() => void handleGenerateReport(true)}
                     disabled={reportLoading || (!reportData && !hasResults)}
                     className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
                     style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
                   >
                     {reportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
-                    {reportLoading ? 'Working…' : 'Download .md'}
+                    {reportLoading ? 'Working…' : `Download .${reportFormat === 'markdown' ? 'md' : reportFormat}`}
                   </button>
+                  {reportData && reportData.csv_exports && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => downloadCsvFromReport(reportData, 'ranked_results.csv')}
+                        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                        style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+                        disabled={!reportData.csv_exports['ranked_results.csv']}
+                      >
+                        Download ranked_results.csv
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => downloadCsvFromReport(reportData, 'provider_diagnostics.csv')}
+                        className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                        style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+                        disabled={!reportData.csv_exports['provider_diagnostics.csv']}
+                      >
+                        Download provider_diagnostics.csv
+                      </button>
+                    </>
+                  )}
                   {downloadSuccess && (
                     <span className="text-[11px]" style={{ color: '#22c55e' }} aria-live="polite">
                       ✓ Downloaded
@@ -536,6 +588,16 @@ export function OptimizePage() {
                           </ul>
                         </div>
                       ))}
+                    </div>
+                  )}
+                  {reportData.narrative && (
+                    <div>
+                      <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                        Narrative
+                      </div>
+                      <p className="mt-1 text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                        {reportData.narrative}
+                      </p>
                     </div>
                   )}
                 </div>

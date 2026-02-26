@@ -131,6 +131,12 @@ async function post<T>(path: string, body: unknown): Promise<T> {
   return res.json() as Promise<T>
 }
 
+export interface DownloadReportResult {
+  blob: Blob
+  filename: string
+  contentType: string
+}
+
 async function get<T>(
   path: string,
   params?: Record<string, string>,
@@ -656,6 +662,7 @@ export async function generateReport(req: ReportGenerateRequest): Promise<Report
     const now = new Date().toISOString()
     const mode = req.mode
     const title = req.title ?? 'InferenceAtlas Optimization Report'
+    const outputFormat = req.output_format ?? 'markdown'
     const markdown = [
       `# ${title}`,
       '',
@@ -686,10 +693,76 @@ export async function generateReport(req: ReportGenerateRequest): Promise<Report
           ],
         },
       ],
-      chart_data: {},
+      chart_data: req.include_charts === false ? {} : {},
       metadata: {},
+      output_format: outputFormat,
+      narrative: req.include_narrative
+        ? 'Primary recommendation is grounded to this mock run payload.'
+        : null,
+      csv_exports:
+        req.include_csv_exports === false
+          ? {}
+          : {
+              'ranked_results.csv': 'rank,provider,monthly_cost_usd\n1,mock,10.0\n',
+              'provider_diagnostics.csv': 'provider,status,reason\nmock,included,mock data\n',
+            },
       markdown,
+      html:
+        outputFormat === 'html' || outputFormat === 'pdf'
+          ? '<!doctype html><html><body><h1>Mock Report</h1></body></html>'
+          : null,
+      pdf_base64:
+        outputFormat === 'pdf'
+          ? 'JVBERi0xLjQKJcTl8uXrCg=='
+          : null,
     }
   }
   return post<ReportGenerateResponse>('/api/v1/report/generate', req)
+}
+
+export async function downloadReport(
+  req: ReportGenerateRequest
+): Promise<DownloadReportResult> {
+  if (USE_MOCK) {
+    const report = await generateReport(req)
+    const format = report.output_format ?? req.output_format ?? 'markdown'
+    const dateToken = new Date(report.generated_at_utc).toISOString().slice(0, 10)
+    if (format === 'html') {
+      const htmlContent = report.html ?? '<!doctype html><html><body></body></html>'
+      return {
+        blob: new Blob([htmlContent], { type: 'text/html;charset=utf-8' }),
+        filename: `${report.mode}_report_${dateToken}.html`,
+        contentType: 'text/html;charset=utf-8',
+      }
+    }
+    if (format === 'pdf') {
+      const bytes = Uint8Array.from(atob(report.pdf_base64 ?? ''), (c) => c.charCodeAt(0))
+      return {
+        blob: new Blob([bytes], { type: 'application/pdf' }),
+        filename: `${report.mode}_report_${dateToken}.pdf`,
+        contentType: 'application/pdf',
+      }
+    }
+    return {
+      blob: new Blob([report.markdown], { type: 'text/markdown;charset=utf-8' }),
+      filename: `${report.mode}_report_${dateToken}.md`,
+      contentType: 'text/markdown;charset=utf-8',
+    }
+  }
+
+  const res = await fetch(`${BASE}/api/v1/report/download`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(req),
+  })
+  if (!res.ok) {
+    const text = await res.text().catch(() => 'Unknown error')
+    throw new Error(`${res.status} ${res.statusText}: ${text}`)
+  }
+  const blob = await res.blob()
+  const contentType = res.headers.get('content-type') ?? 'application/octet-stream'
+  const cd = res.headers.get('content-disposition') ?? ''
+  const match = cd.match(/filename=\"([^\"]+)\"/)
+  const filename = match?.[1] ?? 'report.bin'
+  return { blob, filename, contentType }
 }
