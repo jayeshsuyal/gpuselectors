@@ -279,39 +279,54 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
           {isWorkloadFirst ? providerSelect : workloadSelect}
         </div>
 
-        <Select
-          value={filters.model_name || '__all__'}
-          onValueChange={(v) => setValue('model_name', v === '__all__' ? '' : v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All models" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All models</SelectItem>
-            {uniqueModels.map((m) => (
-              <SelectItem key={m} value={m}>{m}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-1">
+          <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text-tertiary)' }}>
+            Model
+          </div>
+          <Select
+            value={filters.model_name || '__all__'}
+            onValueChange={(v) => setValue('model_name', v === '__all__' ? '' : v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All models" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All models</SelectItem>
+              {uniqueModels.map((m) => (
+                <SelectItem key={m} value={m}>{m}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <Select
-          value={filters.unit_name || '__all__'}
-          onValueChange={(v) => setValue('unit_name', v === '__all__' ? '' : v)}
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="All units" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="__all__">All units</SelectItem>
-            {uniqueUnits.map((u) => (
-              <SelectItem key={u} value={u}>{u}</SelectItem>
-            ))}
-          </SelectContent>
-        </Select>
+        <div className="space-y-1">
+          <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text-tertiary)' }}>
+            Unit
+          </div>
+          <Select
+            value={filters.unit_name || '__all__'}
+            onValueChange={(v) => setValue('unit_name', v === '__all__' ? '' : v)}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="All units" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="__all__">All units</SelectItem>
+              {uniqueUnits.map((u) => (
+                <SelectItem key={u} value={u}>{u}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-tertiary)' }} />
-          <Input {...register('search')} className="pl-8" placeholder="Search SKU or model…" />
+        <div className="space-y-1">
+          <div className="text-[10px] uppercase tracking-[0.08em]" style={{ color: 'var(--text-tertiary)' }}>
+            Search
+          </div>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-3.5 w-3.5" style={{ color: 'var(--text-tertiary)' }} />
+            <Input {...register('search')} className="pl-8" placeholder="SKU or model…" />
+          </div>
         </div>
       </div>
 
@@ -405,7 +420,8 @@ export function CatalogTable({ rows, loading }: CatalogTableProps) {
                 filtered.map((row, i) => (
                   <tr
                     key={i}
-                    className="table-row-hover group"
+                    className="catalog-row group"
+                    data-workload-card={row.workload_type}
                     style={{
                       borderBottom: '1px solid var(--border-subtle)',
                       // Left accent line appears on hover via CSS

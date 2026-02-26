@@ -79,7 +79,7 @@ function ProviderCostChart({ mode, plans, offers, chartData }: InsightsChartsPro
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Provider Cost Comparison</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Lowest monthly estimate per provider (top 8).
@@ -87,7 +87,7 @@ function ProviderCostChart({ mode, plans, offers, chartData }: InsightsChartsPro
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis
               dataKey="provider"
               tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }}
@@ -163,7 +163,7 @@ function RiskCostScatter({ plans, chartData }: { plans: RankedPlan[]; chartData?
   const nonFrontier = enriched.filter((d) => !d.is_frontier)
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Risk vs Cost Frontier</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Lower-left is ideal: lower risk and lower monthly cost.
@@ -171,7 +171,7 @@ function RiskCostScatter({ plans, chartData }: { plans: RankedPlan[]; chartData?
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <ScatterChart>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis
               type="number"
               dataKey="monthly_cost"
@@ -244,7 +244,7 @@ function PriceChangeChart({ offers }: { offers: RankedCatalogOffer[] }) {
   }
 
   return (
-    <div className="rounded-lg border p-4" style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}>
+    <div className="rounded-lg p-4" style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}>
       <h3 className="text-sm font-semibold" style={{ color: 'var(--text-primary)' }}>Price Change Since Last Sync</h3>
       <p className="text-[11px] mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
         Negative means cheaper, positive means more expensive.
@@ -252,7 +252,7 @@ function PriceChangeChart({ offers }: { offers: RankedCatalogOffer[] }) {
       <div className="h-64 mt-3">
         <ResponsiveContainer width="100%" height="100%">
           <BarChart data={data}>
-            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
+            <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" />
             <XAxis
               dataKey="provider"
               tick={{ fill: 'var(--text-tertiary)', fontSize: 11 }}

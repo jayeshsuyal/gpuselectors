@@ -73,6 +73,23 @@
   --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
+/* ─── Workload palette tokens ───────────────────────────────────────────────
+   Single source of truth for all workload accent colors.
+   Two scopes:
+     [data-workload="X"]      — page-level (Optimize.tsx outer div)
+     [data-workload-card="X"] — card/row-level (WorkloadSelector buttons, CatalogTable rows)
+   Components reference var(--workload-*) or var(--card-*) — zero hardcoded colors.
+────────────────────────────────────────────────────────────────────────────── */
+
+[data-workload="llm"],            [data-workload-card="llm"]            { --w-accent:#818cf8; --w-ring:rgba(99,102,241,0.28);  --w-border:rgba(99,102,241,0.42);  --w-bg:rgba(99,102,241,0.055); --w-glow:rgba(99,102,241,0.18);  }
+[data-workload="speech_to_text"], [data-workload-card="speech_to_text"] { --w-accent:#34d399; --w-ring:rgba(52,211,153,0.24);  --w-border:rgba(52,211,153,0.38);  --w-bg:rgba(52,211,153,0.048); --w-glow:rgba(52,211,153,0.15);  }
+[data-workload="text_to_speech"], [data-workload-card="text_to_speech"] { --w-accent:#38bdf8; --w-ring:rgba(56,189,248,0.24);  --w-border:rgba(56,189,248,0.38);  --w-bg:rgba(56,189,248,0.048); --w-glow:rgba(56,189,248,0.15);  }
+[data-workload="embeddings"],     [data-workload-card="embeddings"]     { --w-accent:#a78bfa; --w-ring:rgba(167,139,250,0.28); --w-border:rgba(167,139,250,0.42); --w-bg:rgba(167,139,250,0.055);--w-glow:rgba(167,139,250,0.20); }
+[data-workload="vision"],         [data-workload-card="vision"]         { --w-accent:#fbbf24; --w-ring:rgba(251,191,36,0.24);  --w-border:rgba(251,191,36,0.38);  --w-bg:rgba(251,191,36,0.048); --w-glow:rgba(251,191,36,0.15);  }
+[data-workload="image_generation"],[data-workload-card="image_generation"]{ --w-accent:#fb7185; --w-ring:rgba(251,113,133,0.24); --w-border:rgba(251,113,133,0.38); --w-bg:rgba(251,113,133,0.048);--w-glow:rgba(251,113,133,0.15); }
+[data-workload="video_generation"],[data-workload-card="video_generation"]{ --w-accent:#fb923c; --w-ring:rgba(251,146,60,0.24);  --w-border:rgba(251,146,60,0.38);  --w-bg:rgba(251,146,60,0.048); --w-glow:rgba(251,146,60,0.15);  }
+[data-workload="moderation"],     [data-workload-card="moderation"]     { --w-accent:#2dd4bf; --w-ring:rgba(45,212,191,0.24);  --w-border:rgba(45,212,191,0.38);  --w-bg:rgba(45,212,191,0.048); --w-glow:rgba(45,212,191,0.15);  }
+
 /* ─── Base ─────────────────────────────────────────────────────────────────── */
 
 @layer base {
@@ -417,6 +434,54 @@
     border-color: var(--danger-border);
     color: #fca5a5;
   }
+
+  /* ── Metadata chip — inline pill for labels, trust bar, trace filters ── */
+  .ui-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-size: 0.6875rem;
+    font-weight: 500;
+    border: 1px solid var(--border-default);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  /* ── Ghost action button — unified style for secondary actions ── */
+  .ui-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.75rem;
+    font-weight: 500;
+    border: 1px solid var(--border-default);
+    background: rgba(255, 255, 255, 0.03);
+    color: var(--text-secondary);
+    transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+    white-space: nowrap;
+  }
+  .ui-btn:hover:not(:disabled),
+  .ui-btn:focus-visible:not(:disabled) {
+    border-color: var(--glass-border-strong);
+    color: var(--text-primary);
+    background: rgba(255, 255, 255, 0.055);
+  }
+  .ui-btn:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  /* ── Inset secondary panel — nested info panels inside cards ── */
+  .ui-panel-inset {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid var(--border-subtle);
+    border-radius: 10px;
+  }
 }
 
 /* ─── Keyframes ────────────────────────────────────────────────────────────── */
@@ -449,6 +514,117 @@
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
+}
+
+/* ─── Workload utility classes ──────────────────────────────────────────────
+   All reference --w-* tokens above — no hardcoded colors anywhere.
+────────────────────────────────────────────────────────────────────────────── */
+
+/* WorkloadSelector cards */
+.workload-card {
+  transition: border-color 200ms ease, background 200ms ease, box-shadow 200ms ease, transform 200ms ease;
+}
+.workload-card:hover,
+.workload-card[data-active] {
+  border-color: var(--w-border, rgba(124,92,252,0.42));
+  background: rgba(255,255,255,0.02);
+}
+.workload-card[data-active] {
+  background: var(--w-bg, rgba(124,92,252,0.055));
+}
+.workload-card:hover {
+  box-shadow: 0 0 0 1px var(--w-ring, rgba(124,92,252,0.22)),
+              0 0 18px var(--w-glow, rgba(124,92,252,0.15)),
+              0 4px 12px rgba(0,0,0,0.35),
+              inset 0 1px 0 rgba(255,255,255,0.05);
+  transform: translateY(-2px);
+}
+.workload-card[data-active] {
+  box-shadow: 0 0 0 1px var(--w-ring, rgba(124,92,252,0.28)),
+              0 0 28px var(--w-glow, rgba(124,92,252,0.18)),
+              0 4px 16px rgba(0,0,0,0.45),
+              inset 0 1px 0 rgba(255,255,255,0.07);
+  transform: translateY(-2px);
+}
+.workload-card:active { transform: translateY(0) scale(0.98); }
+
+/* Accent strip */
+.workload-card .card-accent-strip {
+  background: linear-gradient(90deg, transparent, var(--w-accent, var(--brand-hover)), transparent);
+  opacity: 0;
+  transition: opacity 200ms ease;
+}
+.workload-card:hover .card-accent-strip,
+.workload-card[data-active] .card-accent-strip { opacity: 1; }
+
+/* Foreground icon */
+.workload-card .card-icon { color: var(--text-tertiary); transition: color 200ms ease, transform 200ms ease; }
+.workload-card:hover .card-icon,
+.workload-card[data-active] .card-icon { color: var(--w-accent, var(--brand-hover)); }
+.workload-card:hover .card-icon { transform: scale(1.05); }
+
+/* Label */
+.workload-card .card-label { transition: color 200ms ease; }
+.workload-card:hover .card-label,
+.workload-card[data-active] .card-label { color: var(--text-primary); }
+
+/* Watermark */
+.workload-card .card-watermark { color: var(--w-accent, var(--brand-hover)); opacity: 0.028; filter: blur(0.5px); transition: opacity 400ms ease; }
+.workload-card:hover .card-watermark { opacity: 0.06; }
+.workload-card[data-active] .card-watermark { opacity: 0.10; animation: watermarkDrift 7s ease-in-out infinite; }
+
+/* ── Rank-1 result card (Optimize results) ── */
+.workload-rank1 {
+  border-color: var(--w-border, rgba(124,92,252,0.28)) !important;
+  background: var(--w-bg, rgba(124,92,252,0.04)) !important;
+  box-shadow: 0 0 0 1px var(--w-ring, rgba(124,92,252,0.10)), var(--shadow-md), var(--inner-highlight) !important;
+}
+.workload-rank1:hover {
+  box-shadow: 0 0 0 1px var(--w-ring, rgba(124,92,252,0.18)),
+              0 0 20px var(--w-glow, rgba(124,92,252,0.12)),
+              var(--shadow-md), var(--inner-highlight) !important;
+}
+.workload-rank1 .rank1-accent {
+  background: linear-gradient(90deg, transparent, var(--w-accent, var(--brand-hover)), transparent);
+}
+.workload-badge {
+  background: color-mix(in srgb, var(--w-accent, var(--brand-hover)) 16%, transparent);
+  color: var(--w-accent, var(--brand-hover));
+}
+.workload-cost-hero { color: var(--w-accent, var(--brand-hover)); }
+.workload-rank-num  { color: var(--w-accent, var(--brand)); }
+
+/* ── Configure step header glow ── */
+.workload-header-glow {
+  position: relative;
+}
+.workload-header-glow::before {
+  content: '';
+  position: absolute;
+  inset: -8px -12px;
+  background: radial-gradient(ellipse 70% 100% at 0% 50%, var(--w-accent, transparent) 0%, transparent 70%);
+  opacity: 0.07;
+  pointer-events: none;
+  border-radius: 12px;
+}
+
+/* ── Catalog table row left-accent on hover ── */
+.catalog-row td:first-child {
+  box-shadow: inset 2px 0 0 transparent;
+  transition: box-shadow 150ms ease;
+}
+.catalog-row:hover td:first-child {
+  box-shadow: inset 2px 0 0 var(--w-accent, rgba(255,255,255,0.12));
+}
+
+@keyframes watermarkDrift {
+  0%, 100% { transform: translateY(0px)   scale(1)    rotate(0deg);   }
+  35%       { transform: translateY(-5px)  scale(1.05) rotate(2deg);   }
+  70%       { transform: translateY(-2px)  scale(1.02) rotate(-1deg);  }
+}
+
+.watermark-drift {
+  animation: watermarkDrift 7s ease-in-out infinite;
 }
 
 /* Respect reduced motion */

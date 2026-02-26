@@ -35,53 +35,58 @@ export function WorkloadSelector({ selected, onSelect }: WorkloadSelectorProps) 
             <button
               key={w.id}
               onClick={() => onSelect(w.id)}
-              style={{
-                animationDelay: `${i * 25}ms`,
-                ...(isSelected
-                  ? {
-                      borderColor: 'rgba(124,92,252,0.45)',
-                      background: 'rgba(124,92,252,0.06)',
-                      boxShadow: 'var(--shadow-glow-sm)',
-                    }
-                  : {}),
-              }}
+              // data-workload-card drives --w-* token cascade from index.css
+              data-workload-card={w.id}
+              // data-active signals selected state to CSS (hover-like but persistent)
+              data-active={isSelected ? '' : undefined}
+              style={{ animationDelay: `${i * 25}ms` }}
               className={cn(
-                'group relative flex flex-col gap-2.5 rounded-lg border p-3.5 text-left cursor-pointer',
-                'transition-all duration-200 ease-out animate-enter',
-                'hover:-translate-y-0.5 active:translate-y-0 active:scale-[0.98]',
-                isSelected
-                  ? 'ring-1 ring-[rgba(124,92,252,0.18)]'
-                  : 'border-white/[0.07] bg-surface-elevated hover:border-white/[0.13] hover:bg-white/[0.02]'
+                // workload-card: all hover/active/watermark states handled by CSS
+                'workload-card group relative flex flex-col gap-2.5 rounded-lg border p-3.5 text-left cursor-pointer animate-enter',
+                'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]',
+                !isSelected && 'border-white/[0.07] bg-surface-elevated'
               )}
             >
-              {/* Top gradient accent strip when selected */}
-              {isSelected && (
+              {/* Top accent strip — opacity toggled by .workload-card CSS */}
+              <div
+                className="card-accent-strip absolute top-0 inset-x-0 h-[1.5px] rounded-t-lg"
+                aria-hidden="true"
+              />
+
+              {/* Watermark — inner clip container so the button's box-shadow is never clipped */}
+              {Icon && (
                 <div
-                  className="absolute top-0 inset-x-0 h-[1.5px] rounded-t-lg"
-                  style={{ background: 'var(--brand-gradient)' }}
-                />
+                  className="absolute inset-0 overflow-hidden rounded-lg pointer-events-none"
+                  aria-hidden="true"
+                >
+                  <div
+                    className={cn(
+                      'card-watermark absolute bottom-0 right-0 select-none',
+                      isSelected && 'watermark-drift'
+                    )}
+                    style={{ transform: 'translate(18%, 18%)' }}
+                  >
+                    <Icon className="h-16 w-16" />
+                  </div>
+                </div>
               )}
 
+              {/* Foreground icon — color driven by .card-icon CSS rule */}
               {Icon && (
-                <span
-                  className="transition-all duration-200 group-hover:scale-105 inline-flex"
-                  style={{ color: isSelected ? 'var(--brand-hover)' : 'var(--text-tertiary)' }}
-                >
+                <span className="card-icon inline-flex relative z-10">
                   <Icon className="h-5 w-5 flex-shrink-0" />
                 </span>
               )}
 
-              <div>
+              {/* Label + description */}
+              <div className="relative z-10">
                 <div
-                  className="text-xs font-semibold leading-tight"
-                  style={{ color: isSelected ? 'var(--text-primary)' : 'var(--text-secondary)' }}
+                  className="card-label text-xs font-semibold leading-tight"
+                  style={{ color: 'var(--text-secondary)' }}
                 >
                   {w.label}
                 </div>
-                <div
-                  className="text-[10px] mt-0.5 leading-tight"
-                  style={{ color: 'var(--text-disabled)' }}
-                >
+                <div className="text-[10px] mt-0.5 leading-tight" style={{ color: 'var(--text-disabled)' }}>
                   {w.description}
                 </div>
               </div>

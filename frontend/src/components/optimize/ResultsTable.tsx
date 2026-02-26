@@ -40,25 +40,24 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
     <div
       style={{
         animationDelay: `${index * 50}ms`,
-        ...(isFirst
+        ...(!isFirst
           ? {
-              borderColor: 'rgba(124,92,252,0.28)',
-              background: 'rgba(124,92,252,0.04)',
+              borderColor: 'var(--glass-border)',
+              background: 'var(--surface-card)',
+              boxShadow: 'var(--shadow-sm), var(--inner-highlight)',
             }
-          : {
-              borderColor: 'rgba(255,255,255,0.06)',
-              background: 'var(--bg-elevated)',
-            }),
+          : {}),
       }}
       className={cn(
-        'relative rounded-lg border overflow-hidden transition-all duration-200 animate-enter',
-        'hover:-translate-y-px',
-        !isFirst && 'hover:border-white/[0.11]'
+        'relative rounded-lg border overflow-hidden animate-enter',
+        'transition-all duration-150 ease-out will-change-transform',
+        'hover:-translate-y-0.5',
+        isFirst ? 'workload-rank1' : 'hover:border-white/[0.11]'
       )}
     >
-      {/* Brand gradient top accent for #1 */}
+      {/* Workload-accented top strip for #1 — color from --w-accent CSS token */}
       {isFirst && (
-        <div className="h-[1.5px]" style={{ background: 'var(--brand-gradient)' }} />
+        <div className="rank1-accent h-[1.5px]" />
       )}
 
       <div className="p-5">
@@ -68,16 +67,13 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
             {/* Rank + best-value tag */}
             <div className="flex items-center gap-2 mb-2">
               <span
-                className="text-[10px] font-mono font-bold tracking-[0.12em]"
-                style={{ color: isFirst ? 'var(--brand)' : 'var(--text-disabled)' }}
+                className={cn('text-[10px] font-mono font-bold tracking-[0.12em]', isFirst && 'workload-rank-num')}
+                style={{ color: isFirst ? undefined : 'var(--text-disabled)' }}
               >
                 #{String(plan.rank).padStart(2, '0')}
               </span>
               {isFirst && (
-                <span
-                  className="text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded"
-                  style={{ background: 'rgba(124,92,252,0.15)', color: 'var(--brand-hover)' }}
-                >
+                <span className="workload-badge text-[9px] font-bold uppercase tracking-widest px-1.5 py-0.5 rounded">
                   Best value
                 </span>
               )}
@@ -98,11 +94,11 @@ function LLMResultCard({ plan, isFirst, index }: { plan: RankedPlan; isFirst: bo
           <div className="text-right flex-shrink-0">
             <div className="micro-label mb-1">est. monthly</div>
             <div
-              className="font-bold font-numeric leading-none"
+              className={cn('font-bold font-numeric leading-none', isFirst && 'workload-cost-hero')}
               style={{
                 fontSize: isFirst ? '1.875rem' : '1.375rem',
                 letterSpacing: '-0.035em',
-                color: isFirst ? 'var(--brand-hover)' : 'var(--text-primary)',
+                color: isFirst ? undefined : 'var(--text-primary)',
               }}
             >
               {formatUSD(plan.monthly_cost_usd, 0)}
@@ -188,15 +184,17 @@ function NonLLMResultRow({ offer, isFirst, index }: { offer: RankedCatalogOffer;
           ? {
               borderColor: 'rgba(124,92,252,0.28)',
               background: 'rgba(124,92,252,0.04)',
+              boxShadow: '0 0 0 1px rgba(124,92,252,0.06), var(--shadow-md), var(--inner-highlight)',
             }
           : {
-              borderColor: 'rgba(255,255,255,0.06)',
-              background: 'var(--bg-elevated)',
+              borderColor: 'var(--glass-border)',
+              background: 'var(--surface-card)',
+              boxShadow: 'var(--shadow-sm), var(--inner-highlight)',
             }),
       }}
       className={cn(
-        'relative flex items-center gap-4 px-4 py-3.5 rounded-lg border overflow-hidden',
-        'transition-all duration-200 animate-enter hover:-translate-y-px',
+        'relative flex items-center gap-4 px-4 py-3.5 rounded-lg border overflow-hidden animate-enter',
+        'transition-all duration-150 ease-out will-change-transform hover:-translate-y-0.5',
         !isFirst && 'hover:border-white/[0.11]'
       )}
     >
@@ -278,7 +276,7 @@ function DiagnosticsPanel({ diagnostics }: { diagnostics: ProviderDiagnostic[] }
   if (excluded.length === 0) return null
 
   return (
-    <div className="border border-white/[0.06] rounded-lg overflow-hidden">
+    <div className="ui-panel-inset overflow-hidden">
       <button
         onClick={() => setOpen(!open)}
         aria-expanded={open}
@@ -435,7 +433,7 @@ export function ResultsTable({
 
       {/* Relaxation trace */}
       {mode === 'non-llm' && relaxationSteps.length > 0 && (
-        <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="ui-panel-inset px-3 py-2">
           <div className="micro-label mb-2">Applied filters</div>
           <div className="flex flex-wrap items-center gap-1.5">
             {relaxationSteps
@@ -475,7 +473,7 @@ export function ResultsTable({
 
       {/* Exclusion breakdown */}
       {mode === 'non-llm' && Object.keys(exclusionBreakdown).length > 0 && (
-        <div className="rounded-lg border px-3 py-2" style={{ borderColor: 'var(--border-default)' }}>
+        <div className="ui-panel-inset px-3 py-2">
           <div className="micro-label mb-2">Exclusion reasons</div>
           <div className="flex flex-wrap gap-1.5">
             {Object.entries(exclusionBreakdown)

@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+from types import SimpleNamespace
+
 import pytest
 from pydantic import ValidationError
 
@@ -122,6 +124,63 @@ def test_run_ai_assist_returns_grounded_reply() -> None:
         )
     )
     assert "lowest current unit prices" in response.reply
+
+
+def test_run_ai_assist_returns_alternatives_when_workload_missing(monkeypatch: pytest.MonkeyPatch) -> None:
+    rows = [
+        SimpleNamespace(
+            provider="openai",
+            workload_type="llm",
+            sku_name="gpt-4o-mini",
+            model_key="gpt-4o-mini",
+            billing_mode="per_token",
+            unit_price_usd=0.15,
+            unit_name="1m_tokens",
+            region="global",
+            confidence="official",
+            source_kind="provider_csv",
+        ),
+        SimpleNamespace(
+            provider="deepgram",
+            workload_type="speech_to_text",
+            sku_name="nova-2",
+            model_key="nova-2",
+            billing_mode="per_unit",
+            unit_price_usd=0.0043,
+            unit_name="audio_min",
+            region="global",
+            confidence="official",
+            source_kind="provider_csv",
+        ),
+    ]
+
+    monkeypatch.setattr("inference_atlas.api_service.get_catalog_v2_rows", lambda: rows)
+
+    response = run_ai_assist(
+        AIAssistRequest(
+            message="give me text to speech options",
+            context=AIAssistContext(workload_type="text_to_speech", providers=[]),
+        )
+    )
+    assert "consider these alternatives" in response.reply.lower()
+    assert "next best actions" in response.reply.lower()
+    assert response.suggested_action is None
+
+
+def test_run_ai_assist_returns_actionable_message_when_catalog_empty(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("inference_atlas.api_service.get_catalog_v2_rows", lambda: [])
+
+    response = run_ai_assist(
+        AIAssistRequest(
+            message="cheapest provider?",
+            context=AIAssistContext(workload_type="llm", providers=[]),
+        )
+    )
+    assert "don't have pricing rows loaded" in response.reply.lower()
+    assert "broadening provider scope" in response.reply.lower()
+    assert response.suggested_action is None
 
 
 def test_run_rank_catalog_sets_relaxation_metadata_on_fallback() -> None:

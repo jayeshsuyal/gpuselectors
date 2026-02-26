@@ -245,7 +245,7 @@ export function OptimizePage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
+    <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6" data-workload={workload ?? undefined}>
       {/* ── Page header (select step only) ── */}
       {step === 'select' && (
         <div className="mb-8 page-section">
@@ -312,8 +312,8 @@ export function OptimizePage() {
       {/* ── Step: Configure ── */}
       {step === 'configure' && workload && (
         <div className="space-y-5 animate-enter">
-          {/* Workload header */}
-          <div>
+          {/* Workload header — workload-header-glow adds a faint radial accent via ::before */}
+          <div className="workload-header-glow">
             <div className="eyebrow mb-1">{workloadMeta?.label ?? workload.replace(/_/g, ' ')}</div>
             <h2 className="text-lg font-bold tracking-tight" style={{ color: 'var(--text-primary)' }}>
               Cost Optimization
@@ -411,7 +411,7 @@ export function OptimizePage() {
 
           {/* ── Shared results panel ── */}
           {hasResults && !loading && (
-            <div className="space-y-4 pt-5 border-t border-white/[0.06] animate-enter">
+            <div className="space-y-5 pt-6 border-t border-white/[0.06] animate-enter">
               <div>
                 <div className="eyebrow mb-1">Results</div>
                 <h2 className="text-base font-semibold tracking-tight" style={{ color: 'var(--text-primary)' }}>
@@ -426,24 +426,20 @@ export function OptimizePage() {
 
               {/* Contract/freshness trust bar */}
               <div
-                className="rounded-lg border px-3 py-2"
-                style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+                className="rounded-lg px-4 py-3"
+                style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}
               >
                 <div className="micro-label mb-1.5">Catalog snapshot</div>
                 {reportData ? (
-                  <div className="flex flex-wrap items-center gap-2 text-[11px]">
-                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="ui-chip">
                       {catalogGeneratedAt
                         ? new Date(catalogGeneratedAt).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })
                         : 'n/a'}
                     </span>
-                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
-                      Schema: {catalogSchemaVersion}
-                    </span>
-                    <span className="rounded-md border px-2 py-0.5" style={{ borderColor: 'var(--border-subtle)', color: 'var(--text-secondary)' }}>
-                      Providers: {catalogProvidersSynced}
-                    </span>
-                    <span className="rounded-md border px-2 py-0.5 font-medium" style={{ borderColor: freshness.border, color: freshness.color }}>
+                    <span className="ui-chip">Schema: {catalogSchemaVersion}</span>
+                    <span className="ui-chip">Providers: {catalogProvidersSynced}</span>
+                    <span className="ui-chip font-medium" style={{ borderColor: freshness.border, color: freshness.color }}>
                       {freshness.label}
                     </span>
                   </div>
@@ -461,7 +457,7 @@ export function OptimizePage() {
                     <button
                       type="button"
                       aria-pressed={true}
-                      className="rounded px-2 py-1 text-[11px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
+                      className="rounded-full px-2.5 py-0.5 text-[11px] border focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
                       style={{ borderColor: 'var(--brand-border)', background: 'rgba(124,92,252,0.08)', color: 'var(--brand-hover)' }}
                     >
                       Markdown (.md)
@@ -470,8 +466,8 @@ export function OptimizePage() {
                       type="button"
                       disabled
                       aria-label="PDF format — coming soon"
-                      className="rounded px-2 py-1 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
-                      style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'var(--bg-elevated)', color: 'var(--text-disabled)' }}
+                      className="rounded-full px-2.5 py-0.5 text-[11px] border disabled:opacity-40 disabled:cursor-not-allowed"
+                      style={{ borderColor: 'rgba(255,255,255,0.08)', background: 'transparent', color: 'var(--text-disabled)' }}
                     >
                       PDF <span className="text-[9px] opacity-70">soon</span>
                     </button>
@@ -485,8 +481,7 @@ export function OptimizePage() {
                     type="button"
                     onClick={() => void handleGenerateReport(false)}
                     disabled={reportLoading}
-                    className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
-                    style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+                    className="ui-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
                   >
                     {reportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Sparkles className="h-3.5 w-3.5" />}
                     {reportLoading ? 'Generating…' : 'Generate Report'}
@@ -502,8 +497,7 @@ export function OptimizePage() {
                       }
                     }}
                     disabled={reportLoading || (!reportData && !hasResults)}
-                    className="inline-flex items-center gap-1.5 rounded-md border px-3 py-1.5 text-xs transition-colors disabled:opacity-60 disabled:cursor-not-allowed focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
-                    style={{ borderColor: 'var(--border-default)', color: 'var(--text-secondary)', background: 'var(--bg-elevated)' }}
+                    className="ui-btn focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--brand)] focus-visible:ring-offset-1 focus-visible:ring-offset-[var(--bg-base)]"
                   >
                     {reportLoading ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Download className="h-3.5 w-3.5" />}
                     {reportLoading ? 'Working…' : 'Download .md'}
@@ -547,8 +541,8 @@ export function OptimizePage() {
 
               {reportData && (
                 <div
-                  className="rounded-lg border p-4 space-y-3"
-                  style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+                  className="rounded-lg p-4 space-y-3"
+                  style={{ background: 'var(--surface-card)', border: '1px solid var(--glass-border)', boxShadow: 'var(--shadow-sm), var(--inner-highlight)' }}
                 >
                   <div className="flex items-center justify-between gap-2">
                     <div>
@@ -563,23 +557,23 @@ export function OptimizePage() {
                   </div>
 
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div className="ui-panel-inset p-2">
                       <div className="micro-label mb-1">Mode</div>
                       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{reportData.mode}</div>
                     </div>
-                    <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div className="ui-panel-inset p-2">
                       <div className="micro-label mb-1">Catalog Rows</div>
                       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {String(reportData.metadata?.catalog_row_count ?? 'n/a')}
                       </div>
                     </div>
-                    <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div className="ui-panel-inset p-2">
                       <div className="micro-label mb-1">Providers Synced</div>
                       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {String(reportData.metadata?.catalog_providers_synced_count ?? 'n/a')}
                       </div>
                     </div>
-                    <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                    <div className="ui-panel-inset p-2">
                       <div className="micro-label mb-1">Schema</div>
                       <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                         {String(reportData.metadata?.catalog_schema_version ?? 'n/a')}
@@ -591,21 +585,21 @@ export function OptimizePage() {
                   <div>
                     <div className="micro-label mb-1.5">Chart data</div>
                     <div className="grid grid-cols-2 gap-2">
-                      <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                      <div className="ui-panel-inset p-2">
                         <div className="micro-label mb-0.5">Cost by rank</div>
                         <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                           {costByRankCount !== null ? `${costByRankCount} entries` : 'n/a'}
                         </div>
                       </div>
                       {isLLM ? (
-                        <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <div className="ui-panel-inset p-2">
                           <div className="micro-label mb-0.5">Risk breakdown</div>
                           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                             {riskBreakdownCount !== null ? `${riskBreakdownCount} entries` : 'n/a'}
                           </div>
                         </div>
                       ) : (
-                        <div className="rounded border p-2" style={{ borderColor: 'var(--border-subtle)' }}>
+                        <div className="ui-panel-inset p-2">
                           <div className="micro-label mb-0.5">Exclusion breakdown</div>
                           <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>
                             {exclusionKeys !== null ? `${exclusionKeys} keys` : 'n/a'}

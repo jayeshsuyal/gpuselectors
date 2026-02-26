@@ -46,20 +46,54 @@ function initialsFromLabel(label: string): string {
   return (words[0][0] + words[1][0]).toUpperCase()
 }
 
-const FALLBACK_BG: string[] = [
-  'bg-indigo-950/60 text-indigo-300 ring-indigo-700/40',
-  'bg-sky-950/60 text-sky-300 ring-sky-700/40',
-  'bg-emerald-950/60 text-emerald-300 ring-emerald-700/40',
-  'bg-violet-950/60 text-violet-300 ring-violet-700/40',
-  'bg-amber-950/60 text-amber-300 ring-amber-700/40',
-]
+// Crystalline conic-gradient palettes — each provider gets a unique gem-like fingerprint
+const GRADIENT_PALETTES = [
+  // Indigo gem — brand-adjacent deep violet
+  {
+    bg: 'conic-gradient(from 120deg at 25% 30%, #1e1b4b, #312e81, #0f0e1f, #1e1b4b)',
+    accent: '#818cf8',
+    ring: 'rgba(99,102,241,0.38)',
+  },
+  // Teal gem — electric deep sea
+  {
+    bg: 'conic-gradient(from 200deg at 70% 25%, #0c2435, #134e4a, #071218, #0c2435)',
+    accent: '#2dd4bf',
+    ring: 'rgba(20,184,166,0.32)',
+  },
+  // Amber gem — molten gold
+  {
+    bg: 'conic-gradient(from 45deg at 35% 65%, #2c1810, #78350f, #180d06, #2c1810)',
+    accent: '#fbbf24',
+    ring: 'rgba(245,158,11,0.34)',
+  },
+  // Violet gem — warm deep purple
+  {
+    bg: 'conic-gradient(from 300deg at 60% 40%, #1a0535, #4c1d95, #100220, #1a0535)',
+    accent: '#c084fc',
+    ring: 'rgba(168,85,247,0.34)',
+  },
+  // Emerald gem — forest crystal
+  {
+    bg: 'conic-gradient(from 160deg at 40% 20%, #0a1f0f, #14532d, #051008, #0a1f0f)',
+    accent: '#4ade80',
+    ring: 'rgba(34,197,94,0.30)',
+  },
+  // Rose gem — deep crimson facet
+  {
+    bg: 'conic-gradient(from 270deg at 50% 70%, #200710, #881337, #14030a, #200710)',
+    accent: '#fb7185',
+    ring: 'rgba(244,63,94,0.30)',
+  },
+] as const
 
-function colorFromToken(token: string): string {
+type GradientPalette = (typeof GRADIENT_PALETTES)[number]
+
+function paletteFromToken(token: string): GradientPalette {
   let hash = 0
   for (let i = 0; i < token.length; i += 1) {
     hash = (hash * 31 + token.charCodeAt(i)) >>> 0
   }
-  return FALLBACK_BG[hash % FALLBACK_BG.length]
+  return GRADIENT_PALETTES[hash % GRADIENT_PALETTES.length]
 }
 
 type ProviderLogoSize = 'sm' | 'md' | 'lg'
@@ -82,7 +116,7 @@ export function ProviderLogo({ provider, size = 'md', className }: ProviderLogoP
   const providerKey = normalizeProviderToken(provider)
   const label = PROVIDER_LABELS[providerKey] ?? provider
   const initials = useMemo(() => initialsFromLabel(label), [label])
-  const colorClass = useMemo(() => colorFromToken(providerKey), [providerKey])
+  const palette = useMemo(() => paletteFromToken(providerKey), [providerKey])
   const [hasImage, setHasImage] = useState(!missingLogoProviders.has(providerKey))
   const imageSrc = `/logos/providers/${providerKey}.svg`
 
@@ -91,11 +125,12 @@ export function ProviderLogo({ provider, size = 'md', className }: ProviderLogoP
       <img
         src={imageSrc}
         alt={`${label} logo`}
-        className={cn(
-          'rounded-md object-contain ring-1 ring-white/[0.08] bg-zinc-900/80 p-0.5',
-          SIZE_CLASS[size],
-          className
-        )}
+        className={cn('rounded-md object-contain p-0.5', SIZE_CLASS[size], className)}
+        style={{
+          background: 'rgba(13,13,19,0.9)',
+          boxShadow:
+            '0 0 0 1px rgba(255,255,255,0.09), inset 0 1px 0 rgba(255,255,255,0.06), 0 2px 6px rgba(0,0,0,0.45)',
+        }}
         onError={() => {
           missingLogoProviders.add(providerKey)
           setHasImage(false)
@@ -108,12 +143,17 @@ export function ProviderLogo({ provider, size = 'md', className }: ProviderLogoP
   return (
     <div
       className={cn(
-        'inline-flex items-center justify-center rounded-md ring-1 font-semibold uppercase tracking-tight',
-        'ring-white/[0.08]',
-        colorClass,
+        'inline-flex items-center justify-center rounded-md font-semibold uppercase',
         SIZE_CLASS[size],
         className
       )}
+      style={{
+        background: palette.bg,
+        color: palette.accent,
+        boxShadow: `0 0 0 1px ${palette.ring}, inset 0 1px 0 rgba(255,255,255,0.10), 0 2px 6px rgba(0,0,0,0.50)`,
+        letterSpacing: '0.02em',
+        textShadow: '0 1px 2px rgba(0,0,0,0.5)',
+      }}
       aria-label={label}
       title={label}
     >
