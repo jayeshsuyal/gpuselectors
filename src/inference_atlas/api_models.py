@@ -355,6 +355,17 @@ class CostAuditDataGap(BaseModel):
     why_it_matters: str
 
 
+class CostAuditLegAudit(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    modality: str
+    model_name: str
+    estimated_spend_usd: float = Field(ge=0, default=0)
+    efficiency_score: int = Field(ge=0, le=100)
+    top_recommendation: Optional[str] = None
+    estimated_savings_high_usd: float = Field(ge=0, default=0)
+
+
 class CostAuditRequest(BaseModel):
     model_config = ConfigDict(extra="ignore", protected_namespaces=())
 
@@ -429,6 +440,7 @@ class CostAuditResponse(BaseModel):
     red_flags: list[str] = Field(default_factory=list)
     estimated_monthly_savings: CostAuditSavingsEstimate
     score_breakdown: CostAuditScoreBreakdown
+    per_modality_audits: list[CostAuditLegAudit] = Field(default_factory=list)
     assumptions: list[str] = Field(default_factory=list)
     data_gaps: list[str] = Field(default_factory=list)
     data_gaps_detailed: list[CostAuditDataGap] = Field(default_factory=list)

@@ -22,6 +22,7 @@ from inference_atlas.api_models import (
     CatalogRankingRequest,
     CatalogRankingResponse,
     CostAuditDataGap,
+    CostAuditLegAudit,
     CostAuditHardwareRecommendation,
     CostAuditPricingVerdict,
     CostAuditRecommendation,
@@ -655,7 +656,51 @@ def _combine_savings_pct(pcts: list[float]) -> float:
     return max(0.0, min(100.0, (1.0 - remaining) * 100.0))
 
 
-def run_cost_audit(payload: CostAuditRequest) -> CostAuditResponse:
+def _infer_modality_for_model(model_name: str) -> str:
+    token = model_name.strip().lower()
+    if any(k in token for k in ("whisper", "stt", "asr", "transcribe", "nova")):
+        return "asr"
+    if any(k in token for k in ("tts", "voice", "speech", "eleven")):
+        return "tts"
+    if "embed" in token:
+        return "embeddings"
+    if any(k in token for k in ("image", "flux", "dall", "sdxl", "imagen")):
+        return "image_gen"
+    if any(k in token for k in ("video", "veo", "sora", "wan")):
+        return "video_gen"
+    return "llm"
+
+
+def _build_mixed_leg_payloads(payload: CostAuditRequest) -> list[CostAuditRequest]:
+    model_names = [m.strip() for m in payload.pipeline_models if m.strip()]
+    if not model_names:
+        return []
+    leg_count = len(model_names)
+    spend_total = float(payload.monthly_ai_spend_usd or 0.0)
+    spend_per_leg = (spend_total / leg_count) if leg_count > 0 and spend_total > 0 else None
+    in_total = float(payload.monthly_input_tokens or 0.0)
+    out_total = float(payload.monthly_output_tokens or 0.0)
+    in_per_leg = (in_total / leg_count) if leg_count > 0 and in_total > 0 else None
+    out_per_leg = (out_total / leg_count) if leg_count > 0 and out_total > 0 else None
+
+    legs: list[CostAuditRequest] = []
+    for model in model_names:
+        leg = payload.model_copy(
+            update={
+                "modality": _infer_modality_for_model(model),
+                "model_name": model,
+                "multi_model_pipeline": False,
+                "pipeline_models": [],
+                "monthly_ai_spend_usd": spend_per_leg,
+                "monthly_input_tokens": in_per_leg,
+                "monthly_output_tokens": out_per_leg,
+            }
+        )
+        legs.append(leg)
+    return legs
+
+
+def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -> CostAuditResponse:
     base_score = 100
     score = base_score
     penalty_points = 0
@@ -988,6 +1033,45 @@ def run_cost_audit(payload: CostAuditRequest) -> CostAuditResponse:
         key=lambda g: (_impact_rank(g.impact), gap_field_order.get(g.field, 999), g.field),
     )
 
+    per_modality_audits: list[CostAuditLegAudit] = []
+    if payload.modality == "mixed" and _allow_mixed_split:
+        leg_payloads = _build_mixed_leg_payloads(payload)
+        if leg_payloads:
+            leg_responses = [run_cost_audit(leg, _allow_mixed_split=False) for leg in leg_payloads]
+            for leg_payload, leg_response in zip(leg_payloads, leg_responses):
+                per_modality_audits.append(
+                    CostAuditLegAudit(
+                        modality=leg_payload.modality,
+                        model_name=leg_payload.model_name,
+                        estimated_spend_usd=float(leg_payload.monthly_ai_spend_usd or 0.0),
+                        efficiency_score=leg_response.efficiency_score,
+                        top_recommendation=(
+                            leg_response.recommendations[0].title if leg_response.recommendations else None
+                        ),
+                        estimated_savings_high_usd=leg_response.estimated_monthly_savings.high_usd,
+                    )
+                )
+            total_leg_spend = sum(leg.estimated_spend_usd for leg in per_modality_audits)
+            if total_leg_spend > 0:
+                weighted_score = sum(
+                    leg.efficiency_score * leg.estimated_spend_usd for leg in per_modality_audits
+                ) / total_leg_spend
+            else:
+                weighted_score = sum(leg.efficiency_score for leg in per_modality_audits) / len(per_modality_audits)
+            score = max(0, min(100, int(round(weighted_score))))
+            pre_cap_score = score
+            post_cap_score = score
+            summed_high = sum(leg.estimated_savings_high_usd for leg in per_modality_audits)
+            if current_spend > 0:
+                high_savings = min(current_spend, summed_high)
+                low_savings = min(high_savings, high_savings * 0.5)
+            else:
+                high_savings = summed_high
+                low_savings = max(0.0, summed_high * 0.5)
+            # This gap is resolved when per-leg mini-audits are available.
+            data_gaps_sorted = [g for g in data_gaps_sorted if g.field != "per_modality_usage_breakdown"]
+            assumptions.append("Mixed workload score/savings aggregated from per-leg mini-audits.")
+
     return CostAuditResponse(
         efficiency_score=score,
         recommendations=recommendations_sorted,
@@ -1025,6 +1109,7 @@ def run_cost_audit(payload: CostAuditRequest) -> CostAuditResponse:
             caps_applied=caps_applied,
             combined_savings_pct=round(combined_savings_pct, 2),
         ),
+        per_modality_audits=per_modality_audits,
         assumptions=assumptions,
         data_gaps=[gap.field for gap in data_gaps_sorted],
         data_gaps_detailed=data_gaps_sorted,

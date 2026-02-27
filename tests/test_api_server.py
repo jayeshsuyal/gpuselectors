@@ -102,6 +102,7 @@ def test_cost_audit_endpoint() -> None:
     assert "recommendations" in body
     assert "score_breakdown" in body
     assert body["score_breakdown"]["post_cap_score"] == body["efficiency_score"]
+    assert "per_modality_audits" in body
     assert "hardware_recommendation" in body
     assert "pricing_model_verdict" in body
     assert "pricing_source" in body

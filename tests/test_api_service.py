@@ -499,7 +499,24 @@ def test_run_cost_audit_mixed_modality_flags_data_gap() -> None:
             pipeline_models=["gpt-4o", "nova-3"],
         )
     )
+    assert len(response.per_modality_audits) >= 1
+    assert "per_modality_usage_breakdown" not in response.data_gaps
+
+
+def test_run_cost_audit_mixed_without_pipeline_keeps_data_gap() -> None:
+    response = run_cost_audit(
+        CostAuditRequest(
+            modality="mixed",
+            model_name="Mixed pipeline",
+            pricing_model="mixed",
+            traffic_pattern="bursty",
+            workload_execution="mixed",
+            providers=["openai", "deepgram"],
+            multi_model_pipeline=False,
+        )
+    )
     assert "per_modality_usage_breakdown" in response.data_gaps
+    assert response.per_modality_audits == []
 
 
 def test_run_cost_audit_score_monotonicity_with_major_flags() -> None:
