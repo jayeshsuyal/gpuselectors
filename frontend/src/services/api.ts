@@ -17,8 +17,11 @@ import type {
   CopilotApplyPayload,
   ReportGenerateRequest,
   ReportGenerateResponse,
+  ReportChart,
   ScalingPlanRequest,
   ScalingPlanResponse,
+  CostAuditRequest,
+  CostAuditResponse,
 } from './types'
 
 const USE_MOCK = (import.meta.env.VITE_USE_MOCK_API ?? 'true').toLowerCase() !== 'false'
@@ -704,10 +707,214 @@ export async function planScaling(req: ScalingPlanRequest): Promise<ScalingPlanR
 export async function generateReport(req: ReportGenerateRequest): Promise<ReportGenerateResponse> {
   if (USE_MOCK) {
     await delay(500)
+    const catalogRows = await getMockCatalogRows()
+    const providersSynced = new Set(catalogRows.map((r) => r.provider)).size
     const now = new Date().toISOString()
     const mode = req.mode
     const title = req.title ?? 'InferenceAtlas Optimization Report'
     const outputFormat = req.output_format ?? 'markdown'
+    const includeCharts = req.include_charts !== false
+    const includeCsv = req.include_csv_exports !== false
+    const includeNarrative = req.include_narrative === true
+
+    const llmPlans = req.llm_planning?.plans ?? []
+    const catalogOffers = req.catalog_ranking?.offers ?? []
+    const topLLM = llmPlans[0]
+    const topCatalog = catalogOffers[0]
+
+    const llmChartData = {
+      cost_by_rank: llmPlans.map((plan) => ({
+        rank: plan.rank,
+        provider_id: plan.provider_id,
+        provider_name: plan.provider_name,
+        monthly_cost_usd: plan.monthly_cost_usd,
+        score: plan.score,
+        total_risk: plan.risk.total_risk,
+      })),
+      risk_breakdown: llmPlans.map((plan) => ({
+        rank: plan.rank,
+        provider_id: plan.provider_id,
+        risk_overload: plan.risk.risk_overload,
+        risk_complexity: plan.risk.risk_complexity,
+        total_risk: plan.risk.total_risk,
+      })),
+      confidence_distribution: llmPlans.reduce<Record<string, number>>((acc, row) => {
+        acc[row.confidence] = (acc[row.confidence] ?? 0) + 1
+        return acc
+      }, {}),
+    }
+
+    const catalogChartData = {
+      cost_by_rank: catalogOffers.map((offer) => ({
+        rank: offer.rank,
+        provider: offer.provider,
+        sku_name: offer.sku_name,
+        monthly_estimate_usd: offer.monthly_estimate_usd,
+        unit_price_usd: offer.unit_price_usd,
+        unit_name: offer.unit_name,
+      })),
+      exclusion_breakdown: req.catalog_ranking?.exclusion_breakdown ?? {},
+      relaxation_trace: req.catalog_ranking?.relaxation_steps ?? [],
+      confidence_distribution: catalogOffers.reduce<Record<string, number>>((acc, row) => {
+        acc[row.confidence] = (acc[row.confidence] ?? 0) + 1
+        return acc
+      }, {}),
+    }
+
+    const charts: ReportChart[] =
+      mode === 'llm'
+        ? [
+            {
+              id: 'cost_comparison',
+              title: 'Cost Comparison',
+              type: 'bar',
+              x_label: 'Rank',
+              y_label: 'Monthly Cost (USD)',
+              sort_key: 'rank',
+              legend: ['Monthly Cost'],
+              series: [
+                {
+                  id: 'monthly_cost_usd',
+                  label: 'Monthly Cost',
+                  unit: 'usd',
+                  points: llmPlans.map((plan) => ({
+                    rank: plan.rank,
+                    provider_name: plan.provider_name,
+                    value: plan.monthly_cost_usd,
+                  })),
+                },
+              ],
+            },
+            {
+              id: 'risk_comparison',
+              title: 'Risk Comparison',
+              type: 'stacked_bar',
+              x_label: 'Rank',
+              y_label: 'Risk Score',
+              sort_key: 'risk',
+              legend: ['Overload Risk', 'Complexity Risk'],
+              series: [
+                {
+                  id: 'risk_overload',
+                  label: 'Overload Risk',
+                  unit: 'risk_score',
+                  points: llmPlans.map((plan) => ({
+                    rank: plan.rank,
+                    provider_name: plan.provider_name,
+                    value: plan.risk.risk_overload,
+                  })),
+                },
+                {
+                  id: 'risk_complexity',
+                  label: 'Complexity Risk',
+                  unit: 'risk_score',
+                  points: llmPlans.map((plan) => ({
+                    rank: plan.rank,
+                    provider_name: plan.provider_name,
+                    value: plan.risk.risk_complexity,
+                  })),
+                },
+              ],
+            },
+          ]
+        : [
+            {
+              id: 'cost_comparison',
+              title: 'Cost Comparison',
+              type: 'bar',
+              x_label: 'Rank',
+              y_label: 'Monthly Estimate (USD)',
+              sort_key: 'rank',
+              legend: ['Monthly Estimate'],
+              series: [
+                {
+                  id: 'monthly_estimate_usd',
+                  label: 'Monthly Estimate',
+                  unit: 'usd',
+                  points: catalogOffers.map((offer) => ({
+                    rank: offer.rank,
+                    provider: offer.provider,
+                    value: offer.monthly_estimate_usd ?? 0,
+                  })),
+                },
+              ],
+            },
+            {
+              id: 'fallback_trace',
+              title: 'Fallback Trace',
+              type: 'step_line',
+              x_label: 'Relaxation Step',
+              y_label: 'Offers Returned',
+              sort_key: 'rank',
+              legend: ['Offers Returned'],
+              series: [
+                {
+                  id: 'offers_returned',
+                  label: 'Offers Returned',
+                  unit: 'count',
+                  points: (req.catalog_ranking?.relaxation_steps ?? []).map((step, idx) => ({
+                    step_index: idx,
+                    step: String(step.step ?? `step_${idx}`),
+                    value: Number(step.offers_returned ?? 0),
+                  })),
+                },
+              ],
+            },
+          ]
+
+    const sections =
+      mode === 'llm'
+        ? [
+            {
+              title: 'Executive Summary',
+              bullets: [
+                topLLM
+                  ? `Top plan: ${topLLM.provider_name} (${topLLM.offering_id}) at $${topLLM.monthly_cost_usd.toFixed(2)}/mo.`
+                  : 'No feasible LLM plans returned.',
+                `Plans included: ${llmPlans.length}.`,
+              ],
+            },
+            {
+              title: 'Top Recommendations',
+              bullets: llmPlans.slice(0, 5).map(
+                (plan) =>
+                  `#${plan.rank} ${plan.provider_name} · $${plan.monthly_cost_usd.toFixed(2)} · risk ${plan.risk.total_risk.toFixed(2)}`
+              ),
+            },
+            {
+              title: 'Diagnostics',
+              bullets: [
+                `Included providers: ${req.llm_planning?.provider_diagnostics.filter((d) => d.status === 'included').length ?? 0}.`,
+                ...(req.llm_planning?.warnings ?? []).slice(0, 3),
+              ],
+            },
+          ]
+        : [
+            {
+              title: 'Executive Summary',
+              bullets: [
+                topCatalog
+                  ? `Top offer: ${topCatalog.provider} (${topCatalog.sku_name}) at $${(topCatalog.monthly_estimate_usd ?? 0).toFixed(2)}/mo.`
+                  : 'No matching catalog offers returned.',
+                `Offers included: ${catalogOffers.length}.`,
+              ],
+            },
+            {
+              title: 'Top Recommendations',
+              bullets: catalogOffers.slice(0, 10).map(
+                (offer) =>
+                  `#${offer.rank} ${offer.provider} · $${(offer.monthly_estimate_usd ?? 0).toFixed(2)} · ${offer.confidence}`
+              ),
+            },
+            {
+              title: 'Filter Diagnostics',
+              bullets: [
+                `Excluded offers count: ${req.catalog_ranking?.excluded_count ?? 0}.`,
+                ...(req.catalog_ranking?.warnings ?? []).slice(0, 4),
+              ],
+            },
+          ]
+
     const markdown = [
       `# ${title}`,
       '',
@@ -715,46 +922,85 @@ export async function generateReport(req: ReportGenerateRequest): Promise<Report
       `- Generated at (UTC): \`${now}\``,
       '',
       '## Executive Summary',
-      mode === 'llm'
-        ? `- Plans included: ${req.llm_planning?.plans.length ?? 0}.`
-        : `- Offers included: ${req.catalog_ranking?.offers.length ?? 0}.`,
+      ...(sections[0]?.bullets ?? []).map((bullet) => `- ${bullet}`),
       '',
+      ...(sections.slice(1).flatMap((section) => [
+        `## ${section.title}`,
+        ...(section.bullets.length > 0 ? section.bullets.map((bullet) => `- ${bullet}`) : ['- n/a']),
+        '',
+      ])),
       '## Notes',
-      '- Mock report generated in frontend mode.',
+      '- Generated in frontend mock mode from live run payload.',
       '',
     ].join('\n')
+
+    const rankedCsv =
+      mode === 'llm'
+        ? [
+            'rank,provider_id,provider_name,offering_id,monthly_cost_usd,total_risk',
+            ...llmPlans.map(
+              (plan) =>
+                `${plan.rank},${plan.provider_id},${plan.provider_name},${plan.offering_id},${plan.monthly_cost_usd},${plan.risk.total_risk}`
+            ),
+          ].join('\n') + '\n'
+        : [
+            'rank,provider,sku_name,monthly_estimate_usd,unit_price_usd,unit_name,confidence',
+            ...catalogOffers.map(
+              (offer) =>
+                `${offer.rank},${offer.provider},${offer.sku_name},${offer.monthly_estimate_usd ?? ''},${offer.unit_price_usd},${offer.unit_name},${offer.confidence}`
+            ),
+          ].join('\n') + '\n'
+
+    const diagnosticsCsv =
+      mode === 'llm'
+        ? [
+            'provider,status,reason',
+            ...(req.llm_planning?.provider_diagnostics ?? []).map(
+              (row) => `${row.provider},${row.status},${row.reason}`
+            ),
+          ].join('\n') + '\n'
+        : [
+            'provider,status,reason',
+            ...(req.catalog_ranking?.provider_diagnostics ?? []).map(
+              (row) => `${row.provider},${row.status},${row.reason}`
+            ),
+          ].join('\n') + '\n'
+
     return {
       report_id: `rep_mock_${Date.now().toString(36)}`,
       generated_at_utc: now,
       title,
       mode,
-      sections: [
-        {
-          title: 'Executive Summary',
-          bullets: [
-            mode === 'llm'
-              ? `Plans included: ${req.llm_planning?.plans.length ?? 0}.`
-              : `Offers included: ${req.catalog_ranking?.offers.length ?? 0}.`,
-          ],
-        },
-      ],
-      chart_data: req.include_charts === false ? {} : {},
-      metadata: {},
+      sections,
+      charts: includeCharts ? charts : [],
+      chart_data: includeCharts ? (mode === 'llm' ? llmChartData : catalogChartData) : {},
+      metadata: {
+        chart_schema_version: 'v1.2-mock',
+        catalog_generated_at_utc: now,
+        catalog_schema_version: 'mock',
+        catalog_row_count: catalogRows.length,
+        catalog_providers_synced_count: providersSynced,
+      },
       output_format: outputFormat,
-      narrative: req.include_narrative
-        ? 'Primary recommendation is grounded to this mock run payload.'
+      narrative: includeNarrative
+        ? mode === 'llm'
+          ? topLLM
+            ? `Primary recommendation: ${topLLM.provider_name} is rank #1 at $${topLLM.monthly_cost_usd.toFixed(2)}/month with risk ${topLLM.risk.total_risk.toFixed(2)}.`
+            : 'Primary recommendation unavailable because no LLM plans were returned.'
+          : topCatalog
+          ? `Primary recommendation: ${topCatalog.provider} ${topCatalog.sku_name} is rank #1 at $${(topCatalog.monthly_estimate_usd ?? 0).toFixed(2)}/month.`
+          : 'Primary recommendation unavailable because no catalog offers were returned.'
         : null,
-      csv_exports:
-        req.include_csv_exports === false
-          ? {}
-          : {
-              'ranked_results.csv': 'rank,provider,monthly_cost_usd\n1,mock,10.0\n',
-              'provider_diagnostics.csv': 'provider,status,reason\nmock,included,mock data\n',
-            },
+      csv_exports: includeCsv
+        ? {
+            'ranked_results.csv': rankedCsv,
+            'provider_diagnostics.csv': diagnosticsCsv,
+          }
+        : {},
       markdown,
       html:
         outputFormat === 'html' || outputFormat === 'pdf'
-          ? '<!doctype html><html><body><h1>Mock Report</h1></body></html>'
+          ? `<!doctype html><html><body><h1>${title}</h1><pre>${markdown}</pre></body></html>`
           : null,
       pdf_base64:
         outputFormat === 'pdf'
@@ -810,4 +1056,85 @@ export async function downloadReport(
   const match = cd.match(/filename=\"([^\"]+)\"/)
   const filename = match?.[1] ?? 'report.bin'
   return { blob, filename, contentType }
+}
+
+// ─── Cost Audit ────────────────────────────────────────────────────────────────
+
+export async function auditCost(req: CostAuditRequest): Promise<CostAuditResponse> {
+  if (USE_MOCK) {
+    await delay(950)
+    const isGpu = req.pricing_model !== 'token_api'
+    const lowUtil = typeof req.avg_utilization === 'number' && req.avg_utilization < 0.5
+    return {
+      efficiency_score: 72,
+      recommendations: [
+        {
+          recommendation_type: 'quantization',
+          title: 'Enable lower-precision inference',
+          rationale: 'FP8/INT8 can increase throughput 1.5–2× on H100-class GPUs, directly reducing per-token cost.',
+          estimated_savings_pct: 28,
+          priority: 'high',
+        },
+        {
+          recommendation_type: isGpu ? 'procurement' : 'pricing_model_switch',
+          title: isGpu ? 'Negotiate reserved instance pricing' : 'Evaluate dedicated GPU deployment',
+          rationale: isGpu
+            ? 'Steady traffic justifies a 1-year reserved commitment at a 30–40 % discount over on-demand.'
+            : 'Token volume may have crossed the dedicated-GPU break-even threshold (est. 3–4 months payback).',
+          estimated_savings_pct: 18,
+          priority: 'medium',
+        },
+      ],
+      hardware_recommendation: {
+        tier: isGpu ? 'single_gpu' : 'serverless',
+        gpu_family: isGpu ? 'H100-class' : null,
+        deployment_shape: req.pricing_model,
+        reasoning: isGpu
+          ? 'Single H100 80 GB covers a typical 70 B model at moderate QPS with headroom for bursts.'
+          : 'Serverless token API appropriate while traffic remains unpredictable.',
+      },
+      pricing_model_verdict: {
+        current_model: req.pricing_model,
+        verdict: req.pricing_model === 'token_api' ? 'consider_switch' : 'appropriate',
+        reason: req.pricing_model === 'token_api'
+          ? 'Token volume is high enough to reach dedicated-GPU break-even within 3–4 months.'
+          : 'Dedicated GPU deployment aligns well with your steady traffic pattern.',
+      },
+      red_flags: lowUtil
+        ? ['Low GPU utilisation detected — on-demand costs likely exceed committed pricing.']
+        : [],
+      estimated_monthly_savings: {
+        low_usd: 400,
+        high_usd: 1100,
+        basis: 'combined_savings_pct=35; top_recommendations=2; current_spend estimated from token volume.',
+      },
+      score_breakdown: {
+        base_score: 100,
+        penalty_points: 32,
+        bonus_points: 4,
+        pre_cap_score: 72,
+        post_cap_score: 72,
+        major_flags: lowUtil ? 2 : 1,
+        caps_applied: lowUtil ? ['major_flags_cap'] : [],
+        combined_savings_pct: 35,
+      },
+      assumptions: [
+        'Savings are directional estimates based on pricing priors.',
+        'GPU recommendations assume H100 80 GB PCIe baseline.',
+      ],
+      data_gaps: [],
+      data_gaps_detailed: [],
+      pricing_source: 'provider_csv',
+      pricing_source_provider: 'anthropic',
+      pricing_source_gpu: isGpu ? req.gpu_type ?? null : null,
+      per_modality_audits: req.pricing_model === 'mixed'
+        ? [
+            { modality: 'llm' as const,        efficiency_score: 68, top_recommendation: 'Enable quantization to reduce per-token cost.', red_flags: [] },
+            { modality: 'embeddings' as const,  efficiency_score: 81, top_recommendation: null, red_flags: [] },
+            { modality: 'moderation' as const,  efficiency_score: 74, top_recommendation: 'Batch requests to improve GPU utilisation.', red_flags: ['Idle GPU hours detected on off-peak periods.'] },
+          ]
+        : undefined,
+    }
+  }
+  return post<CostAuditResponse>('/api/v1/audit/cost', req)
 }

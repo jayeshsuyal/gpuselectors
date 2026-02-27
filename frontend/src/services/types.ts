@@ -304,6 +304,121 @@ export interface ReportChart {
   sort_key?: 'rank' | 'cost' | 'risk'
 }
 
+// ─── Cost Audit ───────────────────────────────────────────────────────────────
+
+export type CostAuditModality =
+  | 'llm'
+  | 'speech_to_text'
+  | 'text_to_speech'
+  | 'embeddings'
+  | 'vision'
+  | 'image_generation'
+  | 'video_generation'
+  | 'moderation'
+
+export type CostAuditPricingModel = 'token_api' | 'dedicated_gpu' | 'mixed'
+export type CostAuditTrafficPattern = 'steady' | 'business_hours' | 'bursty'
+export type CostAuditVerdict = 'appropriate' | 'consider_switch' | 'suboptimal' | 'unknown'
+export type CostAuditHardwareTier = 'serverless' | 'single_gpu' | 'multi_gpu' | 'hybrid' | 'unknown'
+export type CostAuditPriority = 'high' | 'medium' | 'low'
+export type CostAuditDataGapImpact = 'high' | 'medium' | 'low'
+export type CostAuditRecommendationType =
+  | 'pricing_model_switch'
+  | 'procurement'
+  | 'quantization'
+  | 'autoscaling'
+  | 'caching'
+  | 'hardware_match'
+  | 'other'
+export type CostAuditPricingSource = 'provider_csv' | 'heuristic_prior' | 'unknown'
+
+export interface CostAuditRequest {
+  modality: CostAuditModality
+  model_name: string
+  pricing_model: CostAuditPricingModel
+  tokens_per_day?: number | null
+  monthly_ai_spend_usd?: number | null
+  gpu_type?: string | null
+  gpu_count?: number | null
+  avg_utilization?: number | null
+  traffic_pattern?: CostAuditTrafficPattern | null
+  has_caching?: boolean | null
+  has_quantization?: boolean | null
+  has_autoscaling?: boolean | null
+}
+
+export interface CostAuditRecommendation {
+  recommendation_type: CostAuditRecommendationType
+  title: string
+  rationale: string
+  estimated_savings_pct: number
+  priority: CostAuditPriority
+}
+
+export interface CostAuditHardwareRecommendation {
+  tier: CostAuditHardwareTier
+  gpu_family: string | null
+  deployment_shape: string
+  reasoning: string
+}
+
+export interface CostAuditPricingVerdict {
+  current_model: CostAuditPricingModel
+  verdict: CostAuditVerdict
+  reason: string
+}
+
+export interface CostAuditSavingsEstimate {
+  low_usd: number
+  high_usd: number
+  basis: string
+}
+
+export interface CostAuditScoreBreakdown {
+  base_score: number
+  penalty_points: number
+  bonus_points: number
+  pre_cap_score: number
+  post_cap_score: number
+  major_flags: number
+  caps_applied: string[]
+  combined_savings_pct: number
+}
+
+export interface CostAuditDataGap {
+  field: string
+  impact: CostAuditDataGapImpact
+  why_it_matters: string
+}
+
+/** Per-modality sub-audit leg for mixed-pipeline responses */
+export interface CostAuditModalityLeg {
+  modality: CostAuditModality
+  efficiency_score: number
+  top_recommendation?: string | null
+  red_flags?: string[]
+}
+
+export interface CostAuditResponse {
+  efficiency_score: number
+  recommendations: CostAuditRecommendation[]
+  hardware_recommendation: CostAuditHardwareRecommendation
+  pricing_model_verdict: CostAuditPricingVerdict
+  red_flags: string[]
+  estimated_monthly_savings: CostAuditSavingsEstimate
+  /** Optional for resilience — backend may not always populate */
+  score_breakdown?: CostAuditScoreBreakdown
+  assumptions: string[]
+  data_gaps: string[]
+  data_gaps_detailed: CostAuditDataGap[]
+  /** Upcoming pricing source fields — absent until backend ships them */
+  pricing_source?: CostAuditPricingSource
+  pricing_source_provider?: string | null
+  pricing_source_gpu?: string | null
+  /** Mixed-pipeline only — per-modality sub-audit legs */
+  per_modality_audits?: CostAuditModalityLeg[]
+}
+
 // ─── Report Generation ────────────────────────────────────────────────────────
 
 export interface ReportSection {
