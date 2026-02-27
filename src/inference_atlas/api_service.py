@@ -868,6 +868,7 @@ def run_cost_audit(payload: CostAuditRequest) -> CostAuditResponse:
 
     if major_flags >= 3:
         score = min(score, 45)
+
     score = max(0, min(100, score))
 
     recommendations_sorted = sorted(
@@ -880,6 +881,11 @@ def run_cost_audit(payload: CostAuditRequest) -> CostAuditResponse:
 
     top_savings_pcts = [item.estimated_savings_pct for item in recommendations_sorted]
     combined_savings_pct = min(85.0, _combine_savings_pct(top_savings_pcts)) if top_savings_pcts else 0.0
+    # Align score with strong model-switch economics to avoid conflicting signals.
+    if verdict == "consider_switch" and combined_savings_pct > 30.0:
+        score = min(score, 45)
+    score = max(0, min(100, score))
+
     if current_spend > 0:
         high_savings = min(current_spend, current_spend * (combined_savings_pct / 100.0))
         low_savings = min(high_savings, high_savings * 0.5)

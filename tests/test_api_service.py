@@ -641,6 +641,58 @@ def test_run_cost_audit_falls_back_to_heuristic_basis_when_provider_not_in_gpu_c
     assert "basis: heuristic_prior:H100_80GB" in switch_rec.rationale
 
 
+def test_run_cost_audit_caps_score_on_high_savings_consider_switch() -> None:
+    response = run_cost_audit(
+        CostAuditRequest(
+            modality="llm",
+            model_name="Llama 3.1 70B",
+            model_precision="fp16",
+            pricing_model="token_api",
+            monthly_input_tokens=3_500_000_000,
+            monthly_output_tokens=1_000_000_000,
+            traffic_pattern="steady",
+            workload_execution="latency_sensitive",
+            caching_enabled="yes",
+            providers=["fireworks"],
+            quantization_applied="yes",
+            monthly_ai_spend_usd=20000,
+            gpu_type="A100_80GB",
+        )
+    )
+    assert response.pricing_model_verdict.verdict == "consider_switch"
+    basis = response.estimated_monthly_savings.basis
+    assert "combined_savings_pct=" in basis
+    combined_pct = float(basis.split("combined_savings_pct=")[1].split(";")[0])
+    assert combined_pct > 30.0
+    assert response.efficiency_score <= 45
+
+
+def test_run_cost_audit_does_not_force_cap_when_savings_not_high() -> None:
+    response = run_cost_audit(
+        CostAuditRequest(
+            modality="llm",
+            model_name="Llama 3.1 70B",
+            model_precision="fp16",
+            pricing_model="token_api",
+            monthly_input_tokens=2_000_000_000,
+            monthly_output_tokens=600_000_000,
+            traffic_pattern="steady",
+            workload_execution="latency_sensitive",
+            caching_enabled="yes",
+            providers=["fireworks"],
+            quantization_applied="yes",
+            monthly_ai_spend_usd=7000,
+            gpu_type="H200",
+        )
+    )
+    assert response.pricing_model_verdict.verdict == "consider_switch"
+    basis = response.estimated_monthly_savings.basis
+    assert "combined_savings_pct=" in basis
+    combined_pct = float(basis.split("combined_savings_pct=")[1].split(";")[0])
+    assert combined_pct <= 30.0
+    assert response.efficiency_score > 45
+
+
 def test_run_plan_scaling_llm_returns_mode_and_gpu_estimate() -> None:
     llm = run_plan_llm(
         LLMPlanningRequest(
