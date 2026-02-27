@@ -70,6 +70,27 @@ Returns:
 - `relaxation_steps`
 - `exclusion_breakdown`
 
+### `POST /api/v1/plan/scaling`
+
+Scaling guidance derived from ranked outputs.
+
+Request mode:
+
+- `mode: "llm"` with `llm_planning` payload
+- `mode: "catalog"` with `catalog_ranking` payload
+
+Returns:
+
+- `deployment_mode` (`serverless|dedicated|autoscale|unknown`)
+- `estimated_gpu_count`
+- `suggested_gpu_type` (when available)
+- `projected_utilization`
+- `utilization_target`
+- `risk_band`
+- `capacity_check`
+- `rationale`
+- `assumptions`
+
 ### `GET /api/v1/catalog`
 
 Browse catalog rows with optional filters:
@@ -105,6 +126,22 @@ Supports both payload styles:
 
 - frontend shape: `{message, history, workload_type}`
 - internal shape: `{user_text, state}`
+
+### `POST /api/v1/report/generate`
+
+Deterministic report generation for ranked outputs.
+
+Request mode:
+
+- `mode: "llm"` with `llm_planning`
+- `mode: "catalog"` with `catalog_ranking`
+
+Returns:
+
+- `sections` (now includes `Scaling Summary`)
+- `charts`, `chart_data`, `metadata`
+- `csv_exports`
+- `markdown`/`html`/`pdf_base64` based on `output_format`
 
 ## Error Semantics
 

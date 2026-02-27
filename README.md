@@ -18,6 +18,7 @@ Fallback: https://inferenceatlas-hjcltilq4njm6vrez4o877.streamlit.app/
 | Pricing catalog browser (filterable, exportable) | ✅ Production |
 | Invoice Analyzer — find savings vs. current catalog | ✅ Beta |
 | Non-LLM optimizer (demand-aware ranking) | 🧪 Beta — throughput checks when metadata exists |
+| Scaling planner summary (deployment mode + GPU estimate) | ✅ v1.3 |
 | AI assistant + Ask IA AI chat | ✅ Optional (API key required) |
 | Latency queueing model | ❌ Not implemented |
 
@@ -59,6 +60,23 @@ To use a real backend, set:
 VITE_USE_MOCK_API=false
 VITE_API_BASE_URL=http://127.0.0.1:8000
 ```
+
+### Backend API (Real Mode)
+
+Run API server:
+
+```bash
+python3 scripts/run_api_server.py
+```
+
+Key endpoints:
+
+- `POST /api/v1/plan/llm`
+- `POST /api/v1/rank/catalog`
+- `POST /api/v1/plan/scaling` (v1.3 scaling guidance)
+- `POST /api/v1/report/generate`
+
+Full reference: [docs/api.md](docs/api.md)
 
 ---
 
@@ -239,6 +257,16 @@ Providers without API secrets configured fall back to their CSV files in `data/p
 **Manual sync:**
 ```bash
 python scripts/sync_catalog_v2.py --providers all
+```
+
+**Weekly one-command sync:**
+```bash
+make sync-catalog
+```
+
+**Weekly sync + validation + tests:**
+```bash
+make sync-catalog-verify
 ```
 
 ---
