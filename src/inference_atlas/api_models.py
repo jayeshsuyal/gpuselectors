@@ -356,7 +356,7 @@ class CostAuditDataGap(BaseModel):
 
 
 class CostAuditLegAudit(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", protected_namespaces=())
 
     modality: str
     model_name: str
