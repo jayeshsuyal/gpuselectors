@@ -1,0 +1,32 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+speech_to_text,deepgram,per_minute,dg_nova3_paygo,Nova-3 STT Pay-As-You-Go,nova-3,0.0077,audio_min,,,,,,global,Billed per second. Streaming. PAYG rate,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova3_growth,Nova-3 STT Growth Plan,nova-3,0.0065,audio_min,,,,,,global,Growth plan pricing. ~16% discount,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova3_batch,Nova-3 STT Batch,nova-3,0.0043,audio_min,,,,,,global,Batch/pre-recorded. $4.30/1000 min,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_paygo,Nova-2 STT Pay-As-You-Go,nova-2,0.0059,audio_min,,,,,,global,Legacy nova-2. PAYG,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_batch,Nova-2 STT Batch,nova-2,0.0042,audio_min,,,,,,global,Batch processing,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_medical,Nova-2 Medical,nova-2-medical,0.025,audio_min,,,,,,global,Medical domain specialist,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_phone,Nova-2 Phone Call,nova-2-phonecall,0.0059,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_meeting,Nova-2 Meeting,nova-2-meeting,0.0059,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_nova2_voicemail,Nova-2 Voicemail,nova-2-voicemail,0.0059,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_enhanced,Enhanced STT,enhanced,0.0145,audio_min,,,,,,global,~3x more expensive than Nova,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_enhanced_medical,Enhanced Medical,enhanced-medical,0.025,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_base,Base STT,base,0.0059,audio_min,,,,,,global,Base model pricing,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_whisper_large,Deepgram Whisper Large,whisper-large,0.0048,audio_min,,,,,,global,Deepgram hosted Whisper Large-v2,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_whisper_medium,Deepgram Whisper Medium,whisper-medium,0.0015,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_whisper_small,Deepgram Whisper Small,whisper-small,0.0015,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_whisper_base,Deepgram Whisper Base,whisper-base,0.0015,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_whisper_tiny,Deepgram Whisper Tiny,whisper-tiny,0.0015,audio_min,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura2_paygo,Aura-2 TTS Pay-As-You-Go,aura-2,0.03,1k_chars,,,,,,global,$30/1M chars. Sub-100ms TTFB. 7 languages,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura2_growth,Aura-2 TTS Growth Plan,aura-2,0.027,1k_chars,,,,,,global,$27/1M chars at Growth tier,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_asteria,Aura Asteria TTS,aura-asteria-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_luna,Aura Luna TTS,aura-luna-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_stella,Aura Stella TTS,aura-stella-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_athena,Aura Athena TTS,aura-athena-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_hera,Aura Hera TTS,aura-hera-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_orion,Aura Orion TTS,aura-orion-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_arcas,Aura Arcas TTS,aura-arcas-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_perseus,Aura Perseus TTS,aura-perseus-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_angus,Aura Angus TTS,aura-angus-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_helios,Aura Helios TTS,aura-helios-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+text_to_speech,deepgram,per_character,dg_aura_zeus,Aura Zeus TTS,aura-zeus-en,0.03,1k_chars,,,,,,global,,https://deepgram.com/pricing,2026-02-18,official
+speech_to_text,deepgram,per_minute,dg_voice_agent,Voice Agent API,voice-agent,0.075,audio_min,,,,,,global,Combined STT+LLM+TTS. ~$4.50/hr. WebSocket connection time billing,https://deepgram.com/pricing,2026-02-18,official

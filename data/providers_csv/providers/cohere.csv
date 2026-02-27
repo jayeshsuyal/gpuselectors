@@ -1,0 +1,16 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,cohere,per_token,command_a_input,Command A Input,command-a,2.5,1m_tokens,,,,,,global,Most advanced model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_a_output,Command A Output,command-a,10.0,1m_tokens,,,,,,global,Most advanced model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r_plus_input,Command R+ Input,command-r-plus,2.5,1m_tokens,,,,,,global,Premium R model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r_plus_output,Command R+ Output,command-r-plus,10.0,1m_tokens,,,,,,global,Premium R model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r_input,Command R Input,command-r,0.15,1m_tokens,,,,,,global,Balanced model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r_output,Command R Output,command-r,0.6,1m_tokens,,,,,,global,Balanced model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r7b_input,Command R7B Input,command-r7b,0.0375,1m_tokens,,,,,,global,Lightweight model,https://cohere.com/pricing,2026-02-16,high
+llm,cohere,per_token,command_r7b_output,Command R7B Output,command-r7b,0.15,1m_tokens,,,,,,global,Lightweight model,https://cohere.com/pricing,2026-02-16,high
+embedding,cohere,per_token,embed_4,Embed 4,embed-4,0.12,1m_tokens,,,,,,global,Text embeddings,https://cohere.com/pricing,2026-02-16,high
+embedding,cohere,per_token,embed_4_vision,Embed 4 Vision,embed-4-vision,0.47,1m_tokens,,,,,,global,Image embeddings,https://cohere.com/pricing,2026-02-16,high
+embedding,cohere,per_token,embed_english_v3,Embed English v3.0,embed-english-v3,0.1,1m_tokens,,,,,,global,English embeddings,https://cohere.com/pricing,2026-02-16,high
+embedding,cohere,per_token,embed_multilingual_v3,Embed Multilingual v3.0,embed-multilingual-v3,0.1,1m_tokens,,,,,,global,Multilingual embeddings,https://cohere.com/pricing,2026-02-16,high
+rerank,cohere,per_1k_searches,rerank_3_5,Rerank 3.5,rerank-3.5,2.0,per_1k_searches,,,,,,global,Latest rerank model,https://cohere.com/pricing,2026-02-16,high
+rerank,cohere,per_1k_searches,rerank_english_v3,Rerank English v3.0,rerank-english-v3,2.0,per_1k_searches,,,,,,global,English rerank,https://cohere.com/pricing,2026-02-16,high
+rerank,cohere,per_1k_searches,rerank_multilingual_v3,Rerank Multilingual v3.0,rerank-multilingual-v3,2.0,per_1k_searches,,,,,,global,Multilingual rerank,https://cohere.com/pricing,2026-02-16,high

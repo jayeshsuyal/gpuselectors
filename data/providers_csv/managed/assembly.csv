@@ -1,0 +1,4 @@
+provider,service_type,billing_mode,effective_unit_price_usd,unit_name,region,workload_type,source_url,confidence,last_verified_at,notes
+assembly,universal_batch,managed_api,0.15,audio_min_per_minute,global,speech_to_text,https://www.assemblyai.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+assembly,universal_streaming,managed_api,0.15,audio_min_per_minute,global,speech_to_text,https://www.assemblyai.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+assembly,universal_3_pro,managed_api,0.20,audio_min_per_minute,global,speech_to_text,https://www.assemblyai.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.

@@ -1,0 +1,7 @@
+provider,service_type,billing_mode,effective_unit_price_usd,unit_name,region,workload_type,source_url,confidence,last_verified_at,notes
+deepgram,nova_3_prerecorded,managed_api,0.258,audio_min_per_minute,global,speech_to_text,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+deepgram,nova_3_streaming,managed_api,0.462,audio_min_per_minute,global,speech_to_text,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+deepgram,nova_3_multilingual_prerecorded,managed_api,0.258,audio_min_per_minute,global,speech_to_text,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+deepgram,nova_3_multilingual_streaming,managed_api,0.552,audio_min_per_minute,global,speech_to_text,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+deepgram,aura_2,managed_api,0.90,chars_per_second,global,text_to_speech,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+deepgram,aura_1,managed_api,0.45,chars_per_second,global,text_to_speech,https://deepgram.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.

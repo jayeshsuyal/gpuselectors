@@ -1,0 +1,82 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,together_ai,per_token,tog_llama4_maverick_input,Llama 4 Maverick Input,meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8,0.27,1m_tokens,,,,,,global,"17B active, 400B total MoE, 256K context",https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama4_maverick_output,Llama 4 Maverick Output,meta-llama/Llama-4-Maverick-17B-128E-Instruct-FP8,0.85,1m_tokens,,,,,,global,"17B active, 400B total MoE, 256K context",https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2p5_input,Kimi K2.5 Input,moonshotai/Kimi-K2.5-A37B-Instruct,0.5,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2p5_output,Kimi K2.5 Output,moonshotai/Kimi-K2.5-A37B-Instruct,2.8,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_coder_next,Qwen3-Coder-Next,Qwen/Qwen3-Coder-Next,0.85,1m_tokens,,,,,,global,Blended. Combined 0.50/1.20 avg,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_minimax_m2p5_input,MiniMax M2.5 Input,MiniMax/MiniMax-M2.5,0.3,1m_tokens,,,,,,global,196K context,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_minimax_m2p5_output,MiniMax M2.5 Output,MiniMax/MiniMax-M2.5,1.2,1m_tokens,,,,,,global,196K context,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen35_397b_input,Qwen3.5-397B-A17B Input,Qwen/Qwen3.5-397B-A17B,0.6,1m_tokens,,,,,,global,MoE 397B,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen35_397b_output,Qwen3.5-397B-A17B Output,Qwen/Qwen3.5-397B-A17B,3.6,1m_tokens,,,,,,global,MoE 397B,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm5_input,GLM-5 Input,zai-org/GLM-5,1.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm5_output,GLM-5 Output,zai-org/GLM-5,3.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama33_70b,Llama 3.3 70B,meta-llama/Llama-3.3-70B-Instruct-Turbo,0.88,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama32_3b,Llama 3.2 3B Instruct Turbo,meta-llama/Llama-3.2-3B-Instruct-Turbo,0.06,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama31_405b,Llama 3.1 405B,meta-llama/Meta-Llama-3.1-405B-Instruct-Turbo,3.5,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama31_70b,Llama 3.1 70B,meta-llama/Meta-Llama-3.1-70B-Instruct-Turbo,0.88,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama31_8b,Llama 3.1 8B,meta-llama/Meta-Llama-3.1-8B-Instruct-Turbo,0.18,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_llama3_8b_lite,Llama 3 8B Instruct Lite,meta-llama/Meta-Llama-3-8B-Instruct-Lite,0.1,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_deepseek_r1_0528_input,DeepSeek-R1-0528 Input,deepseek-ai/DeepSeek-R1-0528,3.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_deepseek_r1_0528_output,DeepSeek-R1-0528 Output,deepseek-ai/DeepSeek-R1-0528,7.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_deepseek_v3p1_input,DeepSeek-V3.1 Input,deepseek-ai/DeepSeek-V3-1,0.6,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_deepseek_v3p1_output,DeepSeek-V3.1 Output,deepseek-ai/DeepSeek-V3-1,1.7,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_deepseek_v3_0324,DeepSeek-V3-0324,deepseek-ai/DeepSeek-V3-0324,1.25,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gpt_oss_120b_input,gpt-oss-120B Input,openai/gpt-oss-120b,0.15,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gpt_oss_120b_output,gpt-oss-120B Output,openai/gpt-oss-120b,0.6,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gpt_oss_20b_input,gpt-oss-20B Input,openai/gpt-oss-20b,0.05,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gpt_oss_20b_output,gpt-oss-20B Output,openai/gpt-oss-20b,0.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_next_80b_instruct_input,Qwen3-Next-80B-A3B-Instruct Input,Qwen/Qwen3-Next-80B-A3B-Instruct,0.15,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_next_80b_instruct_output,Qwen3-Next-80B-A3B-Instruct Output,Qwen/Qwen3-Next-80B-A3B-Instruct,1.5,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_next_80b_thinking_input,Qwen3-Next-80B-A3B-Thinking Input,Qwen/Qwen3-Next-80B-A3B-Thinking,0.15,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_next_80b_thinking_output,Qwen3-Next-80B-A3B-Thinking Output,Qwen/Qwen3-Next-80B-A3B-Thinking,1.5,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_vl_32b_input,Qwen3-VL-32B-Instruct Input,Qwen/Qwen3-VL-32B-Instruct,0.5,1m_tokens,,,,,,global,Vision,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_vl_32b_output,Qwen3-VL-32B-Instruct Output,Qwen/Qwen3-VL-32B-Instruct,1.5,1m_tokens,,,,,,global,Vision,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_coder_480b,Qwen3-Coder 480B A35B Instruct,Qwen/Qwen3-Coder-480B-A35B-Instruct,2.0,1m_tokens,,,,,,global,Blended. 262K context,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_235b_instruct_input,Qwen3 235B A22B Instruct 2507 FP8 Input,Qwen/Qwen3-235B-A22B-Instruct-2507-FP8,0.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_235b_instruct_output,Qwen3 235B A22B Instruct 2507 FP8 Output,Qwen/Qwen3-235B-A22B-Instruct-2507-FP8,0.6,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_235b_thinking_input,Qwen3 235B A22B Thinking 2507 FP8 Input,Qwen/Qwen3-235B-A22B-Thinking-2507-FP8,0.65,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen3_235b_thinking_output,Qwen3 235B A22B Thinking 2507 FP8 Output,Qwen/Qwen3-235B-A22B-Thinking-2507-FP8,3.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_qwen25_7b,Qwen2.5 7B Instruct Turbo,Qwen/Qwen2.5-7B-Instruct-Turbo,0.3,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm47_input,GLM-4.7 Input,zai-org/GLM-4-7,0.45,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm47_output,GLM-4.7 Output,zai-org/GLM-4-7,2.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2_instruct_input,Kimi K2 Instruct Input,moonshotai/Kimi-K2-Instruct,1.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2_instruct_output,Kimi K2 Instruct Output,moonshotai/Kimi-K2-Instruct,3.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm45_air_input,GLM-4.5-Air Input,zai-org/GLM-4-5-Air,0.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_glm45_air_output,GLM-4.5-Air Output,zai-org/GLM-4-5-Air,1.1,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2_thinking_input,Kimi K2 Thinking Input,moonshotai/Kimi-K2-Thinking,1.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_kimi_k2_thinking_output,Kimi K2 Thinking Output,moonshotai/Kimi-K2-Thinking,4.0,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_mistral_7b,Mistral (7B) Instruct v0.2,mistralai/Mistral-7B-Instruct-v0.2,0.2,1m_tokens,,,,,,global,Blended.,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_mistral_small3_input,Mistral Small 3 Input,mistralai/Mistral-Small-24B-Instruct-2501,0.1,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_mistral_small3_output,Mistral Small 3 Output,mistralai/Mistral-Small-24B-Instruct-2501,0.3,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gemma3n_e4b_input,Gemma 3n E4B Instruct Input,google/gemma-3n-e4b-it,0.02,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+llm,together_ai,per_token,tog_gemma3n_e4b_output,Gemma 3n E4B Instruct Output,google/gemma-3n-e4b-it,0.04,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux_kontext_dev,FLUX.1 Kontext [dev],black-forest-labs/FLUX.1-Kontext-dev,0.025,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux_kontext_pro,FLUX.1 Kontext [pro],black-forest-labs/FLUX.1-Kontext-pro,0.04,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux_kontext_max,FLUX.1 Kontext [max],black-forest-labs/FLUX.1-Kontext-max,0.08,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux11_pro,FLUX1.1 [pro],black-forest-labs/FLUX.1.1-pro,0.04,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux_dev,FLUX.1 [dev],black-forest-labs/FLUX.1-dev,0.025,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_flux_schnell,FLUX.1 [schnell],black-forest-labs/FLUX.1-schnell-Free,0.0027,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_imagen4_preview,Google Imagen 4.0 Preview,google/imagen-4-0-preview,0.04,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_imagen4_fast,Google Imagen 4.0 Fast,google/imagen-4-0-fast,0.02,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_imagen4_ultra,Google Imagen 4.0 Ultra,google/imagen-4-0-ultra,0.06,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_ideogram3,Ideogram 3.0,ideogram-ai/ideogram-3-0,0.06,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_seedream4,ByteDance Seedream 4.0,bytedance/seedream-4-0,0.03,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+image_generation,together_ai,per_image,tog_sdxl,Stable Diffusion XL,stabilityai/stable-diffusion-xl-base-1.0,0.0019,per_image,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_sora2,Sora 2,openai/sora-2,0.8,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_sora2_pro,Sora 2 Pro,openai/sora-2-pro,2.4,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_google_veo3,Google Veo 3.0,google/veo-3-0,1.6,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_google_veo3_audio,Google Veo 3.0 + Audio,google/veo-3-0-audio,3.2,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_google_veo3_fast,Google Veo 3.0 Fast,google/veo-3-0-fast,0.8,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_kling21_pro,Kling 2.1 Pro,kling/2-1-pro,0.32,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_kling21_master,Kling 2.1 Master,kling/2-1-master,0.92,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+video_generation,together_ai,per_unit,tog_minimax_hailuo02,MiniMax Hailuo 02,MiniMax/hailuo-02,0.49,video,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+text_to_speech,together_ai,per_character,tog_cartesia_sonic2,Cartesia Sonic-2,cartesia/sonic-2,65.0,1m_chars,,,,,,global,$65 per 1M characters,https://www.together.ai/pricing,2026-02-18,official
+text_to_speech,together_ai,per_character,tog_cartesia_sonic3,Cartesia Sonic-3,cartesia/sonic-3,65.0,1m_chars,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+speech_to_text,together_ai,per_minute,tog_whisper_v3,Whisper Large v3,openai/whisper-large-v3,0.0015,audio_min,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+embeddings,together_ai,per_token,tog_bge_base,BGE-Base-EN v1.5,BAAI/bge-base-en-v1.5,0.01,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+embeddings,together_ai,per_token,tog_bge_large,BGE-Large-EN v1.5,BAAI/bge-large-en-v1.5,0.02,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+embeddings,together_ai,per_token,tog_multilingual_e5,Multilingual e5 large instruct,intfloat/multilingual-e5-large-instruct,0.02,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+embeddings,together_ai,per_token,tog_gte_modernbert,GTE ModernBERT base,Alibaba-NLP/gte-modernbert-base,0.08,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+embeddings,together_ai,per_token,tog_mxbai_rerank,Mxbai Rerank Large V2,mixedbread-ai/mxbai-rerank-large-v2,0.1,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+moderation,together_ai,per_token,tog_llama_guard4,Llama Guard 4 12B,meta-llama/Llama-Guard-4-12B,0.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official
+moderation,together_ai,per_token,tog_llama_guard3,Llama Guard 3 8B,meta-llama/Meta-Llama-Guard-3-8B,0.2,1m_tokens,,,,,,global,,https://www.together.ai/pricing,2026-02-18,official

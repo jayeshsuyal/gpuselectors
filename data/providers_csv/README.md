@@ -71,6 +71,24 @@ InferenceAtlas_Final_Complete/
 └── runpod.csv (5 SKUs)
 ```
 
+## GPU v1.3 Ingestion Layout
+
+For scaling-planner inputs, GPU and managed API rows are stored separately:
+
+- `data/providers_csv/gpu/`:
+  - true GPU-hour rows (`billing_mode` in `dedicated_hourly|autoscale_hourly`)
+- `data/providers_csv/managed/`:
+  - managed API effective-cost rows (not direct GPU procurement)
+
+Normalize incoming `*_gpu.csv` files with:
+
+```bash
+python3 scripts/normalize_gpu_provider_csvs.py \
+  --input-dir data/providers_csv/incoming \
+  --gpu-dir data/providers_csv/gpu \
+  --managed-dir data/providers_csv/managed
+```
+
 ## 📚 Workload Type Distribution
 
 | Workload | Providers | Total SKUs | Description |

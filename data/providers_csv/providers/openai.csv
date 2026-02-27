@@ -1,0 +1,109 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+llm,openai,per_token,oa_gpt5_input,GPT-5 Input,gpt-5,1.25,1m_tokens,,,,,,global,Context: 400k. Flagship model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_output,GPT-5 Output,gpt-5,10.0,1m_tokens,,,,,,global,Context: 400k. Flagship model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_cache_read,GPT-5 Cache Read,gpt-5,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_pro_input,GPT-5 Pro Input,gpt-5-pro,15.0,1m_tokens,,,,,,global,Context: 400k. Maximum capability,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_pro_output,GPT-5 Pro Output,gpt-5-pro,120.0,1m_tokens,,,,,,global,Context: 400k. Maximum capability,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_codex_input,GPT-5 Codex Input,gpt-5-codex,1.25,1m_tokens,,,,,,global,Context: 400k. Coding model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_codex_output,GPT-5 Codex Output,gpt-5-codex,10.0,1m_tokens,,,,,,global,Context: 400k. Coding model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_codex_cache_read,GPT-5 Codex Cache Read,gpt-5-codex,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_chat_input,GPT-5 Chat Input,gpt-5-chat,1.25,1m_tokens,,,,,,global,Context: 128k. Chat interface,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_chat_output,GPT-5 Chat Output,gpt-5-chat,10.0,1m_tokens,,,,,,global,Context: 128k. Chat interface,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_chat_cache_read,GPT-5 Chat Cache Read,gpt-5-chat,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_mini_input,GPT-5 Mini Input,gpt-5-mini,0.25,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_mini_output,GPT-5 Mini Output,gpt-5-mini,2.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_mini_cache_read,GPT-5 Mini Cache Read,gpt-5-mini,0.025,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_nano_input,GPT-5 Nano Input,gpt-5-nano,0.05,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_nano_output,GPT-5 Nano Output,gpt-5-nano,0.4,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_nano_cache_read,GPT-5 Nano Cache Read,gpt-5-nano,0.005,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_input,GPT-5 Image Input,gpt-5-image,10.0,1m_tokens,,,,,,global,Context: 400k. Image generation,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_output,GPT-5 Image Output,gpt-5-image,10.0,1m_tokens,,,,,,global,Context: 400k. Image generation,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_cache_read,GPT-5 Image Cache Read,gpt-5-image,1.25,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_mini_input,GPT-5 Image Mini Input,gpt-5-image-mini,2.5,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_mini_output,GPT-5 Image Mini Output,gpt-5-image-mini,2.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt5_image_mini_cache_read,GPT-5 Image Mini Cache Read,gpt-5-image-mini,0.25,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_input,GPT-5.1 Input,gpt-5.1,1.25,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_output,GPT-5.1 Output,gpt-5.1,10.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_cache_read,GPT-5.1 Cache Read,gpt-5.1,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_input,GPT-5.1-Codex Input,gpt-5.1-codex,1.25,1m_tokens,,,,,,global,Context: 400k. Coding,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_output,GPT-5.1-Codex Output,gpt-5.1-codex,10.0,1m_tokens,,,,,,global,Context: 400k. Coding,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_cache_read,GPT-5.1-Codex Cache Read,gpt-5.1-codex,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_max_input,GPT-5.1-Codex-Max Input,gpt-5.1-codex-max,1.25,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_max_output,GPT-5.1-Codex-Max Output,gpt-5.1-codex-max,10.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_max_cache_read,GPT-5.1-Codex-Max Cache Read,gpt-5.1-codex-max,0.125,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_mini_input,GPT-5.1-Codex-Mini Input,gpt-5.1-codex-mini,0.25,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_mini_output,GPT-5.1-Codex-Mini Output,gpt-5.1-codex-mini,2.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt51_codex_mini_cache_read,GPT-5.1-Codex-Mini Cache Read,gpt-5.1-codex-mini,0.025,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_input,GPT-5.2 Input,gpt-5.2,1.75,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_output,GPT-5.2 Output,gpt-5.2,14.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_cache_read,GPT-5.2 Cache Read,gpt-5.2,0.175,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_pro_input,GPT-5.2 Pro Input,gpt-5.2-pro,21.0,1m_tokens,,,,,,global,Context: 400k. 88.9 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_pro_output,GPT-5.2 Pro Output,gpt-5.2-pro,168.0,1m_tokens,,,,,,global,Context: 400k. 88.9 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_codex_input,GPT-5.2-Codex Input,gpt-5.2-codex,1.75,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_codex_output,GPT-5.2-Codex Output,gpt-5.2-codex,14.0,1m_tokens,,,,,,global,Context: 400k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt52_codex_cache_read,GPT-5.2-Codex Cache Read,gpt-5.2-codex,0.175,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_input,GPT-4.1 Input,gpt-4.1,2.0,1m_tokens,,,,,,global,Context: 1M. 1M token context window,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_output,GPT-4.1 Output,gpt-4.1,8.0,1m_tokens,,,,,,global,Context: 1M. 1M token context window,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_cache_read,GPT-4.1 Cache Read,gpt-4.1,0.5,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_mini_input,GPT-4.1 Mini Input,gpt-4.1-mini,0.4,1m_tokens,,,,,,global,Context: 1M.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_mini_output,GPT-4.1 Mini Output,gpt-4.1-mini,1.6,1m_tokens,,,,,,global,Context: 1M.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_mini_cache_read,GPT-4.1 Mini Cache Read,gpt-4.1-mini,0.1,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_nano_input,GPT-4.1 Nano Input,gpt-4.1-nano,0.1,1m_tokens,,,,,,global,Context: 1M.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_nano_output,GPT-4.1 Nano Output,gpt-4.1-nano,0.4,1m_tokens,,,,,,global,Context: 1M.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt41_nano_cache_read,GPT-4.1 Nano Cache Read,gpt-4.1-nano,0.025,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_input,GPT-4o Input,gpt-4o,2.5,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_output,GPT-4o Output,gpt-4o,10.0,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_cache_read,GPT-4o Cache Read,gpt-4o,1.25,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_mini_input,GPT-4o Mini Input,gpt-4o-mini,0.15,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_mini_output,GPT-4o Mini Output,gpt-4o-mini,0.6,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_mini_cache_read,GPT-4o Mini Cache Read,gpt-4o-mini,0.075,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_search_input,GPT-4o Search Preview Input,gpt-4o-search-preview,2.5,1m_tokens,,,,,,global,Context: 128k. Web search enabled,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_search_output,GPT-4o Search Preview Output,gpt-4o-search-preview,10.0,1m_tokens,,,,,,global,Context: 128k. Web search enabled,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_mini_search_input,GPT-4o Mini Search Preview Input,gpt-4o-mini-search-preview,0.15,1m_tokens,,,,,,global,Context: 128k. Web search,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_mini_search_output,GPT-4o Mini Search Preview Output,gpt-4o-mini-search-preview,0.6,1m_tokens,,,,,,global,Context: 128k. Web search,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_audio_input,GPT-4o Audio Preview Input,gpt-4o-audio-preview,2.5,1m_tokens,,,,,,global,Context: 128k. Audio input/output,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4o_audio_output,GPT-4o Audio Preview Output,gpt-4o-audio-preview,10.0,1m_tokens,,,,,,global,Context: 128k. Audio input/output,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_input,o4 Mini Input,o4-mini,1.1,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_output,o4 Mini Output,o4-mini,4.4,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_cache_read,o4 Mini Cache Read,o4-mini,0.275,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_deep_research_input,o4 Mini Deep Research Input,o4-mini-deep-research,2.0,1m_tokens,,,,,,global,Context: 200k. Deep research tasks,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_deep_research_output,o4 Mini Deep Research Output,o4-mini-deep-research,8.0,1m_tokens,,,,,,global,Context: 200k. Deep research tasks,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o4_mini_deep_research_cache_read,o4 Mini Deep Research Cache Read,o4-mini-deep-research,0.5,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_input,o3 Input,o3,2.0,1m_tokens,,,,,,global,Context: 200k. 80.8 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_output,o3 Output,o3,8.0,1m_tokens,,,,,,global,Context: 200k. 80.8 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_cache_read,o3 Cache Read,o3,0.5,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_mini_input,o3 Mini Input,o3-mini,1.1,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_mini_output,o3 Mini Output,o3-mini,4.4,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_mini_cache_read,o3 Mini Cache Read,o3-mini,0.55,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_pro_input,o3 Pro Input,o3-pro,20.0,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_pro_output,o3 Pro Output,o3-pro,80.0,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_deep_research_input,o3 Deep Research Input,o3-deep-research,10.0,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_deep_research_output,o3 Deep Research Output,o3-deep-research,40.0,1m_tokens,,,,,,global,Context: 200k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o3_deep_research_cache_read,o3 Deep Research Cache Read,o3-deep-research,2.5,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o1_input,o1 Input,o1,15.0,1m_tokens,,,,,,global,Context: 200k. 67.9 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o1_output,o1 Output,o1,60.0,1m_tokens,,,,,,global,Context: 200k. 67.9 coding score,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o1_cache_read,o1 Cache Read,o1,7.5,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o1_pro_input,o1-pro Input,o1-pro,150.0,1m_tokens,,,,,,global,Context: 200k. Maximum reasoning capability,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_o1_pro_output,o1-pro Output,o1-pro,600.0,1m_tokens,,,,,,global,Context: 200k. Maximum reasoning capability,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_20b_input,GPT-OSS-20b Input,gpt-oss-20b,0.03,1m_tokens,,,,,,global,Context: 131k. Open source model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_20b_output,GPT-OSS-20b Output,gpt-oss-20b,0.14,1m_tokens,,,,,,global,Context: 131k. Open source model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_120b_input,GPT-OSS-120b Input,gpt-oss-120b,0.039,1m_tokens,,,,,,global,Context: 131k. Open source model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_120b_output,GPT-OSS-120b Output,gpt-oss-120b,0.19,1m_tokens,,,,,,global,Context: 131k. Open source model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_safeguard_20b_input,gpt-oss-safeguard-20b Input,gpt-oss-safeguard-20b,0.075,1m_tokens,,,,,,global,Context: 131k. Safety/moderation,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_safeguard_20b_output,gpt-oss-safeguard-20b Output,gpt-oss-safeguard-20b,0.3,1m_tokens,,,,,,global,Context: 131k. Safety/moderation,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_oss_safeguard_20b_cache_read,gpt-oss-safeguard-20b Cache Read,gpt-oss-safeguard-20b,0.037,1m_tokens,,,,,,global,Cached input rate,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_audio_input,GPT Audio Input,gpt-4o-audio,2.5,1m_tokens,,,,,,global,Context: 128k. Text audio model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_audio_output,GPT Audio Output,gpt-4o-audio,10.0,1m_tokens,,,,,,global,Context: 128k. Text audio model,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_audio_mini_input,GPT Audio Mini Input,gpt-4o-audio-mini,0.6,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt_audio_mini_output,GPT Audio Mini Output,gpt-4o-audio-mini,2.4,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4_turbo_input,GPT-4 Turbo Input,gpt-4-turbo,10.0,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4_turbo_output,GPT-4 Turbo Output,gpt-4-turbo,30.0,1m_tokens,,,,,,global,Context: 128k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4_input,GPT-4 Input,gpt-4,30.0,1m_tokens,,,,,,global,Context: 8k. Legacy,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt4_output,GPT-4 Output,gpt-4,60.0,1m_tokens,,,,,,global,Context: 8k. Legacy,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt35_turbo_input,GPT-3.5 Turbo Input,gpt-3.5-turbo,0.5,1m_tokens,,,,,,global,Context: 16k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt35_turbo_output,GPT-3.5 Turbo Output,gpt-3.5-turbo,1.5,1m_tokens,,,,,,global,Context: 16k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt35_turbo_instruct_input,GPT-3.5 Turbo Instruct Input,gpt-3.5-turbo-instruct,1.5,1m_tokens,,,,,,global,Context: 4k.,https://openai.com/api/pricing/,2026-02-18,official
+llm,openai,per_token,oa_gpt35_turbo_instruct_output,GPT-3.5 Turbo Instruct Output,gpt-3.5-turbo-instruct,2.0,1m_tokens,,,,,,global,Context: 4k.,https://openai.com/api/pricing/,2026-02-18,official
+image_generation,openai,per_image,oa_dalle3_hd,DALL-E 3 HD 1024x1024,dall-e-3,0.08,per_image,,,,,,global,,https://openai.com/api/pricing/,2026-02-18,official
+image_generation,openai,per_image,oa_dalle3_std,DALL-E 3 Standard 1024x1024,dall-e-3,0.04,per_image,,,,,,global,,https://openai.com/api/pricing/,2026-02-18,official
+speech_to_text,openai,per_minute,oa_whisper,Whisper,whisper-1,0.006,audio_min,,,,,,global,$6/1000 min,https://openai.com/api/pricing/,2026-02-18,official

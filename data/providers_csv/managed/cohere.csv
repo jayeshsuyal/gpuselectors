@@ -1,0 +1,5 @@
+provider,service_type,billing_mode,effective_unit_price_usd,unit_name,region,workload_type,source_url,confidence,last_verified_at,notes
+cohere,embed_v4_text,managed_api,0.12,tokens_per_second,global,embeddings,https://cohere.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+cohere,embed_v4_image,managed_api,0.47,tokens_per_second,global,embeddings,https://cohere.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+cohere,command_r_plus_input,managed_api,2.50,tokens_per_second,global,llm,https://cohere.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.
+cohere,command_r_plus_output,managed_api,10.00,tokens_per_second,global,llm,https://cohere.com/pricing,official,2026-02-26,Managed API pricing; not direct GPU-hour procurement.

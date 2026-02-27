@@ -1,0 +1,12 @@
+workload_type,provider,billing_type,sku_key,sku_name,model_key,unit_price_usd,unit_name,throughput_value,throughput_unit,memory_gb,latency_p50_ms,latency_p95_ms,region,notes,source_url,source_date,confidence
+embedding,voyage_ai,per_token,voyage_4_large,Voyage-4-Large,voyage_4_large,0.12,1m_tokens,,,,,,global,1024 default dimensions,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_4,Voyage-4,voyage_4,0.06,1m_tokens,,,,,,global,1024 default dimensions,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_4_lite,Voyage-4-Lite,voyage_4_lite,0.02,1m_tokens,,,,,,global,1024 default dimensions,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_context_3,Voyage-Context-3,voyage_context_3,0.18,1m_tokens,,,,,,global,Contextualized chunk embeddings,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_code_3,Voyage-Code-3,voyage_code_3,0.18,1m_tokens,,,,,,global,Code-specific embeddings,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_finance_2,Voyage-Finance-2,voyage_finance_2,0.12,1m_tokens,,,,,,global,Finance domain specialized,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_law_2,Voyage-Law-2,voyage_law_2,0.12,1m_tokens,,,,,,global,Legal domain specialized,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_multimodal_35_text,Voyage-Multimodal-3.5 Text,voyage_multimodal_3_5,0.12,1m_tokens,,,,,,global,Text portion of multimodal,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+embedding,voyage_ai,per_token,voyage_multimodal_35_pixels,Voyage-Multimodal-3.5 Pixels,voyage_multimodal_3_5,0.60,1b_pixels,,,,,,global,Image/video pixel pricing,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+rerank,voyage_ai,per_token,rerank_25,Rerank-2.5,rerank_2_5,0.05,1m_tokens,,,,,,global,Assumes 100 docs per request,https://docs.voyageai.com/docs/pricing,2026-02-13,high
+rerank,voyage_ai,per_token,rerank_25_lite,Rerank-2.5-Lite,rerank_2_5_lite,0.02,1m_tokens,,,,,,global,Lite reranking model,https://docs.voyageai.com/docs/pricing,2026-02-13,high

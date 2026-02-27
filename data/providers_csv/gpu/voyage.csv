@@ -1,0 +1,2 @@
+provider,gpu_type,billing_mode,price_per_gpu_hour_usd,region,workload_type,throughput_value,throughput_unit,min_gpus,max_gpus,startup_latency_sec,source_url,confidence,last_verified_at
+voyage,A10G,dedicated_hourly,7.118,us-east-1,embeddings,,tokens_per_second,1,1,60,https://docs.voyageai.com/docs/aws-marketplace-voyage,medium,2026-02-26

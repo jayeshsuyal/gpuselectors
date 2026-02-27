@@ -1,0 +1,2 @@
+provider,gpu_type,billing_mode,price_per_gpu_hour_usd,region,workload_type,throughput_value,throughput_unit,min_gpus,max_gpus,startup_latency_sec,source_url,confidence,last_verified_at
+anthropic,H100_80GB,dedicated_hourly,15.00,us-east-1,llm,,,1,,300,https://www.anthropic.com/api,estimated,2025-08-01
