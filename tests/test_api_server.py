@@ -77,6 +77,45 @@ def test_plan_llm_endpoint() -> None:
     assert body["plans"][0]["rank"] == 1
 
 
+def test_plan_scaling_endpoint() -> None:
+    client = _client()
+    payload = {
+        "mode": "catalog",
+        "catalog_ranking": {
+            "offers": [
+                {
+                    "rank": 1,
+                    "provider": "openai",
+                    "sku_name": "whisper-1",
+                    "billing_mode": "per_unit",
+                    "unit_price_usd": 0.006,
+                    "normalized_price": 0.36,
+                    "unit_name": "audio_min",
+                    "confidence": "official",
+                    "monthly_estimate_usd": 10.0,
+                    "required_replicas": 1,
+                    "capacity_check": "ok",
+                    "previous_unit_price_usd": None,
+                    "price_change_abs_usd": None,
+                    "price_change_pct": None,
+                }
+            ],
+            "provider_diagnostics": [],
+            "excluded_count": 0,
+            "warnings": [],
+            "relaxation_applied": False,
+            "relaxation_steps": [],
+            "exclusion_breakdown": {},
+        },
+    }
+    response = client.post("/api/v1/plan/scaling", json=payload)
+    assert response.status_code == 200
+    body = response.json()
+    assert body["mode"] == "catalog"
+    assert body["deployment_mode"] in {"serverless", "dedicated", "autoscale", "unknown"}
+    assert body["estimated_gpu_count"] >= 0
+
+
 def test_ai_assist_endpoint() -> None:
     client = _client()
     payload = {

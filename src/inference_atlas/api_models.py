@@ -260,6 +260,37 @@ class ReportGenerateRequest(BaseModel):
         return self
 
 
+class ScalingPlanRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    mode: Literal["llm", "catalog"]
+    llm_planning: Optional[LLMPlanningResponse] = None
+    catalog_ranking: Optional[CatalogRankingResponse] = None
+
+    @model_validator(mode="after")
+    def validate_mode_payload(self) -> "ScalingPlanRequest":
+        if self.mode == "llm" and self.llm_planning is None:
+            raise ValueError("llm_planning is required when mode='llm'")
+        if self.mode == "catalog" and self.catalog_ranking is None:
+            raise ValueError("catalog_ranking is required when mode='catalog'")
+        return self
+
+
+class ScalingPlanResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    mode: Literal["llm", "catalog"]
+    deployment_mode: Literal["serverless", "dedicated", "autoscale", "unknown"]
+    estimated_gpu_count: int = Field(ge=0, default=0)
+    suggested_gpu_type: Optional[str] = None
+    projected_utilization: Optional[float] = None
+    utilization_target: Optional[float] = None
+    risk_band: Literal["low", "medium", "high", "unknown"] = "unknown"
+    capacity_check: Literal["ok", "insufficient", "unknown"] = "unknown"
+    rationale: str
+    assumptions: list[str] = Field(default_factory=list)
+
+
 class ReportGenerateResponse(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

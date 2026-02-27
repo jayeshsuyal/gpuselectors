@@ -15,6 +15,8 @@ from inference_atlas.api_models import (
     InvoiceAnalysisResponse,
     LLMPlanningRequest,
     LLMPlanningResponse,
+    ScalingPlanRequest,
+    ScalingPlanResponse,
     ReportGenerateRequest,
     ReportGenerateResponse,
 )
@@ -25,6 +27,7 @@ from inference_atlas.api_service import (
     run_generate_report,
     run_invoice_analyze,
     run_plan_llm,
+    run_plan_scaling,
     run_rank_catalog,
 )
 
@@ -76,6 +79,15 @@ def create_app():
     def rank_catalog(payload: CatalogRankingRequest) -> CatalogRankingResponse:
         try:
             return run_rank_catalog(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.post("/api/v1/plan/scaling", response_model=ScalingPlanResponse)
+    def plan_scaling(payload: ScalingPlanRequest) -> ScalingPlanResponse:
+        try:
+            return run_plan_scaling(payload)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:  # noqa: BLE001

@@ -28,6 +28,8 @@ from inference_atlas.api_models import (
     ProviderDiagnostic,
     ReportGenerateRequest,
     ReportGenerateResponse,
+    ScalingPlanRequest,
+    ScalingPlanResponse,
     ReportChart,
     ReportChartSeries,
     ReportSection,
@@ -614,6 +616,142 @@ def _build_report_narrative(
     )
 
 
+def _risk_band_from_total_risk(total_risk: float | None) -> str:
+    if total_risk is None:
+        return "unknown"
+    if total_risk < 0.3:
+        return "low"
+    if total_risk < 0.6:
+        return "medium"
+    return "high"
+
+
+def _build_scaling_summary_for_llm(response: LLMPlanningResponse) -> ScalingPlanResponse:
+    if not response.plans:
+        return ScalingPlanResponse(
+            mode="llm",
+            deployment_mode="unknown",
+            estimated_gpu_count=0,
+            projected_utilization=None,
+            utilization_target=None,
+            risk_band="unknown",
+            capacity_check="unknown",
+            rationale="No ranked LLM plans available to estimate scaling.",
+            assumptions=["No feasible LLM plans were returned for current constraints."],
+        )
+
+    top = response.plans[0]
+    plan_assumptions = dict(top.assumptions or {})
+    util_target = (
+        float(plan_assumptions["util_target"])
+        if "util_target" in plan_assumptions
+        else None
+    )
+
+    deployment_mode = (
+        "serverless"
+        if top.billing_mode == "per_token"
+        else "autoscale"
+        if top.billing_mode == "autoscale_hourly"
+        else "dedicated"
+        if top.billing_mode == "dedicated_hourly"
+        else "unknown"
+    )
+    capacity_check = (
+        "ok"
+        if top.utilization_at_peak is not None
+        else "unknown"
+    )
+    projected_util = top.utilization_at_peak
+    assumptions = [
+        f"Top ranked plan #{top.rank} ({top.provider_name}, {top.offering_id}) was used for scaling guidance.",
+        "Guidance is risk-aware and based on current assumptions in the planning payload.",
+    ]
+    if util_target is not None:
+        assumptions.append(f"Utilization target used in planning: {util_target:.2f}.")
+    if projected_util is None:
+        assumptions.append("Projected utilization unavailable for this billing mode.")
+
+    return ScalingPlanResponse(
+        mode="llm",
+        deployment_mode=deployment_mode,
+        estimated_gpu_count=max(int(getattr(top, "gpu_count", 0) or 0), 0),
+        suggested_gpu_type=getattr(top, "gpu_type", None),
+        projected_utilization=projected_util,
+        utilization_target=util_target,
+        risk_band=_risk_band_from_total_risk(top.risk.total_risk),
+        capacity_check=capacity_check,
+        rationale=(
+            f"{top.provider_name} rank #{top.rank} is the current best-value plan with "
+            f"risk={top.risk.total_risk:.2f} and billing mode '{top.billing_mode}'."
+        ),
+        assumptions=assumptions,
+    )
+
+
+def _build_scaling_summary_for_catalog(response: CatalogRankingResponse) -> ScalingPlanResponse:
+    if not response.offers:
+        return ScalingPlanResponse(
+            mode="catalog",
+            deployment_mode="unknown",
+            estimated_gpu_count=0,
+            projected_utilization=None,
+            utilization_target=None,
+            risk_band="unknown",
+            capacity_check="unknown",
+            rationale="No ranked catalog offers available to estimate scaling.",
+            assumptions=["No matching offers were returned after current filters and fallback steps."],
+        )
+
+    top = response.offers[0]
+    deployment_mode = (
+        "autoscale"
+        if top.billing_mode == "autoscale_hourly"
+        else "dedicated"
+        if top.billing_mode == "dedicated_hourly"
+        else "serverless"
+        if top.billing_mode == "per_token"
+        else "unknown"
+    )
+    capacity_check = top.capacity_check
+    if capacity_check == "insufficient":
+        risk_band = "high"
+    elif capacity_check == "ok":
+        risk_band = "low"
+    else:
+        risk_band = "unknown"
+    assumptions = [
+        f"Top ranked offer #{top.rank} ({top.provider}, {top.sku_name}) was used for scaling guidance.",
+        "Catalog scaling guidance uses required_replicas and capacity_check when present.",
+    ]
+    if top.required_replicas is None:
+        assumptions.append("Throughput metadata was missing, so GPU replica estimate may be unavailable.")
+
+    return ScalingPlanResponse(
+        mode="catalog",
+        deployment_mode=deployment_mode,
+        estimated_gpu_count=max(int(top.required_replicas or 0), 0),
+        suggested_gpu_type=None,
+        projected_utilization=None,
+        utilization_target=None,
+        risk_band=risk_band,
+        capacity_check=capacity_check,
+        rationale=(
+            f"{top.provider} rank #{top.rank} is the current best-value offer under active "
+            f"filters with billing mode '{top.billing_mode}'."
+        ),
+        assumptions=assumptions,
+    )
+
+
+def run_plan_scaling(payload: ScalingPlanRequest) -> ScalingPlanResponse:
+    if payload.mode == "llm":
+        assert payload.llm_planning is not None
+        return _build_scaling_summary_for_llm(payload.llm_planning)
+    assert payload.catalog_ranking is not None
+    return _build_scaling_summary_for_catalog(payload.catalog_ranking)
+
+
 def _rows_to_csv_text(rows: list[dict[str, Any]]) -> str:
     if not rows:
         return ""
@@ -965,16 +1103,46 @@ def _build_catalog_report_charts(response: CatalogRankingResponse) -> list[Repor
 def run_generate_report(payload: ReportGenerateRequest) -> ReportGenerateResponse:
     generated_at_utc = datetime.now(timezone.utc).isoformat()
     catalog_meta = get_catalog_v2_metadata()
+    scaling_summary: ScalingPlanResponse | None = None
     if payload.mode == "llm":
         assert payload.llm_planning is not None
         sections = _llm_report_sections(payload.llm_planning)
+        scaling_summary = run_plan_scaling(
+            ScalingPlanRequest(mode="llm", llm_planning=payload.llm_planning)
+        )
         chart_data = _build_llm_report_chart_data(payload.llm_planning)
         charts = _build_llm_report_charts(payload.llm_planning)
     else:
         assert payload.catalog_ranking is not None
         sections = _catalog_report_sections(payload.catalog_ranking)
+        scaling_summary = run_plan_scaling(
+            ScalingPlanRequest(mode="catalog", catalog_ranking=payload.catalog_ranking)
+        )
         chart_data = _build_catalog_report_chart_data(payload.catalog_ranking)
         charts = _build_catalog_report_charts(payload.catalog_ranking)
+    if scaling_summary is not None:
+        gpu_label = (
+            str(scaling_summary.estimated_gpu_count)
+            if scaling_summary.estimated_gpu_count > 0
+            else "n/a"
+        )
+        util_label = (
+            f"{scaling_summary.projected_utilization:.2f}"
+            if scaling_summary.projected_utilization is not None
+            else "n/a"
+        )
+        sections.append(
+            ReportSection(
+                title="Scaling Summary",
+                bullets=[
+                    f"Recommended deployment mode: {scaling_summary.deployment_mode}.",
+                    f"Estimated GPU count: {gpu_label}.",
+                    f"Capacity check: {scaling_summary.capacity_check}; risk band: {scaling_summary.risk_band}.",
+                    f"Projected utilization: {util_label}.",
+                    scaling_summary.rationale,
+                ],
+            )
+        )
     markdown = _sections_to_markdown(
         title=payload.title,
         mode=payload.mode,

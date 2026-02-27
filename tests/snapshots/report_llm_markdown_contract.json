@@ -17,7 +17,7 @@
   ],
   "mode": "llm",
   "output_format": "markdown",
-  "section_count": 3,
+  "section_count": 4,
   "section_keys": [
     "bullets",
     "title"

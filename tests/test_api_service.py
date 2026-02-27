@@ -10,6 +10,7 @@ from inference_atlas.api_models import (
     CopilotTurnRequest,
     LLMPlanningRequest,
     ReportGenerateRequest,
+    ScalingPlanRequest,
 )
 from inference_atlas.api_service import (
     run_ai_assist,
@@ -18,6 +19,7 @@ from inference_atlas.api_service import (
     run_generate_report,
     run_invoice_analyze,
     run_plan_llm,
+    run_plan_scaling,
     run_rank_catalog,
 )
 
@@ -453,3 +455,58 @@ def test_run_generate_report_can_include_narrative() -> None:
     )
     assert report.narrative is not None
     assert "Primary recommendation:" in report.narrative
+
+
+def test_run_plan_scaling_llm_returns_mode_and_gpu_estimate() -> None:
+    llm = run_plan_llm(
+        LLMPlanningRequest(
+            tokens_per_day=3_000_000,
+            model_bucket="7b",
+            provider_ids=[],
+            top_k=3,
+        )
+    )
+    response = run_plan_scaling(ScalingPlanRequest(mode="llm", llm_planning=llm))
+    assert response.mode == "llm"
+    assert response.deployment_mode in {"serverless", "autoscale", "dedicated", "unknown"}
+    assert response.estimated_gpu_count >= 0
+    assert response.risk_band in {"low", "medium", "high", "unknown"}
+
+
+def test_run_plan_scaling_catalog_returns_capacity_guidance() -> None:
+    catalog = run_rank_catalog(
+        CatalogRankingRequest(
+            workload_type="speech_to_text",
+            allowed_providers=[],
+            unit_name=None,
+            monthly_usage=20.0,
+            top_k=3,
+            confidence_weighted=True,
+            comparator_mode="normalized",
+            throughput_aware=True,
+        )
+    )
+    response = run_plan_scaling(ScalingPlanRequest(mode="catalog", catalog_ranking=catalog))
+    assert response.mode == "catalog"
+    assert response.capacity_check in {"ok", "insufficient", "unknown"}
+    assert response.estimated_gpu_count >= 0
+
+
+def test_run_generate_report_includes_scaling_summary_section() -> None:
+    llm = run_plan_llm(
+        LLMPlanningRequest(
+            tokens_per_day=3_000_000,
+            model_bucket="7b",
+            provider_ids=[],
+            top_k=2,
+        )
+    )
+    report = run_generate_report(
+        ReportGenerateRequest(
+            mode="llm",
+            title="Scaling Summary Report",
+            llm_planning=llm,
+        )
+    )
+    titles = [section.title for section in report.sections]
+    assert "Scaling Summary" in titles
