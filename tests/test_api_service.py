@@ -22,6 +22,7 @@ from inference_atlas.api_service import (
     run_invoice_analyze,
     run_plan_llm,
     run_plan_scaling,
+    run_quality_catalog,
     run_rank_catalog,
 )
 
@@ -106,6 +107,19 @@ def test_run_browse_catalog_filters_workload() -> None:
     response = run_browse_catalog(workload_type="llm")
     assert response.total >= 1
     assert all(row["workload_type"] == "llm" for row in response.rows)
+
+
+def test_run_quality_catalog_returns_rows_and_mapping_counts() -> None:
+    response = run_quality_catalog(workload_type="llm")
+    assert response.total >= 1
+    assert response.mapped_count + response.unmapped_count == response.total
+    assert all(row.workload_type == "llm" for row in response.rows)
+
+
+def test_run_quality_catalog_mapped_only_filter() -> None:
+    response = run_quality_catalog(workload_type="llm", mapped_only=True)
+    assert response.total >= 1
+    assert all(row.quality_mapped for row in response.rows)
 
 
 def test_run_invoice_analyze_returns_line_items() -> None:

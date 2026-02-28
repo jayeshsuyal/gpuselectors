@@ -9,8 +9,11 @@ from inference_atlas.api_models import (
     AIAssistRequest,
     AIAssistResponse,
     CatalogBrowseResponse,
+    QualityCatalogResponse,
     CatalogRankingRequest,
     CatalogRankingResponse,
+    CostAuditRequest,
+    CostAuditResponse,
     CopilotTurnRequest,
     CopilotTurnResponse,
     InvoiceAnalysisResponse,
@@ -24,7 +27,9 @@ from inference_atlas.api_models import (
 from inference_atlas.api_service import (
     run_ai_assist,
     run_browse_catalog,
+    run_quality_catalog,
     run_copilot_turn,
+    run_cost_audit,
     run_generate_report,
     run_invoice_analyze,
     run_plan_llm,
@@ -85,6 +90,15 @@ def create_app():
         except Exception as exc:  # noqa: BLE001
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
+    @app.post("/api/v1/audit/cost", response_model=CostAuditResponse)
+    def audit_cost(payload: CostAuditRequest) -> CostAuditResponse:
+        try:
+            return run_cost_audit(payload)
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
     @app.post("/api/v1/plan/scaling", response_model=ScalingPlanResponse)
     def plan_scaling(payload: ScalingPlanRequest) -> ScalingPlanResponse:
         try:
@@ -105,6 +119,25 @@ def create_app():
                 workload_type=workload_type,
                 provider=provider,
                 unit_name=unit_name,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.get("/api/v1/quality/catalog", response_model=QualityCatalogResponse)
+    def browse_quality_catalog(
+        workload_type: Optional[str] = None,
+        provider: Optional[str] = None,
+        model_key_query: Optional[str] = None,
+        mapped_only: bool = False,
+    ) -> QualityCatalogResponse:
+        try:
+            return run_quality_catalog(
+                workload_type=workload_type,
+                provider=provider,
+                model_key_query=model_key_query,
+                mapped_only=mapped_only,
             )
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc

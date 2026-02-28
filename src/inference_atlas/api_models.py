@@ -120,6 +120,34 @@ class CatalogBrowseResponse(BaseModel):
     total: int
 
 
+class QualityCatalogRow(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    provider: str
+    workload_type: str
+    model_key: str
+    sku_name: str
+    billing_mode: str
+    unit_price_usd: float
+    unit_name: str
+    quality_mapped: bool
+    quality_model_id: Optional[str] = None
+    quality_score_0_100: Optional[float] = None
+    quality_score_adjusted_0_100: Optional[float] = None
+    quality_confidence: Optional[str] = None
+    quality_confidence_weight: Optional[float] = None
+    quality_matched_by: Optional[str] = None
+
+
+class QualityCatalogResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    rows: list[QualityCatalogRow]
+    total: int
+    mapped_count: int
+    unmapped_count: int
+
+
 class InvoiceLineItem(BaseModel):
     model_config = ConfigDict(extra="ignore")
 

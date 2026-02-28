@@ -19,6 +19,8 @@ from inference_atlas.api_models import (
     AIAssistRequest,
     AIAssistResponse,
     CatalogBrowseResponse,
+    QualityCatalogResponse,
+    QualityCatalogRow,
     CatalogRankingRequest,
     CatalogRankingResponse,
     CostAuditDataGap,
@@ -57,6 +59,7 @@ from inference_atlas.invoice_analyzer import analyze_invoice_csv
 from inference_atlas.llm.router import LLMRouter
 from inference_atlas.llm.schema import WorkloadSpec
 from inference_atlas.mvp_planner import get_provider_compatibility, rank_configs
+from inference_atlas.quality_metrics import get_quality_scores_for_workload
 
 
 EXCLUSION_REASON_LABELS: dict[str, str] = {
@@ -317,6 +320,66 @@ def run_browse_catalog(
             }
         )
     return CatalogBrowseResponse(rows=payload_rows, total=len(payload_rows))
+
+
+def run_quality_catalog(
+    workload_type: str | None = None,
+    provider: str | None = None,
+    model_key_query: str | None = None,
+    mapped_only: bool = False,
+) -> QualityCatalogResponse:
+    scored = get_quality_scores_for_workload(workload_type=workload_type)
+    query = (model_key_query or "").strip().lower()
+    payload_rows: list[QualityCatalogRow] = []
+    mapped_count = 0
+
+    for row, quality in scored:
+        if provider is not None and row.provider != provider:
+            continue
+        if query and query not in row.model_key.lower() and query not in row.sku_name.lower():
+            continue
+        if mapped_only and quality is None:
+            continue
+
+        quality_mapped = quality is not None
+        if quality_mapped:
+            mapped_count += 1
+
+        payload_rows.append(
+            QualityCatalogRow(
+                provider=row.provider,
+                workload_type=row.workload_type,
+                model_key=row.model_key,
+                sku_name=row.sku_name,
+                billing_mode=row.billing_mode,
+                unit_price_usd=row.unit_price_usd,
+                unit_name=row.unit_name,
+                quality_mapped=quality_mapped,
+                quality_model_id=(quality.model_id if quality else None),
+                quality_score_0_100=(quality.normalized_score if quality else None),
+                quality_score_adjusted_0_100=(quality.adjusted_score if quality else None),
+                quality_confidence=(quality.confidence if quality else None),
+                quality_confidence_weight=(quality.confidence_weight if quality else None),
+                quality_matched_by=(quality.matched_by if quality else None),
+            )
+        )
+
+    payload_rows.sort(
+        key=lambda r: (
+            0 if r.quality_mapped else 1,
+            -(r.quality_score_adjusted_0_100 or -1.0),
+            r.unit_price_usd,
+            r.provider,
+            r.model_key,
+        )
+    )
+    total = len(payload_rows)
+    return QualityCatalogResponse(
+        rows=payload_rows,
+        total=total,
+        mapped_count=mapped_count,
+        unmapped_count=max(0, total - mapped_count),
+    )
 
 
 def run_invoice_analyze(file_bytes: bytes) -> InvoiceAnalysisResponse:
