@@ -10,6 +10,7 @@ from inference_atlas.api_models import (
     AIAssistResponse,
     CatalogBrowseResponse,
     QualityCatalogResponse,
+    QualityInsightsResponse,
     CatalogRankingRequest,
     CatalogRankingResponse,
     CostAuditRequest,
@@ -28,6 +29,7 @@ from inference_atlas.api_service import (
     run_ai_assist,
     run_browse_catalog,
     run_quality_catalog,
+    run_quality_insights,
     run_copilot_turn,
     run_cost_audit,
     run_generate_report,
@@ -134,6 +136,25 @@ def create_app():
     ) -> QualityCatalogResponse:
         try:
             return run_quality_catalog(
+                workload_type=workload_type,
+                provider=provider,
+                model_key_query=model_key_query,
+                mapped_only=mapped_only,
+            )
+        except ValueError as exc:
+            raise HTTPException(status_code=400, detail=str(exc)) from exc
+        except Exception as exc:  # noqa: BLE001
+            raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    @app.get("/api/v1/quality/insights", response_model=QualityInsightsResponse)
+    def quality_insights(
+        workload_type: Optional[str] = None,
+        provider: Optional[str] = None,
+        model_key_query: Optional[str] = None,
+        mapped_only: bool = True,
+    ) -> QualityInsightsResponse:
+        try:
+            return run_quality_insights(
                 workload_type=workload_type,
                 provider=provider,
                 model_key_query=model_key_query,

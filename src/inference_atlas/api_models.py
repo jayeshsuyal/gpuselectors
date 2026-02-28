@@ -121,7 +121,7 @@ class CatalogBrowseResponse(BaseModel):
 
 
 class QualityCatalogRow(BaseModel):
-    model_config = ConfigDict(extra="ignore")
+    model_config = ConfigDict(extra="ignore", protected_namespaces=())
 
     provider: str
     workload_type: str
@@ -144,6 +144,30 @@ class QualityCatalogResponse(BaseModel):
 
     rows: list[QualityCatalogRow]
     total: int
+    mapped_count: int
+    unmapped_count: int
+
+
+class QualityInsightPoint(BaseModel):
+    model_config = ConfigDict(extra="ignore", protected_namespaces=())
+
+    provider: str
+    workload_type: str
+    model_key: str
+    sku_name: str
+    unit_name: str
+    unit_price_usd: float
+    quality_score_adjusted_0_100: float
+    quality_confidence: str
+    is_pareto_frontier: bool = False
+
+
+class QualityInsightsResponse(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    points: list[QualityInsightPoint]
+    total_points: int
+    frontier_count: int
     mapped_count: int
     unmapped_count: int
 

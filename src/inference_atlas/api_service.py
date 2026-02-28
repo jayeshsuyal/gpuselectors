@@ -21,6 +21,8 @@ from inference_atlas.api_models import (
     CatalogBrowseResponse,
     QualityCatalogResponse,
     QualityCatalogRow,
+    QualityInsightPoint,
+    QualityInsightsResponse,
     CatalogRankingRequest,
     CatalogRankingResponse,
     CostAuditDataGap,
@@ -379,6 +381,85 @@ def run_quality_catalog(
         total=total,
         mapped_count=mapped_count,
         unmapped_count=max(0, total - mapped_count),
+    )
+
+
+def _compute_pareto_frontier_flags(points: list[QualityInsightPoint]) -> list[bool]:
+    """Pareto frontier for minimizing price and maximizing quality."""
+    flags = [True] * len(points)
+    for i, p in enumerate(points):
+        for j, q in enumerate(points):
+            if i == j:
+                continue
+            price_better_or_equal = q.unit_price_usd <= p.unit_price_usd
+            quality_better_or_equal = q.quality_score_adjusted_0_100 >= p.quality_score_adjusted_0_100
+            strictly_better = (
+                q.unit_price_usd < p.unit_price_usd
+                or q.quality_score_adjusted_0_100 > p.quality_score_adjusted_0_100
+            )
+            if price_better_or_equal and quality_better_or_equal and strictly_better:
+                flags[i] = False
+                break
+    return flags
+
+
+def run_quality_insights(
+    workload_type: str | None = None,
+    provider: str | None = None,
+    model_key_query: str | None = None,
+    mapped_only: bool = True,
+) -> QualityInsightsResponse:
+    catalog = run_quality_catalog(
+        workload_type=workload_type,
+        provider=provider,
+        model_key_query=model_key_query,
+        mapped_only=mapped_only,
+    )
+    points: list[QualityInsightPoint] = []
+    for row in catalog.rows:
+        if not row.quality_mapped:
+            continue
+        adjusted = row.quality_score_adjusted_0_100
+        confidence = row.quality_confidence
+        if adjusted is None or confidence is None:
+            continue
+        points.append(
+            QualityInsightPoint(
+                provider=row.provider,
+                workload_type=row.workload_type,
+                model_key=row.model_key,
+                sku_name=row.sku_name,
+                unit_name=row.unit_name,
+                unit_price_usd=row.unit_price_usd,
+                quality_score_adjusted_0_100=adjusted,
+                quality_confidence=confidence,
+                is_pareto_frontier=False,
+            )
+        )
+
+    if points:
+        flags = _compute_pareto_frontier_flags(points)
+        points = [
+            p.model_copy(update={"is_pareto_frontier": flags[idx]})
+            for idx, p in enumerate(points)
+        ]
+        points.sort(
+            key=lambda p: (
+                0 if p.is_pareto_frontier else 1,
+                p.unit_price_usd,
+                -p.quality_score_adjusted_0_100,
+                p.provider,
+                p.model_key,
+            )
+        )
+
+    frontier_count = sum(1 for p in points if p.is_pareto_frontier)
+    return QualityInsightsResponse(
+        points=points,
+        total_points=len(points),
+        frontier_count=frontier_count,
+        mapped_count=catalog.mapped_count,
+        unmapped_count=catalog.unmapped_count,
     )
 
 
