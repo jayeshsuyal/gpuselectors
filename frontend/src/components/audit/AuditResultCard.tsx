@@ -40,6 +40,10 @@ function formatUSD(n: number) {
   return new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n)
 }
 
+function formatPct(n: number) {
+  return `${n.toFixed(1)}%`
+}
+
 function humanizePricingModel(m: string) {
   return { token_api: 'Token API', dedicated_gpu: 'Dedicated GPU', mixed: 'Mixed' }[m] ?? m
 }
@@ -60,6 +64,12 @@ function SectionLabel({ children }: { children: React.ReactNode }) {
 
 const MODALITY_LABEL: Record<string, string> = {
   llm:              'LLM',
+  asr:              'Speech-to-Text',
+  tts:              'Text-to-Speech',
+  image_gen:        'Image Gen',
+  video_gen:        'Video Gen',
+  mixed:            'Mixed',
+  // Legacy aliases kept for backward-compatible display from older payloads.
   speech_to_text:   'Speech-to-Text',
   text_to_speech:   'Text-to-Speech',
   embeddings:       'Embeddings',
@@ -139,6 +149,14 @@ export function AuditResultCard({ data }: AuditResultCardProps) {
   const [gapsOpen, setGapsOpen] = useState(false)
 
   const scoreVariant = scoreBadgeVariant(data.efficiency_score)
+  const isTokenApiCurrent = data.pricing_model_verdict.current_model === 'token_api'
+  const showPricingSource = !isTokenApiCurrent || data.pricing_model_verdict.verdict === 'consider_switch'
+  const topScoreDrivers = [
+    ...data.red_flags.slice(0, 2),
+    ...data.recommendations
+      .slice(0, 2)
+      .map((rec) => `${rec.title} (est. ${rec.estimated_savings_pct.toFixed(0)}%)`),
+  ].slice(0, 3)
 
   return (
     <div className="space-y-4 animate-enter">
@@ -198,11 +216,17 @@ export function AuditResultCard({ data }: AuditResultCardProps) {
         </p>
 
         {/* Pricing source */}
-        <PricingSourceBadge
-          source={data.pricing_source}
-          provider={data.pricing_source_provider}
-          gpu={data.pricing_source_gpu}
-        />
+        {showPricingSource ? (
+          <PricingSourceBadge
+            source={data.pricing_source}
+            provider={data.pricing_source_provider}
+            gpu={data.pricing_source_gpu}
+          />
+        ) : (
+          <p className="text-[11px]" style={{ color: 'var(--text-disabled)' }}>
+            Pricing source is abstracted for token-API/serverless audits.
+          </p>
+        )}
       </div>
 
       {/* ── Red flags ── */}
@@ -271,6 +295,45 @@ export function AuditResultCard({ data }: AuditResultCardProps) {
         </div>
       )}
 
+      {data.recommended_options && data.recommended_options.length > 0 && (
+        <div
+          className="rounded-lg border p-4 space-y-3"
+          style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+        >
+          <SectionLabel>Recommended Alternatives</SectionLabel>
+          <div className="space-y-2">
+            {data.recommended_options.map((opt, i) => (
+              <div
+                key={`${opt.provider}-${opt.gpu_type ?? 'none'}-${opt.deployment_mode}-${i}`}
+                className="rounded border p-3 space-y-1.5"
+                style={{ borderColor: 'var(--border-subtle)', background: 'var(--bg-base)' }}
+              >
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="flex items-center gap-1.5 flex-wrap">
+                    <span className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {opt.provider}
+                    </span>
+                    <Badge variant="default">{opt.deployment_mode}</Badge>
+                    {opt.gpu_type && <Badge variant="violet">{opt.gpu_type}</Badge>}
+                  </div>
+                  <div className="text-right">
+                    <div className="text-xs font-semibold" style={{ color: 'var(--text-primary)' }}>
+                      {formatUSD(opt.estimated_monthly_cost_usd)}
+                    </div>
+                    <div className="text-[10px]" style={{ color: '#4ade80' }}>
+                      Save {formatUSD(opt.savings_vs_current_usd)} ({formatPct(opt.savings_vs_current_pct)})
+                    </div>
+                  </div>
+                </div>
+                <p className="text-[11px] leading-relaxed" style={{ color: 'var(--text-tertiary)' }}>
+                  {opt.rationale}
+                </p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ── Hardware recommendation ── */}
       <div
         className="rounded-lg border p-4 space-y-2"
@@ -298,6 +361,22 @@ export function AuditResultCard({ data }: AuditResultCardProps) {
 
       {/* ── Score breakdown (explainability) ── */}
       <ScoreBreakdownCard breakdown={data.score_breakdown} />
+
+      {topScoreDrivers.length > 0 && (
+        <div
+          className="rounded-lg border p-4 space-y-2"
+          style={{ borderColor: 'var(--border-default)', background: 'var(--bg-elevated)' }}
+        >
+          <SectionLabel>Top Score Drivers</SectionLabel>
+          <ul className="space-y-1" role="list">
+            {topScoreDrivers.map((driver, idx) => (
+              <li key={`${idx}-${driver}`} className="text-[11px]" style={{ color: 'var(--text-tertiary)' }}>
+                • {driver}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
 
       {/* ── Data gaps (collapsible) ── */}
       {data.data_gaps_detailed.length > 0 && (

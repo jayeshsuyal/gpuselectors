@@ -59,6 +59,9 @@ export const WORKLOAD_TYPES = [
 
 export type WorkloadTypeId = (typeof WORKLOAD_TYPES)[number]['id']
 
+// Demo mode: keep the landing flow tightly scoped to LLM path.
+export const DEMO_WORKLOAD_IDS: WorkloadTypeId[] = ['llm', 'speech_to_text']
+
 export const MODEL_BUCKETS = [
   { id: '7b', label: '7B params', description: 'Mistral 7B, Llama 3.1 8B' },
   { id: '13b', label: '13B params', description: 'Llama 2 13B, CodeLlama 13B' },

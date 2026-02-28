@@ -407,6 +407,20 @@ class CostAuditDataGap(BaseModel):
     why_it_matters: str
 
 
+class CostAuditAlternative(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+
+    provider: str
+    gpu_type: Optional[str] = None
+    deployment_mode: Literal["serverless", "dedicated", "autoscale"]
+    estimated_monthly_cost_usd: float = Field(ge=0)
+    savings_vs_current_usd: float = Field(default=0)
+    savings_vs_current_pct: float = Field(default=0)
+    confidence: Literal["high", "medium", "low"]
+    source: Literal["provider_csv", "heuristic_prior", "current_baseline"]
+    rationale: str
+
+
 class CostAuditLegAudit(BaseModel):
     model_config = ConfigDict(extra="ignore")
 
@@ -496,6 +510,7 @@ class CostAuditResponse(BaseModel):
     assumptions: list[str] = Field(default_factory=list)
     data_gaps: list[str] = Field(default_factory=list)
     data_gaps_detailed: list[CostAuditDataGap] = Field(default_factory=list)
+    recommended_options: list[CostAuditAlternative] = Field(default_factory=list)
 
 
 class ReportGenerateResponse(BaseModel):

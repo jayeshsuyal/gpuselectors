@@ -17,7 +17,8 @@ export function AppShell() {
 
       {/* ── Ambient aurora orbs — behind everything ── */}
       <div aria-hidden className="pointer-events-none fixed inset-0 z-0 overflow-hidden">
-        {/* Primary violet orb — top right */}
+        <div className="aurora-mesh" />
+        {/* Primary cyan orb — top right */}
         <div
           className="aurora-orb-primary"
           style={{
@@ -25,7 +26,7 @@ export function AppShell() {
             right: '-8%',
             width: '55%',
             height: '55%',
-            opacity: 0.06,
+            opacity: 0.08,
           }}
         />
         {/* Secondary green orb — bottom left */}
@@ -36,7 +37,7 @@ export function AppShell() {
             left: '-6%',
             width: '38%',
             height: '38%',
-            opacity: 0.035,
+            opacity: 0.05,
           }}
         />
         {/* Subtle mid accent */}
@@ -47,7 +48,7 @@ export function AppShell() {
             left: '30%',
             width: '20%',
             height: '20%',
-            opacity: 0.018,
+            opacity: 0.024,
             transform: 'translateY(-50%)',
           }}
         />

@@ -334,13 +334,12 @@ export interface ReportChart {
 
 export type CostAuditModality =
   | 'llm'
-  | 'speech_to_text'
-  | 'text_to_speech'
+  | 'asr'
+  | 'tts'
   | 'embeddings'
-  | 'vision'
-  | 'image_generation'
-  | 'video_generation'
-  | 'moderation'
+  | 'image_gen'
+  | 'video_gen'
+  | 'mixed'
 
 export type CostAuditPricingModel = 'token_api' | 'dedicated_gpu' | 'mixed'
 export type CostAuditTrafficPattern = 'steady' | 'business_hours' | 'bursty'
@@ -362,6 +361,7 @@ export interface CostAuditRequest {
   modality: CostAuditModality
   model_name: string
   pricing_model: CostAuditPricingModel
+  // Frontend convenience input; translated to monthly token fields in service layer.
   tokens_per_day?: number | null
   monthly_ai_spend_usd?: number | null
   gpu_type?: string | null
@@ -417,6 +417,18 @@ export interface CostAuditDataGap {
   why_it_matters: string
 }
 
+export interface CostAuditAlternative {
+  provider: string
+  gpu_type?: string | null
+  deployment_mode: 'serverless' | 'dedicated' | 'autoscale'
+  estimated_monthly_cost_usd: number
+  savings_vs_current_usd: number
+  savings_vs_current_pct: number
+  confidence: 'high' | 'medium' | 'low'
+  source: 'provider_csv' | 'heuristic_prior' | 'current_baseline'
+  rationale: string
+}
+
 /** Per-modality sub-audit leg for mixed-pipeline responses */
 export interface CostAuditModalityLeg {
   modality: CostAuditModality
@@ -441,6 +453,7 @@ export interface CostAuditResponse {
   pricing_source?: CostAuditPricingSource
   pricing_source_provider?: string | null
   pricing_source_gpu?: string | null
+  recommended_options?: CostAuditAlternative[]
   /** Mixed-pipeline only — per-modality sub-audit legs */
   per_modality_audits?: CostAuditModalityLeg[]
 }

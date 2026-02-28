@@ -166,10 +166,9 @@ def create_app():
             raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     @app.post("/api/v1/invoice/analyze", response_model=InvoiceAnalysisResponse)
-    async def analyze_invoice(file: UploadFile = File(...)) -> InvoiceAnalysisResponse:
+    async def analyze_invoice(file: bytes = File(...)) -> InvoiceAnalysisResponse:
         try:
-            content = await file.read()
-            return run_invoice_analyze(content)
+            return run_invoice_analyze(file)
         except ValueError as exc:
             raise HTTPException(status_code=400, detail=str(exc)) from exc
         except Exception as exc:  # noqa: BLE001

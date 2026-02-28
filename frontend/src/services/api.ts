@@ -1233,10 +1233,44 @@ export async function auditCost(req: CostAuditRequest): Promise<CostAuditRespons
         ? [
             { modality: 'llm' as const,        efficiency_score: 68, top_recommendation: 'Enable quantization to reduce per-token cost.', red_flags: [] },
             { modality: 'embeddings' as const,  efficiency_score: 81, top_recommendation: null, red_flags: [] },
-            { modality: 'moderation' as const,  efficiency_score: 74, top_recommendation: 'Batch requests to improve GPU utilisation.', red_flags: ['Idle GPU hours detected on off-peak periods.'] },
+            { modality: 'asr' as const,  efficiency_score: 74, top_recommendation: 'Batch requests to improve GPU utilisation.', red_flags: ['Idle GPU hours detected on off-peak periods.'] },
           ]
         : undefined,
     }
   }
-  return post<CostAuditResponse>('/api/v1/audit/cost', req)
+  const rawTokensPerDay = (req as unknown as { tokens_per_day?: number | null }).tokens_per_day
+  const monthlyTokens = typeof rawTokensPerDay === 'number' && Number.isFinite(rawTokensPerDay)
+    ? Math.max(0, rawTokensPerDay * 30)
+    : 0
+
+  const modalityMap: Record<string, string> = {
+    llm: 'llm',
+    asr: 'asr',
+    speech_to_text: 'asr',
+    tts: 'tts',
+    text_to_speech: 'tts',
+    embeddings: 'embeddings',
+    image_gen: 'image_gen',
+    image_generation: 'image_gen',
+    vision: 'image_gen',
+    video_gen: 'video_gen',
+    video_generation: 'video_gen',
+    mixed: 'mixed',
+  }
+
+  const payload = {
+    modality: modalityMap[req.modality] ?? 'llm',
+    model_name: req.model_name,
+    pricing_model: req.pricing_model,
+    monthly_input_tokens: req.pricing_model === 'token_api' ? monthlyTokens : null,
+    monthly_output_tokens: req.pricing_model === 'token_api' ? monthlyTokens * 0.3 : null,
+    gpu_type: req.gpu_type ?? null,
+    gpu_count: req.gpu_count ?? null,
+    traffic_pattern: req.traffic_pattern ?? 'unknown',
+    caching_enabled: req.has_caching ? 'yes' : 'no',
+    quantization_applied: req.has_quantization ? 'yes' : 'no',
+    autoscaling: req.has_autoscaling ? 'yes' : 'no',
+    monthly_ai_spend_usd: req.monthly_ai_spend_usd ?? null,
+  }
+  return post<CostAuditResponse>('/api/v1/audit/cost', payload)
 }

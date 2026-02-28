@@ -8,7 +8,21 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { ProviderPicker } from '@/components/ui/ProviderPicker'
 import { llmFormSchema, type LLMFormValues } from '@/schemas/forms'
-import { MODEL_BUCKETS, PROVIDERS, TRAFFIC_PATTERNS } from '@/lib/constants'
+import { MODEL_BUCKETS, TRAFFIC_PATTERNS } from '@/lib/constants'
+
+// LLM planner backend supports this provider set.
+const LLM_SUPPORTED_PROVIDERS = [
+  'anthropic',
+  'baseten',
+  'cohere',
+  'fal_ai',
+  'fireworks',
+  'modal',
+  'openai',
+  'replicate',
+  'runpod',
+  'together_ai',
+] as const
 
 interface LLMFormProps {
   onSubmit: (values: LLMFormValues) => void
@@ -142,7 +156,7 @@ export function LLMForm({ onSubmit, loading, initialValues }: LLMFormProps) {
             <ProviderPicker
               value={field.value}
               onChange={field.onChange}
-              allowedProviders={PROVIDERS}
+              allowedProviders={LLM_SUPPORTED_PROVIDERS}
               helperText={
                 field.value.length === 0
                   ? 'No providers selected — select at least one to rank'

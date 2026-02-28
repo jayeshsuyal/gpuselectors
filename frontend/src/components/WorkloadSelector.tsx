@@ -4,7 +4,7 @@ import {
   Film, Shield,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import { WORKLOAD_TYPES, type WorkloadTypeId } from '@/lib/constants'
+import { DEMO_WORKLOAD_IDS, WORKLOAD_TYPES, type WorkloadTypeId } from '@/lib/constants'
 
 const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   Brain, Mic, Volume2, Layers, Eye, ImageIcon, Film, Shield,
@@ -34,6 +34,7 @@ interface WorkloadSelectorProps {
 
 export function WorkloadSelector({ selected, onSelect }: WorkloadSelectorProps) {
   const [hoveredId, setHoveredId] = useState<string | null>(null)
+  const workloadOptions = WORKLOAD_TYPES.filter((w) => DEMO_WORKLOAD_IDS.includes(w.id))
 
   return (
     <div className="space-y-4 animate-enter">
@@ -42,12 +43,12 @@ export function WorkloadSelector({ selected, onSelect }: WorkloadSelectorProps) 
           Select workload category
         </h2>
         <p className="text-xs mt-0.5" style={{ color: 'var(--text-tertiary)' }}>
-          Choose the type of AI workload you want to cost-optimize
+          Demo scope is focused on LLM setup comparison and savings analysis
         </p>
       </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-        {WORKLOAD_TYPES.map((w, i) => {
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+        {workloadOptions.map((w, i) => {
           const Icon = ICON_MAP[w.icon]
           const pal = PALETTE[w.id]
           const isHovered = hoveredId === w.id

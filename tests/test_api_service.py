@@ -532,6 +532,73 @@ def test_run_cost_audit_token_api_returns_structured_response() -> None:
     assert response.score_breakdown.post_cap_score == response.efficiency_score
 
 
+def test_run_cost_audit_returns_recommended_options_for_llm_and_asr() -> None:
+    llm_response = run_cost_audit(
+        CostAuditRequest(
+            modality="llm",
+            model_name="Llama 3.1 70B",
+            pricing_model="token_api",
+            monthly_input_tokens=1_000_000_000,
+            monthly_output_tokens=300_000_000,
+            traffic_pattern="business_hours",
+            providers=["fireworks", "modal"],
+            monthly_ai_spend_usd=6000,
+        )
+    )
+    assert llm_response.recommended_options
+    assert all(opt.estimated_monthly_cost_usd >= 0 for opt in llm_response.recommended_options)
+
+    asr_response = run_cost_audit(
+        CostAuditRequest(
+            modality="asr",
+            model_name="nova-2",
+            pricing_model="token_api",
+            monthly_input_tokens=100_000_000,
+            monthly_output_tokens=0,
+            traffic_pattern="steady",
+            providers=["deepgram", "assemblyai", "modal"],
+            monthly_ai_spend_usd=500,
+        )
+    )
+    assert asr_response.recommended_options
+    assert any(opt.deployment_mode in {"dedicated", "autoscale"} for opt in asr_response.recommended_options)
+
+
+def test_run_cost_audit_recommended_options_use_throughput_metadata_when_available(monkeypatch: pytest.MonkeyPatch) -> None:
+    monkeypatch.setattr(
+        "inference_atlas.api_service._load_gpu_pricing_rows",
+        lambda: [
+            {
+                "provider": "fireworks",
+                "gpu_type": "H100_80GB",
+                "workload_type": "llm",
+                "billing_mode": "autoscale_hourly",
+                "price_per_gpu_hour_usd": "4.0",
+                "throughput_value": "250",
+                "throughput_unit": "tokens_per_second",
+                "confidence": "high",
+                "source_url": "https://example.com/fireworks-gpu",
+            }
+        ],
+    )
+    response = run_cost_audit(
+        CostAuditRequest(
+            modality="llm",
+            model_name="Llama 3.1 70B",
+            pricing_model="token_api",
+            monthly_input_tokens=2_000_000_000,
+            monthly_output_tokens=500_000_000,
+            traffic_pattern="bursty",
+            providers=["fireworks"],
+            monthly_ai_spend_usd=12000,
+        )
+    )
+    assert response.recommended_options
+    provider_rows = [opt for opt in response.recommended_options if opt.provider == "fireworks"]
+    assert provider_rows
+    assert "throughput metadata" in provider_rows[0].rationale
+
+
 def test_run_cost_audit_mixed_modality_flags_data_gap() -> None:
     response = run_cost_audit(
         CostAuditRequest(

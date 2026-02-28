@@ -31,7 +31,7 @@ from inference_atlas.ai_copilot import (
     next_copilot_turn,
 )
 from inference_atlas.api_models import CopilotTurnRequest, CopilotTurnResponse
-from inference_atlas.api_service import run_copilot_turn, run_plan_scaling
+from inference_atlas.api_service import run_copilot_turn, run_cost_audit, run_plan_scaling
 from inference_atlas.data_loader import (
     get_catalog_v2_metadata,
     get_catalog_v2_rows,
@@ -167,5 +167,6 @@ __all__ = [
     "CopilotTurnRequest",
     "CopilotTurnResponse",
     "run_copilot_turn",
+    "run_cost_audit",
     "run_plan_scaling",
 ]

@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom'
-import { BarChart3, BookOpen, Receipt, ShieldCheck, Github, ChevronRight } from 'lucide-react'
+import { BarChart3, ShieldCheck, Github, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { AIAssistantPanel } from './AIAssistantPanel'
 import { Separator } from './ui/separator'
@@ -7,8 +7,6 @@ import { useAIContext } from '@/context/AIContext'
 
 const NAV_ITEMS = [
   { to: '/',        label: 'Optimize Workload', icon: BarChart3,   end: true },
-  { to: '/catalog', label: 'Browse Catalog',    icon: BookOpen },
-  { to: '/invoice', label: 'Invoice Analyzer',  icon: Receipt },
   { to: '/audit',   label: 'Cost Audit',        icon: ShieldCheck },
 ]
 

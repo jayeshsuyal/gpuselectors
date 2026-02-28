@@ -47,11 +47,11 @@ const RING_DECAY_MS    = 950
 const BREATHE_AMP      = 0.45   // ± px radius oscillation
 const BREATHE_SPEED    = 0.0008 // radians/ms
 
-// Brand purple palette
-const C_EDGE  = [100,  75, 240] as const
-const C_NODE  = [130, 100, 255] as const
-const C_PULSE = [168, 142, 255] as const
-const C_RING  = [124,  92, 252] as const
+// Inference cyan palette
+const C_EDGE  = [22,  163, 192] as const
+const C_NODE  = [103, 232, 249] as const
+const C_PULSE = [110, 231, 183] as const
+const C_RING  = [34,  211, 238] as const
 
 function rgba([r, g, b]: readonly [number, number, number], a: number) {
   return `rgba(${r},${g},${b},${Math.max(0, a).toFixed(4)})`

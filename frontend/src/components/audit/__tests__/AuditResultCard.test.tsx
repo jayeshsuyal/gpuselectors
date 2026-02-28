@@ -37,7 +37,7 @@ describe('AuditResultCard — per_modality_audits', () => {
           per_modality_audits: [
             { modality: 'llm',       efficiency_score: 68, top_recommendation: 'Enable quantization.', red_flags: [] },
             { modality: 'embeddings', efficiency_score: 81, top_recommendation: null, red_flags: [] },
-            { modality: 'moderation', efficiency_score: 55, top_recommendation: 'Batch requests.', red_flags: ['Idle GPU hours detected.'] },
+            { modality: 'asr', efficiency_score: 55, top_recommendation: 'Batch requests.', red_flags: ['Idle GPU hours detected.'] },
           ],
         }}
       />
@@ -49,7 +49,7 @@ describe('AuditResultCard — per_modality_audits', () => {
     // Modality labels
     expect(screen.getByText('LLM')).toBeInTheDocument()
     expect(screen.getByText('Embeddings')).toBeInTheDocument()
-    expect(screen.getByText('Moderation')).toBeInTheDocument()
+    expect(screen.getByText('Speech-to-Text')).toBeInTheDocument()
 
     // Scores rendered as badges
     expect(screen.getByText('68')).toBeInTheDocument()
@@ -60,7 +60,7 @@ describe('AuditResultCard — per_modality_audits', () => {
     expect(screen.getByText('Enable quantization.')).toBeInTheDocument()
     expect(screen.getByText('Batch requests.')).toBeInTheDocument()
 
-    // Flag count for moderation
+    // Flag count for ASR leg
     expect(screen.getByText('1 flag')).toBeInTheDocument()
   })
 

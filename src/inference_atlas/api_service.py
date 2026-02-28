@@ -26,6 +26,7 @@ from inference_atlas.api_models import (
     CatalogRankingRequest,
     CatalogRankingResponse,
     CostAuditDataGap,
+    CostAuditAlternative,
     CostAuditLegAudit,
     CostAuditHardwareRecommendation,
     CostAuditPricingVerdict,
@@ -655,6 +656,8 @@ def _load_gpu_pricing_rows() -> list[dict[str, str]]:
                             "workload_type": workload_type,
                             "billing_mode": billing_mode,
                             "price_per_gpu_hour_usd": f"{price:.10f}",
+                            "throughput_value": (row.get("throughput_value") or "").strip(),
+                            "throughput_unit": (row.get("throughput_unit") or "").strip().lower(),
                             "confidence": (row.get("confidence") or "").strip().lower(),
                             "source_url": (row.get("source_url") or "").strip(),
                         }
@@ -779,6 +782,222 @@ def _estimate_dedicated_gpu_monthly_cost(
     )
 
 
+def _cost_audit_confidence_label(token: str | None) -> str:
+    value = (token or "").strip().lower()
+    if value in {"official", "high"}:
+        return "high"
+    if value in {"medium", "estimated"}:
+        return "medium"
+    return "low"
+
+
+def _cost_audit_deployment_mode_from_billing(billing_mode: str | None) -> str:
+    token = (billing_mode or "").strip().lower()
+    if token == "dedicated_hourly":
+        return "dedicated"
+    if token == "autoscale_hourly":
+        return "autoscale"
+    return "serverless"
+
+
+def _estimate_required_gpus_for_audit(payload: CostAuditRequest) -> int:
+    if payload.gpu_count is not None and payload.gpu_count > 0:
+        return int(payload.gpu_count)
+    total_tokens = float(payload.monthly_input_tokens or 0.0) + float(payload.monthly_output_tokens or 0.0)
+    if total_tokens >= 5_000_000_000:
+        return 8
+    if total_tokens >= 2_000_000_000:
+        return 4
+    if total_tokens >= 500_000_000:
+        return 2
+    return 1
+
+
+def _audit_peak_multiplier(traffic_pattern: str) -> float:
+    return {
+        "steady": 1.5,
+        "business_hours": 2.5,
+        "bursty": 4.0,
+        "batch_offline": 2.0,
+    }.get(traffic_pattern, 2.5)
+
+
+def _throughput_per_gpu_peak_unit(
+    throughput_value: str | None,
+    throughput_unit: str | None,
+    workload_type: str,
+) -> float | None:
+    if not throughput_value:
+        return None
+    try:
+        value = float(throughput_value)
+    except (TypeError, ValueError):
+        return None
+    if value <= 0:
+        return None
+    unit = (throughput_unit or "").strip().lower()
+    if workload_type == "llm":
+        # target unit: tokens_per_second
+        if unit == "tokens_per_second":
+            return value
+        if unit == "tokens_per_minute":
+            return value / 60.0
+        if unit == "tokens_per_hour":
+            return value / 3600.0
+        return None
+    if workload_type == "speech_to_text":
+        # target unit: audio_min_per_minute
+        if unit == "audio_min_per_minute":
+            return value
+        if unit == "audio_hour_per_hour":
+            return value * 60.0 / 60.0
+        if unit == "audio_min_per_second":
+            return value * 60.0
+        return None
+    return None
+
+
+def _estimate_required_gpus_from_throughput(
+    payload: CostAuditRequest,
+    workload_type: str,
+    throughput_per_gpu: float | None,
+) -> int | None:
+    if throughput_per_gpu is None or throughput_per_gpu <= 0:
+        return None
+    util_target = 0.75
+    peak_multiplier = _audit_peak_multiplier(payload.traffic_pattern)
+
+    if workload_type == "llm":
+        total_tokens_month = float(payload.monthly_input_tokens or 0.0) + float(payload.monthly_output_tokens or 0.0)
+        if total_tokens_month <= 0:
+            return None
+        avg_tokens_per_sec = total_tokens_month / (30.0 * 24.0 * 3600.0)
+        peak_tokens_per_sec = avg_tokens_per_sec * peak_multiplier
+        return max(1, int((peak_tokens_per_sec / max(throughput_per_gpu * util_target, 1e-9)) + 0.999999))
+
+    if workload_type == "speech_to_text":
+        # As audit payload does not yet include explicit audio-min fields, treat monthly_input_tokens
+        # as workload volume proxy for STT until dedicated audio fields land.
+        monthly_audio_min_proxy = float(payload.monthly_input_tokens or 0.0)
+        if monthly_audio_min_proxy <= 0:
+            return None
+        avg_audio_min_per_min = monthly_audio_min_proxy / (30.0 * 24.0 * 60.0)
+        peak_audio_min_per_min = avg_audio_min_per_min * peak_multiplier
+        return max(1, int((peak_audio_min_per_min / max(throughput_per_gpu * util_target, 1e-9)) + 0.999999))
+
+    return None
+
+
+def _build_cost_audit_recommended_options(
+    payload: CostAuditRequest,
+    current_spend: float,
+) -> list[CostAuditAlternative]:
+    """Build top alternatives from GPU pricing CSVs (+ current serverless baseline)."""
+    if payload.modality not in {"llm", "asr"}:
+        return []
+
+    alternatives: list[CostAuditAlternative] = []
+    if payload.pricing_model == "token_api" and current_spend > 0:
+        alternatives.append(
+            CostAuditAlternative(
+                provider="current_stack",
+                gpu_type=None,
+                deployment_mode="serverless",
+                estimated_monthly_cost_usd=round(current_spend, 2),
+                savings_vs_current_usd=0.0,
+                savings_vs_current_pct=0.0,
+                confidence="high",
+                source="current_baseline",
+                rationale="Baseline from provided monthly AI spend using current token-API/serverless setup.",
+            )
+        )
+
+    rows = _load_gpu_pricing_rows()
+    if not rows:
+        return alternatives
+
+    workload_type = _modality_to_workload_type(payload.modality)
+    selected_providers = {_canonical_gpu_provider(p) for p in payload.providers if p}
+    procurement_factor = PROCUREMENT_DISCOUNT_FACTOR.get(payload.gpu_procurement_type, 1.0)
+    heuristic_required_gpus = _estimate_required_gpus_for_audit(payload)
+
+    ranked: list[tuple[float, CostAuditAlternative]] = []
+    for row in rows:
+        provider = row.get("provider") or ""
+        if selected_providers and provider not in selected_providers:
+            continue
+        if (row.get("workload_type") or "").strip().lower() != workload_type:
+            continue
+        try:
+            hourly = float(row["price_per_gpu_hour_usd"])
+        except (TypeError, ValueError):
+            continue
+        if hourly <= 0:
+            continue
+
+        throughput_per_gpu = _throughput_per_gpu_peak_unit(
+            row.get("throughput_value"),
+            row.get("throughput_unit"),
+            workload_type,
+        )
+        throughput_required = _estimate_required_gpus_from_throughput(
+            payload=payload,
+            workload_type=workload_type,
+            throughput_per_gpu=throughput_per_gpu,
+        )
+        required_gpus = throughput_required or heuristic_required_gpus
+
+        effective_hourly = hourly * procurement_factor
+        monthly_cost = required_gpus * effective_hourly * 730.0
+        savings_usd = max(0.0, current_spend - monthly_cost) if current_spend > 0 else 0.0
+        savings_pct = (savings_usd / current_spend * 100.0) if current_spend > 0 else 0.0
+        deployment_mode = _cost_audit_deployment_mode_from_billing(row.get("billing_mode"))
+        confidence = _cost_audit_confidence_label(row.get("confidence"))
+        gpu_type = (row.get("gpu_type") or "").strip().upper() or None
+        source_url = row.get("source_url") or "provider CSV"
+        if throughput_required is not None:
+            rationale = (
+                f"{required_gpus}x {gpu_type or 'GPU'} sized from throughput metadata "
+                f"({row.get('throughput_value')} {row.get('throughput_unit')}); "
+                f"{deployment_mode} mode priced from {source_url}."
+            )
+        else:
+            rationale = (
+                f"{required_gpus}x {gpu_type or 'GPU'} estimated from workload volume; "
+                f"{deployment_mode} mode priced from {source_url}."
+            )
+
+        ranked.append(
+            (
+                monthly_cost,
+                CostAuditAlternative(
+                    provider=provider,
+                    gpu_type=gpu_type,
+                    deployment_mode=deployment_mode,  # type: ignore[arg-type]
+                    estimated_monthly_cost_usd=round(monthly_cost, 2),
+                    savings_vs_current_usd=round(savings_usd, 2),
+                    savings_vs_current_pct=round(savings_pct, 2),
+                    confidence=confidence,  # type: ignore[arg-type]
+                    source="provider_csv",
+                    rationale=rationale,
+                ),
+            )
+        )
+
+    ranked.sort(key=lambda item: item[0])
+    seen_keys: set[tuple[str, str | None, str]] = set()
+    for _, option in ranked:
+        key = (option.provider, option.gpu_type, option.deployment_mode)
+        if key in seen_keys:
+            continue
+        seen_keys.add(key)
+        alternatives.append(option)
+        if len(alternatives) >= 4:
+            break
+
+    return alternatives
+
+
 def _gap(field: str, impact: str, why: str) -> CostAuditDataGap:
     return CostAuditDataGap(field=field, impact=impact, why_it_matters=why)
 
@@ -880,7 +1099,9 @@ def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -
         penalty_points += 16
         score -= 16
         major_flags += 1
-        red_flags.append("Steady traffic on on-demand GPUs suggests avoidable reservation waste.")
+        red_flags.append(
+            "traffic_pattern='steady' with gpu_procurement_type='on_demand' suggests avoidable reservation waste."
+        )
         if float(payload.monthly_ai_spend_usd or 0.0) <= 0 and payload.pricing_model != "token_api":
             (
                 _estimated_dedicated_spend,
@@ -912,7 +1133,9 @@ def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -
         penalty_points += 12
         score -= 12
         major_flags += 1
-        red_flags.append("No autoscaling for non-steady traffic can create idle spend.")
+        red_flags.append(
+            f"autoscaling='no' with traffic_pattern='{payload.traffic_pattern}' can create idle spend."
+        )
         recommendations.append(
             CostAuditRecommendation(
                 recommendation_type="autoscaling",
@@ -1216,6 +1439,16 @@ def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -
             data_gaps_sorted = [g for g in data_gaps_sorted if g.field != "per_modality_usage_breakdown"]
             assumptions.append("Mixed workload score/savings aggregated from per-leg mini-audits.")
 
+    expose_gpu_pricing_source = (
+        payload.pricing_model != "token_api"
+        or verdict == "consider_switch"
+    )
+
+    recommended_options = _build_cost_audit_recommended_options(
+        payload=payload,
+        current_spend=current_spend,
+    )
+
     return CostAuditResponse(
         efficiency_score=score,
         recommendations=recommendations_sorted,
@@ -1230,9 +1463,9 @@ def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -
             verdict=verdict,
             reason=reason,
         ),
-        pricing_source=pricing_source,
-        pricing_source_provider=pricing_source_provider,
-        pricing_source_gpu=pricing_source_gpu,
+        pricing_source=pricing_source if expose_gpu_pricing_source else "unknown",
+        pricing_source_provider=pricing_source_provider if expose_gpu_pricing_source else None,
+        pricing_source_gpu=pricing_source_gpu if expose_gpu_pricing_source else None,
         red_flags=red_flags,
         estimated_monthly_savings=CostAuditSavingsEstimate(
             low_usd=round(low_savings, 2),
@@ -1257,6 +1490,7 @@ def run_cost_audit(payload: CostAuditRequest, _allow_mixed_split: bool = True) -
         assumptions=assumptions,
         data_gaps=[gap.field for gap in data_gaps_sorted],
         data_gaps_detailed=data_gaps_sorted,
+        recommended_options=recommended_options,
     )
 
 

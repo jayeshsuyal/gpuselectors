@@ -12,7 +12,23 @@ import {
 } from '@/components/ui/select'
 import { ProviderPicker } from '@/components/ui/ProviderPicker'
 import { nonLLMFormSchema, type NonLLMFormValues } from '@/schemas/forms'
-import { UNIT_NAMES, WORKLOAD_UNIT_OPTIONS } from '@/lib/constants'
+import { PROVIDERS, UNIT_NAMES, WORKLOAD_UNIT_OPTIONS } from '@/lib/constants'
+
+const WORKLOAD_PROVIDER_OPTIONS: Partial<Record<string, readonly string[]>> = {
+  speech_to_text: [
+    'assemblyai',
+    'baseten',
+    'deepgram',
+    'elevenlabs',
+    'fal_ai',
+    'fireworks',
+    'google_cloud',
+    'modal',
+    'openai',
+    'replicate',
+    'together_ai',
+  ],
+}
 
 interface NonLLMFormProps {
   workloadType: string
@@ -62,6 +78,7 @@ export function NonLLMForm({ workloadType, onSubmit, loading, initialValues }: N
   const showUnitWarning = budget > 0 && unitName === null
 
   const selectedUnitLabel = UNIT_NAMES.find((u) => u.id === unitName)?.label
+  const workloadProviders = WORKLOAD_PROVIDER_OPTIONS[workloadType] ?? PROVIDERS
 
   return (
     <form
@@ -160,10 +177,11 @@ export function NonLLMForm({ workloadType, onSubmit, loading, initialValues }: N
             <ProviderPicker
               value={field.value}
               onChange={field.onChange}
+              allowedProviders={workloadProviders}
               helperText={
                 selectedProviders.length === 0
-                  ? 'All providers with data for this workload will be included.'
-                  : `${selectedProviders.length} selected`
+                  ? `All ${workloadProviders.length} providers with data for this workload will be included.`
+                  : `${selectedProviders.length} selected (of ${workloadProviders.length} available)`
               }
             />
           )}

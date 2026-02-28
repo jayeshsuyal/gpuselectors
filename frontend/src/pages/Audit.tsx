@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { ShieldCheck, Loader2 } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { auditCost } from '@/services/api'
 import { AuditResultCard } from '@/components/audit/AuditResultCard'
 import type {
@@ -44,14 +45,8 @@ const DEFAULT_FORM: AuditFormState = {
 // ─── Option lists ──────────────────────────────────────────────────────────────
 
 const MODALITY_OPTIONS: { value: CostAuditModality; label: string }[] = [
-  { value: 'llm',              label: 'LLM' },
-  { value: 'speech_to_text',   label: 'Speech-to-Text' },
-  { value: 'text_to_speech',   label: 'Text-to-Speech' },
-  { value: 'embeddings',       label: 'Embeddings' },
-  { value: 'vision',           label: 'Vision' },
-  { value: 'image_generation', label: 'Image Generation' },
-  { value: 'video_generation', label: 'Video Generation' },
-  { value: 'moderation',       label: 'Moderation' },
+  { value: 'llm',       label: 'LLM' },
+  { value: 'asr',       label: 'Speech-to-Text' },
 ]
 
 const PRICING_MODEL_OPTIONS: { value: CostAuditPricingModel; label: string }[] = [
@@ -114,6 +109,12 @@ export function AuditPage() {
   }
 
   const isGpu = form.pricing_model !== 'token_api'
+  const compareWorkload = form.modality === 'asr' ? 'speech_to_text' : 'llm'
+  const compareTo = `/?from=audit&workload=${encodeURIComponent(compareWorkload)}${
+    form.tokens_per_day ? `&tokens_per_day=${encodeURIComponent(form.tokens_per_day)}` : ''
+  }${
+    form.monthly_ai_spend_usd ? `&monthly_budget=${encodeURIComponent(form.monthly_ai_spend_usd)}` : ''
+  }`
 
   return (
     <div className="max-w-3xl mx-auto px-4 py-8 sm:px-6">
@@ -343,8 +344,17 @@ export function AuditPage() {
 
       {/* ── Result ── */}
       {result && (
-        <div className="mt-8 page-section section-delay-2">
+        <div className="mt-8 page-section section-delay-2 space-y-3">
           <AuditResultCard data={result} />
+          <div className="flex justify-end">
+            <Link
+              to={compareTo}
+              className="rounded-md px-3 py-1.5 text-xs font-medium border transition-colors"
+              style={{ borderColor: 'var(--brand-border)', background: 'rgba(34,211,238,0.08)', color: 'var(--brand-hover)' }}
+            >
+              Compare alternatives now
+            </Link>
+          </div>
         </div>
       )}
     </div>

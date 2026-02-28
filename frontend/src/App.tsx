@@ -3,8 +3,6 @@ import { createBrowserRouter, RouterProvider, Navigate } from 'react-router-dom'
 import { AppShell } from '@/components/AppShell'
 
 const OptimizePage = lazy(() => import('@/pages/Optimize').then((m) => ({ default: m.OptimizePage })))
-const CatalogPage = lazy(() => import('@/pages/Catalog').then((m) => ({ default: m.CatalogPage })))
-const InvoicePage = lazy(() => import('@/pages/Invoice').then((m) => ({ default: m.InvoicePage })))
 const AuditPage = lazy(() => import('@/pages/Audit').then((m) => ({ default: m.AuditPage })))
 
 function PageFallback() {
@@ -17,8 +15,6 @@ const router = createBrowserRouter([
     element: <AppShell />,
     children: [
       { index: true, element: <OptimizePage /> },
-      { path: 'catalog', element: <CatalogPage /> },
-      { path: 'invoice', element: <InvoicePage /> },
       { path: 'audit',   element: <AuditPage /> },
       { path: '*', element: <Navigate to="/" replace /> },
     ],
